@@ -14,8 +14,9 @@ class PlantsController extends Controller
         $plants = DB::table('plants')->where('id', '=', $id)->first();
         
         return view('plants')->with('plants',$plants);
-
-
     }
+
+
+
     
 }

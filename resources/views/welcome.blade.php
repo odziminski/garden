@@ -21,13 +21,11 @@
                     <h4 class="card-title">
                             {{$plant->name}}
                     </h4>
-                    <p> Last watered at: {{$plant->watered_at}}
+                    <p> Last watered: {{$plant->watered_at}}</p>
+                       <p> Last fertilized:{{$plant->fertilized_at}} </p>
                 </div>
-                <div class="card-read-more">
-                    <p class="btn btn-link btn-block">
-                        See More
-                    </a>
-                </div>
+                
+            </a>
             </div>
         </div>
     </a>
@@ -37,7 +35,8 @@
 </div>
 
 <div class="text-center">
-    <a href="{{ route('logout') }}">Logout</a>
+    <a href="{{ route('add-plant') }}" type="button" class="btn btn-success btn-lg">Add a plant</a> <br>
+    <a href="{{ route('logout') }}" type="button" class="btn btn-danger btn-lg">Logout</a>
 </div>
 
 

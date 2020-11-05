@@ -23,7 +23,9 @@ class UserController extends Controller
         ->where('user_id', '=', auth()->id())->get();
         foreach ($plants as $plant) {
             $plant->watered_at = Carbon::parse($plant->watered_at)
-            ->diffForHumans(Carbon::now(). ' ago');
+            ->diffForHumans();
+            $plant->fertilized_at = Carbon::parse($plant->fertilized_at)
+            ->diffForHumans();
         }
         return view('welcome')->with('plants',$plants);
 

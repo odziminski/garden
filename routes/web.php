@@ -31,19 +31,16 @@ Route::get('/users',[UserController::class, 'displayUserData'])->name('users');
 
 Route::get('plants/{id}',[PlantsController::class, 'displaySinglePlant'])->name('plants');
 
-Route::get('/add-plant',[UserController::class,'addPlant'])->name('add-plant');
+Route::get('/add-plant', function () {
+    return view('add-plant');
+})->name('add-plant');
 
 
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Auth::routes();
+Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 
