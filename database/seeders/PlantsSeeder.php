@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
+
 use Carbon\Carbon;
 
 class PlantsSeeder extends Seeder
@@ -14,11 +16,36 @@ class PlantsSeeder extends Seeder
      *
      * @return void
      */
+
+     public function getRandomPlantName(){
+        $samplePlants = [
+            'Aloe',
+            'Peace lily',
+            'Mother-in-law’s Tongue',
+            'Zanzibar Gem',
+            'Maidenhair',
+            'Rubber Plant',
+            'Begonia',
+            'Belladonna Lily',
+            'Eternal flame',
+            'Beach Spider Lily',
+            'African Violet',
+            'Queens Tears',
+            'Madagascar Jasmine',
+            'Moth Orchid',
+            'Winter Cherry'
+        ];
+        $random = Arr::random($samplePlants);
+        return $random;
+    }
+
     public function run()
     {
+        
         DB::table('plants')->insert([
             'user_id' => 1,
-            'name' => Str::random(10),
+            //'name' => self::getRandomPlantName(),
+            'name' => Str::random(30), 
             'created_at' => Carbon::now()->subDays(rand(1, 55)),
             'watered_at' => Carbon::now()->subDays(rand(1, 55)),
             'watering_frequency_week' => rand(1,7),

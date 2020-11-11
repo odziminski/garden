@@ -3,5 +3,6 @@
 @section ('content')
 
 {{$plants->name}}
+
  
   @endsection
