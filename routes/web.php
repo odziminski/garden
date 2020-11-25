@@ -35,6 +35,8 @@ Route::get('/add-plant', function () {
     return view('add-plant');
 })->name('add-plant');
 
+Route::post('/add-plant-query',[PlantsController::class, 'store'])->name('add-plant-query');
+
 
 Auth::routes();
 

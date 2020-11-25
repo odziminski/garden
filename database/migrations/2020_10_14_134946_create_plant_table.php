@@ -19,9 +19,9 @@ class CreatePlantTable extends Migration
             $table->string('name');
             $table->timestamp('created_at')->nullable();
             $table->timestamp('watered_at')->nullable();
-            $table->integer('watering_frequency_week');
+            $table->string('watering_frequency');
             $table->timestamp('fertilized_at')->nullable();
-            $table->integer('fertilizing_frequency_year');
+            $table->string('fertilizing_frequency');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

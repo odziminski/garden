@@ -5,12 +5,15 @@
 
 @if (!Auth::guest())
 <div class="text-center">
-
         Number of your plants: {{$plants->count()}}</p>
+        @if (session('message'))
+    <div class="alert alert-success" role="alert">
+        {{ (session('message')) }}
+      </div>
+    @endif
 </div>
 <div class="container">
     <div class="row">
-
         @foreach ($plants as $plant)
         <div class="col-xs-12 col-sm-4">
             <div class="card">
@@ -22,7 +25,7 @@
                             {{$plant->name}}
                     </h4>
                     <p> Last watered: {{$plant->watered_at}}</p>
-                       <p> Last fertilized:{{$plant->fertilized_at}} </p>
+                    <p> Last fertilized:{{$plant->fertilized_at}} </p>
                 </div>
                 
             </a>
