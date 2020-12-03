@@ -25,21 +25,21 @@
                         <label for="watering_frequency" >Watering frequency required?</label> 
                         <select class="form-control" id="watering_frequency" name="watering_frequency">
                              
-                                <option> Very low </option> 
-                                <option> Low </option> 
-                                <option selected="selected"> Moderate </option> 
-                                <option> High </option> 
-                                <option> Very high </option> 
+                                <option value = "15"> Very low </option> 
+                                <option value = "10"> Low </option> 
+                                <option value = "6" selected="selected"> Moderate </option> 
+                                <option value = "4"> High </option> 
+                                <option value = "2"> Very high </option> 
                             
                         </select>  
                         <label for="fertilizing_frequency" >Fertilizing frequency required?</label> 
                         <select class="form-control" id="fertilizing_frequency" name="fertilizing_frequency">
                              
-                                <option> Very low </option> 
-                                <option> Low </option> 
-                                <option selected="selected"> Moderate </option> 
-                                <option> High </option> 
-                                <option> Very high </option> 
+                                <option value = "15"> Very low </option> 
+                                <option value = "10"> Low </option> 
+                                <option value = "6" selected="selected"> Moderate </option> 
+                                <option value = "4"> High </option> 
+                                <option value = "2"> Very high </option>  
                             
                         </select>  
                              

@@ -37,12 +37,13 @@ class StorePlantRequest extends FormRequest
 
 
     public function messages()
-{
-    return [
-        'name.required' => 'A name is required!',
-        'name.min' => 'Name must at least 3 characters long!',
-        'watering_frequency.required' => 'A watering frequency is required!',
-        'fertilizing_frequency.required' => 'A fertilizing frequency is required!',
-    ];
-}
+    {
+        return [
+            'name.required' => 'A name is required!',
+            'name.min' => 'Name must at least 3 characters long!',
+            'watering_frequency.required' => 'A watering frequency is required!',
+            'fertilizing_frequency.required' => 'A fertilizing frequency is required!',
+        ];
+    }
+
 }

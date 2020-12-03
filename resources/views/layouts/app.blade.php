@@ -41,10 +41,13 @@
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
-
+                        <li>
+                            <a class="nav-link" href="{{route('browse')}}">Browse your plants</a>
+                        </li>
                         <li>
                             <a class="nav-link" href="{{route('about')}}">About us</a>
                         </li>
+                        
                         <!-- Authentication Links -->
                         @guest
                             <li class="nav-item">

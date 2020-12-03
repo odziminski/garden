@@ -16,7 +16,9 @@ use App\Http\Controllers\PlantsController;
 */
 
 
-Route::get('/',[UserController::class, 'displayPlants'])->name('welcome');
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
 
 Route::get('/login', function () {
     return view('login');
@@ -25,11 +27,15 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
+Route::get('/browse',[UserController::class, 'displayPlants'])->name('browse');
 
 
 Route::get('/users',[UserController::class, 'displayUserData'])->name('users');
 
 Route::get('plants/{id}',[PlantsController::class, 'displaySinglePlant'])->name('plants');
+
+Route::get('check',[PlantsController::class, 'checkForWatering'])->name('check');
+
 
 Route::get('/add-plant', function () {
     return view('add-plant');
