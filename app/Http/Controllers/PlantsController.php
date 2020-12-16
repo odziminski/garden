@@ -11,12 +11,14 @@ class PlantsController extends Controller
 {
     protected $dates = ['created_at', 'watered_at', 'fertilized_at'];
 
-    public function displaySinglePlant($id){
+    public function displaySinglePlant()
+    {
         $plants = DB::table('plants')
-        ->where('id', '=', $id)
+        ->where('id', '=', auth()->id())
         ->first();
         return view('plants')->with('plants',$plants);
     }
+
 
     public function store(StorePlantRequest $request)
     {
@@ -48,31 +50,25 @@ class PlantsController extends Controller
          return redirect()->route('add-plant')->with('message',$message);  
     }
 
-    public function checkForWatering()
+    public function displayPlants()
     {
-        $all = DB::table('plants')
-        ->select('*')
-        ->get();  
+        $now = new Carbon();
 
-        foreach ($all as $result)
+        $plants = DB::table('plants')
+        ->where('user_id', '=', auth()->id())
+        ->orderBy('watered_at', 'desc')
+        ->get();
+
+        foreach ($plants as $plant)
         {
-            $now = Carbon::now();
-            $nextWatering = (new Carbon ($result->watered_at))
-            ->addDays($result->watering_frequency);            
-            $daysPast = $nextWatering->diffInDays($now);
-
-            $query = DB::table('plants')
-            ->where('watering_frequency', '>=', $daysPast)
-            ->get();
-            
-            if ($query->isEmpty())
-            {
-               return true;
-            }
-            else
-            {
-                return false;
-            }
+            $plant->watered_at = Carbon::parse($plant->watered_at)
+            ->diffForHumans();
+            $plant->fertilized_at = Carbon::parse($plant->fertilized_at)
+            ->diffForHumans();
         }
+         return view('browse')->with('plants',$plants);
+       
     }
+    
+
 }

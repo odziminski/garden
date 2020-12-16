@@ -4,7 +4,6 @@
 @section('content')
 
 @if (!Auth::guest())
-
 <div class="text-center">
 <p> Plants total: {{$plants->count()}} </p>
 </div>
@@ -22,8 +21,16 @@
                     <h4 class="card-title">
                         {{$plant->name}}
                     </h4>
-                    <p> Last watered: {{$plant->watered_at}}</p>
-                    <p> Last fertilized:{{$plant->fertilized_at}} </p>
+                    @if ($plant->need_watering)
+                    <div class="text-danger">
+                        <p> i need watering!</p>
+                    @else 
+                    <div class="text-successs">
+                        @endif 
+                        Last watered: {{$plant->watered_at}} <br/>
+                        Last fertilized:{{$plant->fertilized_at}} 
+                    </div>
+                   
                 </div>
 
                 </a>

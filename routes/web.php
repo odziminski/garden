@@ -27,7 +27,8 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
-Route::get('/browse',[UserController::class, 'displayPlants'])->name('browse');
+Route::get('/browse',[PlantsController::class, 'displayPlants'])->name('browse');
+
 
 
 Route::get('/users',[UserController::class, 'displayUserData'])->name('users');

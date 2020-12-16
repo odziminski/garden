@@ -48,8 +48,10 @@ class PlantsSeeder extends Seeder
             'created_at' => Carbon::now()->subDays(rand(1, 55)),
             'watered_at' => Carbon::now()->subDays(rand(1, 55)),
             'watering_frequency' => rand(1,15),
+            'need_watering' =>rand(0,1),
             'fertilized_at' => Carbon::now()->subDays(rand(1, 55)),
-            'fertilizing_frequency' => rand(1,15)
+            'fertilizing_frequency' => rand(1,15),
+            'need_fertilizing' =>rand(0,1),
         ]);
     }
 }
