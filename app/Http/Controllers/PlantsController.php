@@ -11,12 +11,19 @@ class PlantsController extends Controller
 {
     protected $dates = ['created_at', 'watered_at', 'fertilized_at'];
 
-    public function displaySinglePlant()
+    public function displaySinglePlant($id)
     {
-        $plants = DB::table('plants')
-        ->where('id', '=', auth()->id())
+        $plant = DB::table('plants')
+        ->where('id', '=', $id)
         ->first();
-        return view('plants')->with('plants',$plants);
+        $nextWatering = Carbon::parse($plant->watered_at)->addDays($plant->watering_frequency);
+        $nextFertilizing = Carbon::parse($plant->fertilized_at)->addDays($plant->fertilizing_frequency);
+
+        return view('plants')->with([
+            'plant' => $plant,
+            'nextWatering' => $nextWatering,
+            'nextFertilizing' => $nextFertilizing,
+            ]);
     }
 
 
@@ -52,8 +59,6 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $now = new Carbon();
-
         $plants = DB::table('plants')
         ->where('user_id', '=', auth()->id())
         ->orderBy('watered_at', 'desc')
@@ -70,5 +75,20 @@ class PlantsController extends Controller
        
     }
     
-
+    public function updateDate($column,$id)
+    {
+        $now = Carbon::now();
+        try 
+        { 
+            $update = DB::table('plants')
+            ->whereId($id)
+            ->update([$column => $now]);
+        }
+        catch ( \Exception $e )
+        {
+            $err = $e->getPrevious()->getMessage();
+            echo ($err);
+        }
+        return back();
+    }
 }
