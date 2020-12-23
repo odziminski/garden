@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class PlantsController extends Controller
 {
@@ -16,8 +17,12 @@ class PlantsController extends Controller
         $plant = DB::table('plants')
         ->where('id', '=', $id)
         ->first();
-        $nextWatering = Carbon::parse($plant->watered_at)->addDays($plant->watering_frequency);
-        $nextFertilizing = Carbon::parse($plant->fertilized_at)->addDays($plant->fertilizing_frequency);
+        $nextWatering = Carbon::parse($plant->watered_at)
+        ->addDays($plant->watering_frequency)
+        ->format('l, j-m-Y ');
+        $nextFertilizing = Carbon::parse($plant->fertilized_at)
+        ->addDays($plant->fertilizing_frequency)
+        ->format('l, j-m-Y ');
 
         return view('plants')->with([
             'plant' => $plant,
@@ -26,15 +31,22 @@ class PlantsController extends Controller
             ]);
     }
 
-
     public function store(StorePlantRequest $request)
     {
        $wateringFrequency = $request->input('watering_frequency');
        $fertilizingFrequency = $request->input('fertilizing_frequency');
-    
+        
+       if ($request->hasFile('avatar'))
+       {
+           $avatar = $request->file('avatar');
+           $filename = Carbon::now()->toDateString() . '.' . $avatar->getClientOriginalExtension();
+           Image::make($avatar)->resize(250,250)->save(public_path('images/' . $filename));
+       } else $filename = 'plant.png';
+       
         try 
         { 
             $query = DB::table('plants')->insertGetId([
+                'avatar' => $filename,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
                 'created_at' => Carbon::now(),

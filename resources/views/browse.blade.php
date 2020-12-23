@@ -15,7 +15,7 @@
         <div class="col-xs-12 col-sm-3">
             <div class="card">
                 <a class="img-card" href="{{ URL::to('plants/' . $plant->id) }}">
-                    <img src="{{ asset('images/plant.png') }}" />
+                    <img src="{{ asset('images/'. $plant->avatar) }}" />
                 </a>
                 <div class="card-content">
                     <h4 class="card-title">

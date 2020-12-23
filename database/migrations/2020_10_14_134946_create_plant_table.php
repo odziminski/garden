@@ -15,6 +15,7 @@ class CreatePlantTable extends Migration
     {
         Schema::create('plants', function (Blueprint $table) {
             $table->id();
+            $table->string('avatar')->default('plant.png');
             $table->bigInteger('user_id')->unsigned();
             $table->string('name');
             $table->timestamp('created_at')->nullable();

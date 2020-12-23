@@ -9,7 +9,7 @@
   <div class="card">
     <div class="">
       <div class="img-card">
-          <img src="{{ asset('images/plant.png') }}" />
+          <img src="{{ asset('images/'. $plant->avatar) }}" />
       </div>
       <div class="card-content text-center">
           <h4 class="card-title text-center">

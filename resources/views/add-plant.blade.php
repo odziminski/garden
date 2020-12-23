@@ -6,7 +6,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-body text-center">
-                    <form method="POST" action="{{ route('add-plant-query') }}">
+                    <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}">
                     @csrf
                         <h5> Dates will be assigned from today</h5><br>
                         @if ($errors->any())
@@ -42,6 +42,8 @@
                                 <option value = "2"> Very high </option>  
                             
                         </select>  
+                        <label>Picture of your plant </label> <br>
+                        <input type="file" name="avatar">
                              
                         <br> <input type="submit" class="btn btn-success btn-lg"></button> <br>
 
