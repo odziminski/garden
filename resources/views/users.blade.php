@@ -3,7 +3,9 @@
 
 @section('content')
     @if($user ?? '')
-            <table class="table">
+    <div class="container">
+
+            <table class="table table-striped table-bordered">
                 <tbody>
                 <tr>
                     <th scope="col">Username</th>
@@ -17,6 +19,6 @@
                 </tr>
                 </tbody>
                 </table>
-            
+            </div>
     @endif    
 @endsection 

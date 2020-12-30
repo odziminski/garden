@@ -95,3 +95,6 @@ h1.heading {
   font-weight:600;
   text-transform: uppercase
 }
+.text-margin-left{
+  margin-left:5% !important;
+}

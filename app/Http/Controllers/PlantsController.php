@@ -39,9 +39,9 @@ class PlantsController extends Controller
        if ($request->hasFile('avatar'))
        {
            $avatar = $request->file('avatar');
-           $filename = Carbon::now()->toDateString() . '.' . $avatar->getClientOriginalExtension();
-           Image::make($avatar)->resize(250,250)->save(public_path('images/' . $filename));
-       } else $filename = 'plant.png';
+           $filename = Carbon::now()->format('Y-m-d_h-i-s') . '.' . $avatar->getClientOriginalExtension();
+           Image::make($avatar)->resize(350,350)->save(public_path('images/' . $filename));
+       }  else $filename = 'plant.png';
        
         try 
         { 

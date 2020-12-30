@@ -18,7 +18,6 @@
 
 <div class="text-center">
     <a href="{{ route('add-plant') }}" type = "button" class = "btn btn-success btn-lg"> Add a plant </a> <br>
-    <a href="{{ route('logout') }}" type = "button" class = "btn btn-danger btn-lg"> Logout </a>
 </div>
 
 
