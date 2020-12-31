@@ -22,7 +22,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'clearDB'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
