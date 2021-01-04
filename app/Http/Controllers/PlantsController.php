@@ -40,13 +40,15 @@ class PlantsController extends Controller
        {
            $avatar = $request->file('avatar');
            $filename = Carbon::now()->format('Y-m-d_h-i-s') . '.' . $avatar->getClientOriginalExtension();
-           Image::make($avatar)->resize(350,350)->save(public_path('images/' . $filename));
+           $uploadedFileUrl = Cloudinary::upload($request->file('file')->getRealPath())->getSecurePath();
+           dd($uploadedFileUrl);
+
        }  else $filename = 'plant.png';
-       
+
         try 
         { 
             $query = DB::table('plants')->insertGetId([
-                'avatar' => $filename,
+                'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
                 'created_at' => Carbon::now(),
