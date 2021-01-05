@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
-use Intervention\Image\ImageManagerStatic as Image;
+use Cloudinary;
 
 class PlantsController extends Controller
 {
