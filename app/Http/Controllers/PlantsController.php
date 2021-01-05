@@ -38,11 +38,9 @@ class PlantsController extends Controller
         
        if ($request->hasFile('avatar'))
        {
-           $avatar = $request->file('avatar');
            $filename = Carbon::now()->format('Y-m-d_h-i-s') . '.' . $avatar->getClientOriginalExtension();
-           $uploadedFileUrl = Cloudinary::upload($request->file('file')->getRealPath())->getSecurePath();
+           $uploadedFileUrl = Cloudinary::upload($request->file('avatar')->getRealPath())->getSecurePath();
            dd($uploadedFileUrl);
-
        }  else $filename = 'plant.png';
 
         try 
