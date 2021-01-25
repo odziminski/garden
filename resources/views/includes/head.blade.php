@@ -4,7 +4,7 @@
     <meta name="author" content="Scotch">
 
     <title>@yield('title')</title>
-    <link href="{{ secure_asset('css/app.css') }}" rel="stylesheet" type="text/css" >
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet" type="text/css" >
 
     
 

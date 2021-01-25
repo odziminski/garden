@@ -8,10 +8,10 @@
 <div class="container">
   <div class="card">
 
-    <img class="rounded pt-3 mx-auto" src= {{$plant->avatar}}/>
+    <img src= {{$plant->avatar}} class="rounded pt-3 mx-auto"/>
 
       <div class="card-content text-center p-5">
-          <h4 class="card-title text-center">
+          <h4 class="card-title">
               {{$plant->name}}
           </h4>       
           <div class="text-left">
