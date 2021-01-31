@@ -25,11 +25,11 @@
                         <label for="watering_frequency" >Watering frequency required?</label> 
                         <select class="form-control" id="watering_frequency" name="watering_frequency">
                              
-                                <option value = "15"> Very low </option> 
-                                <option value = "10"> Low </option> 
-                                <option value = "6" selected="selected"> Moderate </option> 
-                                <option value = "4"> High </option> 
-                                <option value = "2"> Very high </option> 
+                                <option value = "15"> Very low - for plants that require very small care, watering once per 15 days</option> 
+                                <option value = "10"> Low - for plants that require small care, watering once per 10 days </option> 
+                                <option value = "6" selected="selected"> Moderate - regular schedule that will work for most plants, watering once per 6 days</option> 
+                                <option value = "4"> High - for plants that require intensive care, watering once per 4 days </option> 
+                                <option value = "2"> Very high - for the most demanding plants, watering once per 2 days </option> 
                             
                         </select>  
                         <label for="fertilizing_frequency" >Fertilizing frequency required?</label> 
@@ -43,9 +43,8 @@
                             
                         </select>  
                         <label>Picture of your plant </label> <br>
-                        <input type="file" name="avatar">
-                             
-                        <br> <input type="submit" class="btn btn-success btn-lg"></button> <br>
+                        <input type="file" name="avatar" accept="image/png, image/jpeg">                             
+                        <br> <input type="submit" value="Add" class="btn btn-success btn-lg"></button> <br>
 
                     </form>
                 </div>

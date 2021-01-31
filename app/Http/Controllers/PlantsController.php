@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
+use Illuminate\Support\Facades\URL;
 use Cloudinary;
 
 class PlantsController extends Controller
@@ -14,21 +15,27 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-        $plant = DB::table('plants')
-        ->where('id', '=', $id)
-        ->first();
-        $nextWatering = Carbon::parse($plant->watered_at)
-        ->addDays($plant->watering_frequency)
-        ->format('l, j-m-Y ');
-        $nextFertilizing = Carbon::parse($plant->fertilized_at)
-        ->addDays($plant->fertilizing_frequency)
-        ->format('l, j-m-Y ');
-
+         $plant = DB::table('plants')
+                ->where('id', '=', $id)
+                ->first();
+        if ($plant->user_id == auth()->id())
+        {
+            $nextWatering = Carbon::parse($plant->watered_at)
+            ->addDays($plant->watering_frequency)
+            ->format('l, j-m-Y ');
+            $nextFertilizing = Carbon::parse($plant->fertilized_at)
+            ->addDays($plant->fertilizing_frequency)
+            ->format('l, j-m-Y ');
+        
         return view('plants')->with([
             'plant' => $plant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
             ]);
+        } else
+        {
+            return back();
+        }
     }
 
     public function store(StorePlantRequest $request)

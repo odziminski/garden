@@ -14,7 +14,7 @@ class UserController extends Controller
         $user = DB::table('users')->where('id', '=', auth()->id())->first();
         return view('users')->with('user', $user);
     }
-
+    
   
 
 
