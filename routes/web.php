@@ -35,7 +35,8 @@ Route::get('/users',[UserController::class, 'displayUserData'])->name('users');
 
 Route::get('plants/{id}',[PlantsController::class, 'displaySinglePlant'])->name('plants');
 
-Route::get('/update/{column?}/{id?}',[PlantsController::class, 'updateDate'])->name('update');
+Route::get('/updateW/{id}',[PlantsController::class, 'updateWatering'])->name('updateWatering');
+Route::get('/updateF/{id}',[PlantsController::class, 'updateFertilizing'])->name('updateFertilizing');
 
 
 Route::get('/add-plant', function () {

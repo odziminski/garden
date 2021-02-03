@@ -93,14 +93,37 @@ class PlantsController extends Controller
        
     }
     
-    public function updateDate($column,$id)
+    public function updateWatering($id)
     {
         $now = Carbon::now();
         try 
         { 
             $update = DB::table('plants')
             ->whereId($id)
-            ->update([$column => $now]);
+            ->update([
+                'need_watering' => 0,
+                'watered_at' => $now,
+            ]);
+        }
+        catch ( \Exception $e )
+        {
+            $err = $e->getPrevious()->getMessage();
+            echo ($err);
+        }
+        return back();
+    }
+
+    public function updateFertilizing($id)
+    {
+        $now = Carbon::now();
+        try 
+        { 
+            $update = DB::table('plants')
+            ->whereId($id)
+            ->update([
+                'need_fertilizing' => 0,
+                'fertilized_at' => $now,
+            ]);
         }
         catch ( \Exception $e )
         {

@@ -2,23 +2,26 @@
 
 
 @section('content')
-    @if($user ?? '')
-    <div class="container">
+    @auth
 
-            <table class="table table-striped table-bordered">
-                <tbody>
-                <tr>
-                    <th scope="col">Username</th>
-                    <th scope="col">E-mail</th>
-                    <th scope="col">Created at</th>
-                </tr>
-                <tr>
-                <td>{{ $user->name }}</td>
-                <td>{{ $user->email }}</td>
-                <td>{{ $user->created_at }}</td>
-                </tr>
-                </tbody>
-                </table>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body text-left">
+
+                            <label class="font-weight-bold">Username :</label> {{ $user->name }} <br />
+                            <label class="font-weight-bold">Email :</label> {{ $user->email }} <br />
+                            <label class="font-weight-bold">Joined at: </label> {{ $user->created_at }} <br />
+                        </div>
+                    </div>
+                </div>
             </div>
-    @endif    
+        </div>              
+                    
+                            
+                            
+
+    </div>
+    @endauth   
 @endsection 

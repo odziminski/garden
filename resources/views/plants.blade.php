@@ -23,14 +23,14 @@
               <p> Next fertilizing will be at: {{$nextFertilizing}} </p>
           </div>
            @if ($plant->need_watering)
-            <a href="{{ route('update',['column' => 'watered_at','id' => $plant->id]) }}" type="button" class="btn-success btn-lg">Watered the plant</a>
+            <a href="{{ route('updateWatering',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">Watered the plant</a>
           @else
-          <button class="btn btn-success btn-lg"  disabled>No need to water yet</button>
+          <button class="btn btn-success btn-lg" disabled>No need to water yet</button>
             @endif
-            @if ($plant->need_watering)
-            <a href="{{ route('update',['column' => 'fertilized_at','id' => $plant->id]) }}" type="button" class="btn-success btn-lg">Fertilized the plant</a>
+            @if ($plant->need_fertilizing)
+            <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">Watered the plant</a>
           @else
-          <button class="btn btn-success btn-lg"  disabled>No need to fertilize yet</button>
+          <button class="btn btn-success btn-lg" disabled>No need to fertilize yet</button>
             @endif
 
           </div>
