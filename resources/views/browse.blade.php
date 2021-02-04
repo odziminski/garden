@@ -23,16 +23,14 @@
                     </h4>
                     @if ($plant->need_watering)
                     <div class="text-danger">
-                        <p> i need watering!</p>
+                       
                     @else 
                     <div class="text-successs">
                         @endif 
                         Last watered: {{$plant->watered_at}} <br/>
                         Last fertilized:{{$plant->fertilized_at}} 
                     </div>
-                   
                 </div>
-
                 </a>
             </div>
         </div>
@@ -40,11 +38,6 @@
         @endforeach
 
     </div>
-</div>
-
-<div class="text-center">
-    <a href="{{ route('add-plant') }}" type = "button" class = "btn btn-success btn-lg"> Add a plant </a> <br>
-    <a href="{{ route('logout') }}" type = "button" class = "btn btn-danger btn-lg"> Logout </a>
 </div>
 
 

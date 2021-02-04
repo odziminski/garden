@@ -44,6 +44,7 @@ class PlantsSeeder extends Seeder
         
         DB::table('plants')->insert([
             'user_id' => 1,
+            'avatar' => "http://127.0.0.1:8000/images/plant.png",
             'name' => self::getRandomPlantName(), 
             'created_at' => Carbon::now()->subDays(rand(1, 55)),
             'watered_at' => Carbon::now()->subDays(rand(1, 55)),

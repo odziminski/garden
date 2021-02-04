@@ -28,7 +28,7 @@
           <button class="btn btn-success btn-lg" disabled>No need to water yet</button>
             @endif
             @if ($plant->need_fertilizing)
-            <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">Watered the plant</a>
+            <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">Fertilized the plant</a>
           @else
           <button class="btn btn-success btn-lg" disabled>No need to fertilize yet</button>
             @endif

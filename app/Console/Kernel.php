@@ -26,6 +26,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('checkForWatering')
                  ->everyMinute();
+        $schedule->command('checkForFertilizing')
+                 ->everyMinute();
     }
 
     /**
