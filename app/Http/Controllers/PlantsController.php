@@ -26,11 +26,19 @@ class PlantsController extends Controller
             $nextFertilizing = Carbon::parse($plant->fertilized_at)
             ->addDays($plant->fertilizing_frequency)
             ->format('l, j-m-Y ');
+            $lateForWatering = Carbon::parse(Carbon::now())
+            ->diffInDays($plant->watered_at);
+            $lateForFertilizing = Carbon::parse(Carbon::now())
+            ->diffInDays($plant->fertilized_at);
+
         
         return view('plants')->with([
             'plant' => $plant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
+            'lateForWatering' => $lateForWatering,
+            'lateForFertilizing' => $lateForFertilizing,
+
             ]);
         } else
         {

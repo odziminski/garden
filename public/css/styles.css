@@ -98,3 +98,6 @@ h1.heading {
 .text-margin-left{
   margin-left:5% !important;
 }
+.single-image{
+  border-radius: 5%;
+}
