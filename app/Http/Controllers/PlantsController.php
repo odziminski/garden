@@ -21,17 +21,17 @@ class PlantsController extends Controller
         if ($plant->user_id == auth()->id())
         {
             $nextWatering = Carbon::parse($plant->watered_at)
-            ->addDays($plant->watering_frequency)
-            ->format('l, j-m-Y ');
+            ->addDays($plant->watering_frequency);
+             $lateForWatering = Carbon::parse(Carbon::now())
+            ->diffInDays($nextWatering);
+             $nextWatering = $nextWatering->format('l, j-m-Y ');
+           
             $nextFertilizing = Carbon::parse($plant->fertilized_at)
-            ->addDays($plant->fertilizing_frequency)
-            ->format('l, j-m-Y ');
-            $lateForWatering = Carbon::parse(Carbon::now())
-            ->diffInDays($plant->watered_at);
-            $lateForFertilizing = Carbon::parse(Carbon::now())
-            ->diffInDays($plant->fertilized_at);
+            ->addDays($plant->fertilizing_frequency);
+           $lateForFertilizing = Carbon::parse(Carbon::now())
+           ->diffInDays($nextFertilizing);
+           $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
-        
         return view('plants')->with([
             'plant' => $plant,
             'nextWatering' => $nextWatering,

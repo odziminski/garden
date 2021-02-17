@@ -10,10 +10,17 @@ use App\Http\PlantsController;
 
 class UserController extends Controller
 {
-    public function displayUserData(){
+    public function displayUserData()
+    {
         $user = DB::table('users')->where('id', '=', auth()->id())->first();
         return view('users')->with('user', $user);
     }
+
+    public function editUserProfile()
+    {
+
+    }
+    
     
   
 

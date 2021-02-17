@@ -8,7 +8,7 @@
                 <div class="card-body text-center">
                     <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}">
                     @csrf
-                        <h6> Dates will be assigned from today </h6><br>
+                        <h6> Dates will be assigned from today </h6><br />
                         @if ($errors->any())
                         <div class="text-danger">
                             <ul>
@@ -42,8 +42,8 @@
 
                         </div>
                         <h4>Picture of your plant </h4> <br />
-                        <input type="file" name="avatar" accept="image/png, image/jpeg">                             
-                        <br> <input type="submit" value="Add" class="btn btn-success btn-lg"></button> <br>
+                        <input type="file" name="avatar" accept="image/png, image/jpeg">    <br /> <br />                          
+                         <input type="submit" value="Add" class="btn btn-success btn-lg"></button> <br />
 
                     </form>
                 </div>
