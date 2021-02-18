@@ -53,9 +53,7 @@ class PlantsController extends Controller
         
        if ($request->hasFile('avatar'))
        {
-         
            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
-
        }  else $uploadedFileUrl = asset('images/plant.png');
 
         try 

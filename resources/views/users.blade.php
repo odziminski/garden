@@ -19,34 +19,37 @@
                                 <div class="modal-dialog" role="document">
                                   <div class="modal-content">
                                     <div class="modal-header">
-                                      <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                      <h5 class="modal-title" id="updateModal">Modal title</h5>
                                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                       </button>
                                     </div>
                                     <div class="modal-body">
-                                      <form method="POST" enctype="multipart/form-data" action="{{ route('editUserProfile') }}">
+                                      <form method="POST" enctype="multipart/form-data" action="{{ route('editUserProfile') }}" id="editForm">
+                                        @method('PUT')
+                                        @csrf
                                         <div class="form-group">
                                           <label>Username</label>
-                                          <input type="text" class="form-control" placeholder="{{$user->name}}">
+                                          <input type="text" name="name" class="form-control" placeholder="{{$user->name}}">
                                         </div>
                                         <div class="form-group">
-                                          <label>Email address</label>
-                                          <input type="email" class="form-control" placeholder="{{$user->email}}">
+                                          <label>Email </label>
+                                          <input type="email" name="email" class="form-control" placeholder="{{$user->email}}">
                                         </div>
                                         <div class="form-group">
-                                          <label>Change your password</label>
-                                          <input type="password" class="form-control">
+                                          <label>Password</label>
+                                          <input type="password" name="password" class="form-control">
                                         </div>
                                         <div class="form-group">
-                                          <label for="exampleInputPassword1">Confirm your password</label>
-                                          <input type="password" class="form-control">
+                                          <label>Confirm password</label>
+                                          <input type="password" name="passwordConfirm" class="form-control">
                                         </div>
                                       </form>
                                     </div>
                                     <div class="modal-footer">
                                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                      <button type="submit" class="btn btn-success">Save changes</button>
+                                      <input form="editForm" type="submit" class="btn btn-success">
+                                    </form>
                                     </div>
                                   </div>
                                 </div>

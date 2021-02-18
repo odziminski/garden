@@ -52,6 +52,6 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
-Route::get('/users/editUserProfile',[UserController::class, 'editUserProfile'])->name('editUserProfile');
+Route::put('/users/edit-profile',[UserController::class, 'editUserProfile'])->name('editUserProfile');
 
 
