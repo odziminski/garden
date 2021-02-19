@@ -15,7 +15,9 @@ class UserController extends Controller
 {
     public function displayUserData()
     {
-        $user = DB::table('users')->where('id', '=', auth()->id())->first();
+        $user = DB::table('users')
+        ->whereId(auth()->id())
+        ->first();
         return view('users')->with('user', $user);
     }
 

@@ -7,6 +7,7 @@ use DB;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
 use Illuminate\Support\Facades\URL;
+use App\Models\Plant;
 use Cloudinary;
 
 class PlantsController extends Controller
@@ -15,22 +16,21 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-         $plant = DB::table('plants')
-                ->where('id', '=', $id)
-                ->first();
-        if ($plant->user_id == auth()->id())
-        {
-            $nextWatering = Carbon::parse($plant->watered_at)
-            ->addDays($plant->watering_frequency);
-             $lateForWatering = Carbon::parse(Carbon::now())
-            ->diffInDays($nextWatering);
-             $nextWatering = $nextWatering->format('l, j-m-Y ');
-           
-            $nextFertilizing = Carbon::parse($plant->fertilized_at)
-            ->addDays($plant->fertilizing_frequency);
-           $lateForFertilizing = Carbon::parse(Carbon::now())
-           ->diffInDays($nextFertilizing);
-           $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
+         $plant = Plant::where('id', '=', $id)->first();
+
+             if ($plant->user_id == auth()->id())
+            {
+                $nextWatering = Carbon::parse($plant->watered_at)
+                ->addDays($plant->watering_frequency);
+                $lateForWatering = Carbon::parse(Carbon::now())
+                ->diffInDays($nextWatering);
+                $nextWatering = $nextWatering->format('l, j-m-Y ');
+                
+                $nextFertilizing = Carbon::parse($plant->fertilized_at)
+                ->addDays($plant->fertilizing_frequency);
+                $lateForFertilizing = Carbon::parse(Carbon::now())
+                ->diffInDays($nextFertilizing);
+                $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
         return view('plants')->with([
             'plant' => $plant,
@@ -58,7 +58,8 @@ class PlantsController extends Controller
 
         try 
         { 
-            $query = DB::table('plants')->insertGetId([
+            $query = DB::table('plants')
+            ->insertGetId([
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
@@ -84,9 +85,8 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $plants = DB::table('plants')
-        ->where('user_id', '=', auth()->id())
-        ->orderBy('watered_at', 'desc')
+        $plants = Plant::where('user_id', auth()->id())
+        ->orderBy('watered_at', 'asc')
         ->get();
 
         foreach ($plants as $plant)
@@ -97,7 +97,6 @@ class PlantsController extends Controller
             ->diffForHumans();
         }
          return view('browse')->with('plants',$plants);
-       
     }
     
     public function updateWatering($id)
