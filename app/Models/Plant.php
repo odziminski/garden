@@ -13,6 +13,8 @@ class Plant extends Model
     protected $table = "plants";
     
     public $primaryKey  = 'id';
+    public $timestamps = false;
+
 
       /**
      * The attributes that are mass assignable.
@@ -20,6 +22,9 @@ class Plant extends Model
      * @var array
      */
     protected $fillable = [
+        'avatar',
+        'user_id',
+        'created_at',
         'name',
         'watering_frequency',
         'fertilizing_frequency',

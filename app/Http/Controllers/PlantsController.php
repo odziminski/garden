@@ -58,8 +58,7 @@ class PlantsController extends Controller
 
         try 
         { 
-            $query = DB::table('plants')
-            ->insertGetId([
+            $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
