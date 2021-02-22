@@ -103,8 +103,7 @@ class PlantsController extends Controller
         $now = Carbon::now();
         try 
         { 
-            $update = DB::table('plants')
-            ->whereId($id)
+            Plant::where('id',$id)
             ->update([
                 'need_watering' => 0,
                 'watered_at' => $now,
@@ -123,8 +122,7 @@ class PlantsController extends Controller
         $now = Carbon::now();
         try 
         { 
-            $update = DB::table('plants')
-            ->whereId($id)
+            Plant::where('id',$id)
             ->update([
                 'need_fertilizing' => 0,
                 'fertilized_at' => $now,
