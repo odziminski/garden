@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
+use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -18,7 +19,7 @@ class UserSeeder extends Seeder
     public function run()
     {
         $faker = Faker::create();
-	        DB::table('users')->insert([
+             User::create([
 	            'name' => $faker->name,
 	            'email' => $faker->email,
 	            'password' => bcrypt('secret'),

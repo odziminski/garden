@@ -37,7 +37,8 @@
           <button class="btn btn-success btn-lg" disabled>No need to fertilize yet</button> <br />
             @endif
 
-          
+            <a href="{{ route('deletePlant',['id' => $plant->id]) }}">Delete the plant</a><br />
+
   </div>
 </div>
 

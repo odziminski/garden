@@ -38,12 +38,6 @@ class UserController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo ($err);
         }
-        
-        
+ 
     }
-    
-    
-  
-
-
 }

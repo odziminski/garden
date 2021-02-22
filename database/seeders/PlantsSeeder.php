@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use App\Models\Plant;
 
 use Carbon\Carbon;
 
@@ -42,7 +43,7 @@ class PlantsSeeder extends Seeder
     public function run()
     {
         
-        DB::table('plants')->insert([
+        Plant::create([
             'user_id' => 1,
             'avatar' => "http://127.0.0.1:8000/images/plant.png",
             'name' => self::getRandomPlantName(), 

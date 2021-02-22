@@ -40,7 +40,8 @@ class PlantsController extends Controller
             'lateForFertilizing' => $lateForFertilizing,
 
             ]);
-        } else
+        } 
+            else
         {
             return back();
         }
@@ -134,5 +135,12 @@ class PlantsController extends Controller
             echo ($err);
         }
         return back();
+    }
+
+    public function deletePlant($id)
+    {
+        $plant = Plant::find($id)->delete();
+
+        return redirect()->route('browse');
     }
 }
