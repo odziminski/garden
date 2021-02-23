@@ -55,4 +55,5 @@ Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout
 Route::put('/users/edit-profile',[UserController::class, 'editUserProfile'])->name('editUserProfile');
 
 Route::get('/delete-plant/{id}',[PlantsController::class, 'deletePlant'])->name('deletePlant');
+Route::get('/edit-plant/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
 

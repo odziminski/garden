@@ -137,6 +137,12 @@ class PlantsController extends Controller
         return back();
     }
 
+    public function editPlant($id)
+    {
+       $plant = Plant::find($id);
+
+        return view('edit-plant')->with('plant',$plant);
+    }
     public function deletePlant($id)
     {
         $plant = Plant::find($id)->delete();
