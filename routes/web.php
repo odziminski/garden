@@ -55,5 +55,6 @@ Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout
 Route::put('/users/edit-profile',[UserController::class, 'editUserProfile'])->name('editUserProfile');
 
 Route::get('/delete-plant/{id}',[PlantsController::class, 'deletePlant'])->name('deletePlant');
-Route::get('/edit-plant/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
+Route::get('/edit-plant/{id}',[PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
+Route::patch('/edit-plant-query/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
 

@@ -137,12 +137,42 @@ class PlantsController extends Controller
         return back();
     }
 
-    public function editPlant($id)
+    public function displayEditPlant($id)
     {
-       $plant = Plant::find($id);
-
+        $plant = Plant::find($id);
         return view('edit-plant')->with('plant',$plant);
     }
+
+    public function editPlant($id,StorePlantRequest $request)
+    {
+        $wateringFrequency = $request->input('watering_frequency');
+        $fertilizingFrequency = $request->input('fertilizing_frequency');
+         
+        if ($request->hasFile('avatar'))
+        {
+            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
+        }  else $uploadedFileUrl = asset('images/plant.png');
+ 
+         try 
+         { 
+             $plant = Plant::findOrFail($id)
+                ->update([
+                 'avatar' => $uploadedFileUrl,
+                 'name' => $request->input('name'),
+                 'watering_frequency' => $wateringFrequency,
+                 'fertilizing_frequency' => $fertilizingFrequency
+             ]);
+         }
+         catch ( \Exception $e )
+         {
+             $err = $e->getPrevious()->getMessage();
+             echo ($err);
+         } 
+        
+          return redirect()->route('browse');
+        
+    }
+   
     public function deletePlant($id)
     {
         $plant = Plant::find($id)->delete();

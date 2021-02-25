@@ -6,7 +6,8 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-body text-center">
-                    <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}">
+                    <form method="POST" enctype="multipart/form-data" action="{{ route('editPlant',['id' => $plant->id]) }}">
+                        @method('PATCH')
                     @csrf
                         @if ($errors->any())
                         <div class="text-danger">
