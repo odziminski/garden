@@ -17,7 +17,7 @@
                 <a class="img-card" href="{{ URL::to('plants/' . $plant->id) }}">
                     <img src={{$plant->avatar}}  /> </a>
                         @if ($plant->need_watering || $plant->need_fertilizing)
-                         <span class="red-dot-notification"> </span>
+                         <span class="red-dot-notification">!</span>
                          @endif
                         <div class="card-content">
                         <h4 class="card-title">{{$plant->name}}</h4>

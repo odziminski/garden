@@ -8,7 +8,7 @@
                 <div class="card-body text-center">
                     <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}">
                     @csrf
-                        <h6> Dates will be assigned from today </h6><br />
+                        <!--<h6> Dates will be assigned from today </h6><br /> -->
                         @if ($errors->any())
                         <div class="text-danger">
                             <ul>
@@ -20,8 +20,8 @@
                     @endif
                         <h4>Name of your plant</h4> <br /> 
                         <input type="text" class="form-control" name="name" id="name" value="{{ old('name') }}"> <br />
-                       <!-- <label for="name"> Where's your plant located? </label>
-                        <input type="text" class="form-control" id="location"> -->
+                        <h4>What's the species of your plant?</h4> <br />
+                        <input type="text" class="form-control" name="species" value="{{ old('species') }}"> <br />
                         <h4>Watering frequency required?</h4> <br />
                         <div class="text-left">
                             <input type="radio" name="watering_frequency" value = "15"> Very low - for plants that require very small care, watering once per 15 days <br />
