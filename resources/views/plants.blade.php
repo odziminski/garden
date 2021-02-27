@@ -38,13 +38,12 @@
             @endif
             <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">Edit the plant</a><br />
 
-            <a href="#" data-toggle="modal" data-target="#exampleModal">Delete the plant</a><br />
-            
-
-            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog" role="document">
+            <a href="#" data-toggle="modal" data-target="#exampleModalCenter">Delete the plant</a><br />
+            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                   <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -61,9 +60,7 @@
                 </div>
               </div>
             </div>
-
-  </div>
-</div>
+                
 
                                
      

@@ -101,3 +101,13 @@ h1.heading {
 .single-image{
   border-radius: 5%;
 }
+.red-dot-notification{
+  position: absolute;
+    left: 95%;
+    top:-3%;
+  height: 25px;
+  width: 25px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+}

@@ -176,7 +176,6 @@ class PlantsController extends Controller
     public function deletePlant($id)
     {
         $plant = Plant::find($id)->delete();
-
         return redirect()->route('browse');
     }
 }
