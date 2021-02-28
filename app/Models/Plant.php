@@ -26,6 +26,7 @@ class Plant extends Model
         'user_id',
         'created_at',
         'name',
+        'species',
         'watering_frequency',
         'fertilizing_frequency',
         'watered_at',

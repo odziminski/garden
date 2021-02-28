@@ -30,6 +30,7 @@ class StorePlantRequest extends FormRequest
     {
         return [
             'name' => 'required|min:3|max:64',
+            'species' => 'required|min:2',
             'watering_frequency' => 'required',
             'fertilizing_frequency' => 'required'
         ];
@@ -41,6 +42,8 @@ class StorePlantRequest extends FormRequest
         return [
             'name.required' => 'A name is required!',
             'name.min' => 'Name must at least 3 characters long!',
+            'species.required' => 'A species is required!',
+            'species.min' => 'Species must at least 2 characters long!',
             'watering_frequency.required' => 'A watering frequency is required!',
             'fertilizing_frequency.required' => 'A fertilizing frequency is required!',
         ];

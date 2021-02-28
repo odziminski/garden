@@ -11,7 +11,8 @@
     <img src= {{$plant->avatar}} class="single-image pt-3 mx-auto img-fluid"/>
 
       <div class="card-content text-center p-5">
-          <h4 class="card-title">{{$plant->name}}</h4>       
+          <h4 class="card-title">{{$plant->name}}</h4> 
+          <small> is a {{$plant->species}} </small>      
           <div class="text-left">
               <p> Last time watered: {{$plant->watered_at}} </p> 
               <p> Last time fertilized: {{$plant->fertilized_at}} </p>

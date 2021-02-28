@@ -63,6 +63,7 @@ class PlantsController extends Controller
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
+                'species' => $request->input('species'),
                 'created_at' => Carbon::now(),
                 'watered_at' => Carbon::now(),
                 'watering_frequency' => $wateringFrequency,
@@ -75,9 +76,9 @@ class PlantsController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo ($err);
         }
-        $query ? $message = "Plant added successfully" : $message = "Error while adding new plant";
+        $plant ? $message = "Plant added successfully" : $message = "Error while adding new plant";
 
-        if ($query) 
+        if ($plant) 
          return redirect()->route('browse')->with('message',$message);
         else 
          return redirect()->route('add-plant')->with('message',$message);  
