@@ -9,6 +9,7 @@ use App\Http\Requests\StorePlantRequest;
 use Illuminate\Support\Facades\URL;
 use App\Models\Plant;
 use Cloudinary;
+use Illuminate\Support\Facades\Http;
 
 class PlantsController extends Controller
 {
@@ -178,5 +179,12 @@ class PlantsController extends Controller
     {
         $plant = Plant::find($id)->delete();
         return redirect()->route('browse');
+    }
+
+    public function getTrefleSpecies()
+    {
+        $token = env('TREFLE_TOKEN');
+        $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q=peace%20lily');
+
     }
 }
