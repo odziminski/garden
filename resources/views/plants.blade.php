@@ -8,7 +8,7 @@
 <div class="container">
   <div class="card">
 
-    <img src= {{$plant->avatar}} class="single-image pt-3 mx-auto img-fluid"/>
+    <img src= {{str_ireplace( 'https://', 'http://', $plant->avatar )}} class="single-image pt-3 mx-auto img-fluid"/>
 
       <div class="card-content text-center p-5">
           <h4 class="card-title">{{$plant->name}}</h4>     
