@@ -11,23 +11,50 @@
     <img src= {{$plant->avatar}} class="single-image pt-3 mx-auto img-fluid"/>
 
       <div class="card-content text-center p-5">
-          <h4 class="card-title">{{$plant->name}}</h4> 
-          <small> is a {{$plant->species}} </small>      
-          <div class="text-left">
-              <p> Last time watered: {{$plant->watered_at}} </p> 
-              <p> Last time fertilized: {{$plant->fertilized_at}} </p>
-              <p> Next watering will be at: {{$nextWatering}} </p>
-              <p> Next fertilizing will be at: {{$nextFertilizing}} </p>
-              <div class="text-right">
-                <h4 class="font-italic"> {{$trefleData['scientific_name']}} </h4>
-                <p> Also called <span class="font-weight-bold"> {{$trefleData['common_name']}} </span>.
-                   Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}} </span> family. </p>
-                <p> Synonyms: 
-                  <span class="font-italic"> {{$trefleData['synonyms'][0]}} </span> 
-                  or <span class="font-italic"> {{$trefleData['synonyms'][1]}} </span>
-                
-              </div>
+          <h4 class="card-title">{{$plant->name}}</h4>     
+          <div class="text-right">
+            <h4 class="font-italic"> {{$trefleData['scientific_name']}} </h4>
+            <p> Also called <span class="font-weight-bold">{{$trefleData['common_name']}}</span>.
+               Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}}</span> family. 
+            </p>
+            <p> Synonyms: 
+              <span class="font-italic"> {{$trefleData['synonyms'][0]}} </span> 
+              or <span class="font-italic"> {{$trefleData['synonyms'][1]}} </span>
+            </p>
           </div>
+      </div>
+          <div class="text-left">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Last time watered</th>
+                  <th scope="col">Last time fertilized</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{$plant->watered_at}}</td>
+                  <td>{{$plant->fertilized_at}}</td>
+                </tr>
+                <tr>
+                </tbody>
+              </table>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Next watering will be at</th>
+                    <th scope="col">Next fertilizing will be at</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{$nextWatering}}</td>
+                    <td>{{$nextFertilizing}}</td>
+                  </tr>
+                  <tr>
+                  </tbody>
+                </table>    
+             <div class="text-center">
            @if ($plant->need_watering)
             <a href="{{ route('updateWatering',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">I have watered the plant</a>
               @if ($lateForWatering > 1)
@@ -35,7 +62,7 @@
                 <p class="text-danger d-block"> You're {{$lateForWatering}} days late for watering! </p>
               @endif
           @else
-          <button class="btn btn-success btn-lg" disabled>No need to water yet</button> <br />
+          <button class="btn btn-success btn-lg" disabled>No need to water yet</button>
             @endif
             @if ($plant->need_fertilizing)
             <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">I have fertilized the plant</a><br />
