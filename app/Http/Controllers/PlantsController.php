@@ -55,8 +55,10 @@ class PlantsController extends Controller
        if ($request->hasFile('avatar'))
        {
            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
-       }  else $uploadedFileUrl = asset('images/plant.png');
-
+       }  else {
+           $uploadedFileUrl = $this->getTrefleData($request->input('species'));
+           $uploadedFileUrl = $uploadedFileUrl['image_url'];
+       }
         try 
         { 
             $plant = Plant::create([

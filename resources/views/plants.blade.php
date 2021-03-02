@@ -19,7 +19,6 @@
               <p> Next watering will be at: {{$nextWatering}} </p>
               <p> Next fertilizing will be at: {{$nextFertilizing}} </p>
               <div class="text-right">
-                <img src="{{$trefleData['image_url']}}" class="single-image">
                 <h4 class="font-italic"> {{$trefleData['scientific_name']}} </h4>
                 <p> Also called <span class="font-weight-bold"> {{$trefleData['common_name']}} </span>.
                    Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}} </span> family. </p>
