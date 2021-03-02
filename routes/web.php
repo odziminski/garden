@@ -57,5 +57,5 @@ Route::put('/users/edit-profile',[UserController::class, 'editUserProfile'])->na
 Route::get('/delete-plant/{id}',[PlantsController::class, 'deletePlant'])->name('deletePlant');
 Route::get('/edit-plant/{id}',[PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
 Route::patch('/edit-plant-query/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
-Route::get('/trefl',[PlantsController::class, 'getTrefleSpecies'])->name('getTrefleSpecies');
+Route::get('/trefl',[PlantsController::class, 'getTrefleData'])->name('getTrefleData');
 

@@ -17,35 +17,34 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-         $plant = Plant::where('id', '=', $id)->first();
+         $plant = Plant::find($id);
 
              if ($plant->user_id == auth()->id())
-            {
-                $nextWatering = Carbon::parse($plant->watered_at)
-                ->addDays($plant->watering_frequency);
-                $lateForWatering = Carbon::parse(Carbon::now())
-                ->diffInDays($nextWatering);
-                $nextWatering = $nextWatering->format('l, j-m-Y ');
+        {
+            $nextWatering = Carbon::parse($plant->watered_at)
+            ->addDays($plant->watering_frequency);
+            $lateForWatering = Carbon::parse(Carbon::now())
+            ->diffInDays($nextWatering);
+            $nextWatering = $nextWatering->format('l, j-m-Y ');
                 
-                $nextFertilizing = Carbon::parse($plant->fertilized_at)
-                ->addDays($plant->fertilizing_frequency);
-                $lateForFertilizing = Carbon::parse(Carbon::now())
-                ->diffInDays($nextFertilizing);
-                $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
+            $nextFertilizing = Carbon::parse($plant->fertilized_at)
+            ->addDays($plant->fertilizing_frequency);
+            $lateForFertilizing = Carbon::parse(Carbon::now())
+            ->diffInDays($nextFertilizing);
+            $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
+            $trefleData = $this->getTrefleData($plant->species);
         return view('plants')->with([
             'plant' => $plant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
             'lateForWatering' => $lateForWatering,
             'lateForFertilizing' => $lateForFertilizing,
-
+            'trefleData' => $trefleData,
             ]);
         } 
-            else
-        {
-            return back();
-        }
+            else return back();
+
     }
 
     public function store(StorePlantRequest $request)
@@ -181,10 +180,14 @@ class PlantsController extends Controller
         return redirect()->route('browse');
     }
 
-    public function getTrefleSpecies()
+    public function getTrefleData($species)
     {
+        $species = rawurlencode($species);
         $token = env('TREFLE_TOKEN');
-        $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q=peace%20lily');
 
+        $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();        
+        $data = $response['data'][0];
+        //dd($data);
+        return $data;
     }
 }

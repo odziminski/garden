@@ -18,6 +18,16 @@
               <p> Last time fertilized: {{$plant->fertilized_at}} </p>
               <p> Next watering will be at: {{$nextWatering}} </p>
               <p> Next fertilizing will be at: {{$nextFertilizing}} </p>
+              <div class="text-right">
+                <img src="{{$trefleData['image_url']}}" class="single-image">
+                <h4 class="font-italic"> {{$trefleData['scientific_name']}} </h4>
+                <p> Also called <span class="font-weight-bold"> {{$trefleData['common_name']}} </span>.
+                   Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}} </span> family. </p>
+                <p> Synonyms: 
+                  <span class="font-italic"> {{$trefleData['synonyms'][0]}} </span> 
+                  or <span class="font-italic"> {{$trefleData['synonyms'][1]}} </span>
+                
+              </div>
           </div>
            @if ($plant->need_watering)
             <a href="{{ route('updateWatering',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">I have watered the plant</a>
