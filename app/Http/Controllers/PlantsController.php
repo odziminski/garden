@@ -118,7 +118,7 @@ class PlantsController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo ($err);
         }
-        return view('plants');
+        return redirect()->route('plants', $id);
     }
 
     public function updateFertilizing($id)
@@ -137,7 +137,7 @@ class PlantsController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo ($err);
         }
-        return back();
+        return redirect()->route('plants', $id);
     }
 
     public function displayEditPlant($id)
