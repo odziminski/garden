@@ -8,22 +8,24 @@
 <div class="container">
   <div class="card">
 
-    <img src= {{str_ireplace( 'https://', 'http://', $plant->avatar )}} class="single-image pt-3 mx-auto img-fluid"/>
+    <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}" class="single-image pt-3 mx-auto img-fluid"/>
 
       <div class="card-content text-center p-5">
           <h4 class="card-title">{{$plant->name}}</h4>     
           <div class="text-right">
-            <h4 class="font-italic"> {{$trefleData['scientific_name']}} </h4>
-            <p> Also called <span class="font-weight-bold">{{$trefleData['common_name']}}</span>.
-               Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}}</span> family. 
-            </p>
-            <p> Synonyms: 
-              <span class="font-italic"> {{$trefleData['synonyms'][0]}} </span> 
-              or <span class="font-italic"> {{$trefleData['synonyms'][1]}} </span>
+            @if ($trefleData ?? '')
+              <h4 class="font-italic"> {{$trefleData['scientific_name']}} </h4>
+              <p> Also called <span class="font-weight-bold">{{$trefleData['common_name']}}</span>.
+                Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}}</span> family. 
+              </p>
+              <p> Synonyms: 
+                <span class="font-italic"> {{$trefleData['synonyms'][0]}} </span> 
+                or <span class="font-italic"> {{$trefleData['synonyms'][1]}} </span>
+            @endif
             </p>
           </div>
       </div>
-          <div class="text-left">
+          <div class="text-center">
             <table class="table table-striped">
               <thead>
                 <tr>
@@ -42,8 +44,8 @@
               <table class="table table-striped">
                 <thead>
                   <tr>
-                    <th scope="col">Next watering will be at</th>
-                    <th scope="col">Next fertilizing will be at</th>
+                    <th scope="col">Next watering </th>
+                    <th scope="col">Next fertilizing </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -58,14 +60,13 @@
            @if ($plant->need_watering)
             <a href="{{ route('updateWatering',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">I have watered the plant</a>
               @if ($lateForWatering > 1)
-              
-                <p class="text-danger d-block"> You're {{$lateForWatering}} days late for watering! </p>
+                <span class="text-danger d-block"> You're {{$lateForWatering}} days late for watering! </span>
               @endif
           @else
           <button class="btn btn-success btn-lg" disabled>No need to water yet</button>
             @endif
             @if ($plant->need_fertilizing)
-            <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">I have fertilized the plant</a><br />
+            <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" type="button" class="btn-success btn-lg">I have fertilized the plant</a>
             @if ($lateForFertilizing > 1)
             
             <p class="text-danger d-block"> You're {{$lateForFertilizing}} days late for fertilizing! </p>

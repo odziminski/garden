@@ -118,7 +118,7 @@ class PlantsController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo ($err);
         }
-        return back();
+        return view('plants');
     }
 
     public function updateFertilizing($id)
@@ -187,9 +187,11 @@ class PlantsController extends Controller
         $species = rawurlencode($species);
         $token = env('TREFLE_TOKEN');
 
-        $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();        
-        $data = $response['data'][0];
-        //dd($data);
+        $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();
+        if ($response){
+            $data = $response['data'][0];
+        }        
+
         return $data;
     }
 }
