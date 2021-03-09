@@ -14,14 +14,13 @@ class DatabaseSeeder extends Seeder
  *
  * @return void
  */
-        public function run()
-        {
-            for ($i=0;$i<10;$i++){
-                $this->call([
+    public function run()
+    {
+        for ($i=0;$i<10;$i++) {
+            $this->call([
                     UserSeeder::class,
                     PlantsSeeder::class,
                 ]);
-            }
-           
-}
+        }
+    }
 }

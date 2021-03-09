@@ -18,7 +18,8 @@ class PlantsSeeder extends Seeder
      * @return void
      */
 
-     public function getRandomPlantName(){
+    public function getRandomPlantName()
+    {
         $samplePlants = [
             'Aloe',
             'Peace lily',
@@ -36,24 +37,24 @@ class PlantsSeeder extends Seeder
             'Moth Orchid',
             'Winter Cherry'
         ];
-        $random = Arr::random($samplePlants);
-        return $random;
+         
+        return $random = Arr::random($samplePlants);
     }
 
     public function run()
-    {     
+    {
         Plant::create([
             'user_id' => 1,
             'avatar' => "http://127.0.0.1:8000/images/plant.png",
-            'name' => self::getRandomPlantName(), 
+            'name' => self::getRandomPlantName(),
             'species' => self::getRandomPlantName(),
             'created_at' => Carbon::now()->subDays(rand(1, 55)),
             'watered_at' => Carbon::now()->subDays(rand(1, 55)),
-            'watering_frequency' => rand(1,15),
-            'need_watering' =>rand(0,1),
+            'watering_frequency' => rand(1, 15),
+            'need_watering' =>rand(0, 1),
             'fertilized_at' => Carbon::now()->subDays(rand(1, 55)),
-            'fertilizing_frequency' => rand(1,15),
-            'need_fertilizing' =>rand(0,1),
+            'fertilizing_frequency' => rand(1, 15),
+            'need_fertilizing' =>rand(0, 1),
         ]);
     }
 }

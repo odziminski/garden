@@ -17,10 +17,9 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-         $plant = Plant::find($id);
+        $plant = Plant::find($id);
 
-             if ($plant->user_id == auth()->id())
-        {
+        if ($plant->user_id == auth()->id()) {
             $nextWatering = Carbon::parse($plant->watered_at)
             ->addDays($plant->watering_frequency);
             $lateForWatering = Carbon::parse(Carbon::now())
@@ -34,7 +33,7 @@ class PlantsController extends Controller
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
             $trefleData = $this->getTrefleData($plant->species);
-        return view('plants')->with([
+            return view('plants')->with([
             'plant' => $plant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
@@ -42,25 +41,29 @@ class PlantsController extends Controller
             'lateForFertilizing' => $lateForFertilizing,
             'trefleData' => $trefleData,
             ]);
-        } 
-            else return back();
-
+        } else {
+            return back();
+        }
     }
 
     public function store(StorePlantRequest $request)
     {
-       $wateringFrequency = $request->input('watering_frequency');
-       $fertilizingFrequency = $request->input('fertilizing_frequency');
+        $wateringFrequency = $request->input('watering_frequency');
+        $fertilizingFrequency = $request->input('fertilizing_frequency');
         
-       if ($request->hasFile('avatar'))
-       {
-           $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
-       }  else {
-           $uploadedFileUrl = $this->getTrefleData($request->input('species'));
-           $uploadedFileUrl = $uploadedFileUrl['image_url'];
-       }
-        try 
-        { 
+        if ($request->hasFile('avatar')) {
+            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
+        } else {
+            $uploadedFileUrl = $this->getTrefleData($request->input('species'));
+            if(!empty($uploadedFileUrl))
+            {
+                $uploadedFileUrl = $uploadedFileUrl['image_url'];
+            } else {
+                $uploadedFileUrl = asset("plant.png");
+            }
+
+        }
+        try {
             $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
@@ -72,18 +75,17 @@ class PlantsController extends Controller
                 'fertilized_at' => Carbon::now(),
                 'fertilizing_frequency' => $fertilizingFrequency
             ]);
-        }
-        catch ( \Exception $e )
-        {
+        } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
-            echo ($err);
+            echo $err;
         }
         $plant ? $message = "Plant added successfully" : $message = "Error while adding new plant";
 
-        if ($plant) 
-         return redirect()->route('browse')->with('message',$message);
-        else 
-         return redirect()->route('add-plant')->with('message',$message);  
+        if ($plant) {
+            return redirect()->route('browse')->with('message', $message);
+        } else {
+            return redirect()->route('add-plant')->with('message', $message);
+        }
     }
 
     public function displayPlants()
@@ -92,31 +94,27 @@ class PlantsController extends Controller
         ->orderBy('watered_at', 'asc')
         ->get();
 
-        foreach ($plants as $plant)
-        {
+        foreach ($plants as $plant) {
             $plant->watered_at = Carbon::parse($plant->watered_at)
             ->diffForHumans();
             $plant->fertilized_at = Carbon::parse($plant->fertilized_at)
             ->diffForHumans();
         }
-         return view('browse')->with('plants',$plants);
+        return view('browse')->with('plants', $plants);
     }
     
     public function updateWatering($id)
     {
         $now = Carbon::now();
-        try 
-        { 
-            Plant::where('id',$id)
+        try {
+            Plant::where('id', $id)
             ->update([
                 'need_watering' => 0,
                 'watered_at' => $now,
             ]);
-        }
-        catch ( \Exception $e )
-        {
+        } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
-            echo ($err);
+            echo $err;
         }
         return redirect()->route('plants', $id);
     }
@@ -124,18 +122,15 @@ class PlantsController extends Controller
     public function updateFertilizing($id)
     {
         $now = Carbon::now();
-        try 
-        { 
-            Plant::where('id',$id)
+        try {
+            Plant::where('id', $id)
             ->update([
                 'need_fertilizing' => 0,
                 'fertilized_at' => $now,
             ]);
-        }
-        catch ( \Exception $e )
-        {
+        } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
-            echo ($err);
+            echo $err;
         }
         return redirect()->route('plants', $id);
     }
@@ -143,37 +138,34 @@ class PlantsController extends Controller
     public function displayEditPlant($id)
     {
         $plant = Plant::find($id);
-        return view('edit-plant')->with('plant',$plant);
+        return view('edit-plant')->with('plant', $plant);
     }
 
-    public function editPlant($id,StorePlantRequest $request)
+    public function editPlant($id, StorePlantRequest $request)
     {
         $wateringFrequency = $request->input('watering_frequency');
         $fertilizingFrequency = $request->input('fertilizing_frequency');
          
-        if ($request->hasFile('avatar'))
-        {
+        if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
-        }  else $uploadedFileUrl = Plant::where('id',$id)->value('avatar');
+        } else {
+            $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
+        }
  
-         try 
-         { 
-             $plant = Plant::findOrFail($id)
+        try {
+            $plant = Plant::findOrFail($id)
                 ->update([
                  'avatar' => $uploadedFileUrl,
                  'name' => $request->input('name'),
                  'watering_frequency' => $wateringFrequency,
                  'fertilizing_frequency' => $fertilizingFrequency
              ]);
-         }
-         catch ( \Exception $e )
-         {
-             $err = $e->getPrevious()->getMessage();
-             echo ($err);
-         } 
+        } catch (\Exception $e) {
+            $err = $e->getPrevious()->getMessage();
+            echo $err;
+        }
         
-          return redirect()->route('browse');
-        
+        return redirect()->route('browse');
     }
    
     public function deletePlant($id)
@@ -188,10 +180,11 @@ class PlantsController extends Controller
         $token = env('TREFLE_TOKEN');
 
         $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();
-        if ($response){
-            $data = $response['data'][0];
-        }        
-
-        return $data;
+        //dd($response);
+        if ($response['data']) {
+            return $data = $response['data'][0];
+        } else {
+            return $data = [];
+        }
     }
 }

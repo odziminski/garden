@@ -10,7 +10,6 @@ use App\Http\PlantsController;
 use App\Http\Requests\UpdateProfileRequest;
 use Illuminate\Support\Facades\Hash;
 
-
 class UserController extends Controller
 {
     public function displayUserData()
@@ -23,8 +22,7 @@ class UserController extends Controller
 
     public function editUserProfile(UpdateProfileRequest $request)
     {
-        try 
-        {
+        try {
             $update = DB::table('users')
             ->whereId(auth()->id())
             ->update([
@@ -32,12 +30,9 @@ class UserController extends Controller
                     'email' => $request->input('email'),
                     'password' => Hash::make($request->input('password')),
                 ]);
-        } 
-        catch ( \Exception $e )
-        {
+        } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
-            echo ($err);
+            echo $err;
         }
- 
     }
 }

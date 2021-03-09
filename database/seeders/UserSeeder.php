@@ -19,10 +19,10 @@ class UserSeeder extends Seeder
     public function run()
     {
         $faker = Faker::create();
-             User::create([
-	            'name' => $faker->name,
-	            'email' => $faker->email,
-	            'password' => bcrypt('secret'),
-	        ]);
-	}
+        User::create([
+                'name' => $faker->name,
+                'email' => $faker->email,
+                'password' => bcrypt('secret'),
+            ]);
+    }
 }

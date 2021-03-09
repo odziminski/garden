@@ -15,7 +15,7 @@
         <div class="col-xs-12 col-sm-3">
             <div class="card">
                 <a class="img-card" href="{{ URL::to('plants/' . $plant->id) }}">
-                    <img src={{$plant->avatar}}  /> </a>
+                    <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"  /> </a>
                         @if ($plant->need_watering || $plant->need_fertilizing)
                          <span class="red-dot-notification">!</span>
                          @endif
