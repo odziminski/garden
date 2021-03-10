@@ -59,7 +59,7 @@ class PlantsController extends Controller
             {
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
             } else {
-                $uploadedFileUrl = asset("plant.png");
+                $uploadedFileUrl = asset("images/plant.png");
             }
 
         }

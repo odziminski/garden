@@ -15,6 +15,9 @@
                             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#exampleModal">
                                 Edit profile
                               </button>
+                              <a  href="{{ route('logout') }}">
+                               {{ __('Logout') }}
+                           </a>
                               <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                   <div class="modal-content">
