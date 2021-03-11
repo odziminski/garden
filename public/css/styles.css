@@ -1,43 +1,87 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Raleway&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Raleway&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Raleway&display=swap");
 html,
 body {
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
-  height: 100%;
-  width: 100%; 
-  font-weight: 400;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    font-weight: 400;
 }
-.topnav{
-  height:80px;
-  background-color: white !important;
+.topnav {
+    height: 80px;
+    background-color: white !important;
 }
 .topnav .navbar-items-right {
-  margin:1%;
-  float:right;
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 600;
-  font-size: 1.5rem;
-  line-height: 1rem; 
+    margin: 1%;
+    float: right;
+    font-family: "Raleway";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1rem;
 }
 
 .topnav a {
-  color: #333C1C !important; 
+    color: #333c1c !important;
 }
 
-.topnav .navbar-items-center  {
+.topnav .navbar-items-center {
     display: inline-block;
     margin-left: 46%;
 }
 .topnav .navbar-items-center .brand {
-    margin-top:5%;
+    margin-top: 5%;
     text-align: center;
-    font-family: 'Abril Fatface', cursive;
+    font-family: "Abril Fatface", cursive;
     font-style: normal;
     font-weight: normal;
     font-size: 32px;
     line-height: 32px;
+}
+
+.container {
+    margin-top: 5%;
+    display: flex;
+    flex-direction: row-reverse;
+}
+.container > .image {
+    flex: 1 0 0%;
+}
+
+.container > .welcome-cards {
+    padding: 15px;
+    flex-direction: column;
+    flex: 2 0 0%;
+    margin: auto 0;
+}
+.welcome-cards-flower-care {
+    padding: 6%;
+    width: 449px;
+    height: 164px;
+    color: #333c1c;
+    background: #e0e7d0;
+    box-shadow: 0px 10px 44px -10px rgba(51, 60, 28, 0.15);
+    border-radius: 10px;
+}
+.welcome-cards-flower-care span {
+    justify-content: center;
+    font-family: Raleway;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 42px;
+}
+
+.welcome-cards-flower-care p {
+    font-family: Raleway;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 42px;
+}
+.items-left {
+    margin-left: 5%;
 }
 /*
 .wrapper {
