@@ -16,9 +16,8 @@ use App\Http\Controllers\PlantsController;
 */
 
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+Route::get('/',[PlantsController::class, 'getRandomPlant'])->name('welcome');
+
 
 Route::get('/login', function () {
     return view('login');

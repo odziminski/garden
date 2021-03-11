@@ -467,22 +467,28 @@
             </svg>
     </div>
     <div class="items-left">
-    <div class="welcome-cards-flower-care">
+    <div class="welcome-cards welcome-cards-flower-care">
       <span> Flower care </span>
       <p> Track your watering, fertilization and love for all of your plants </p>
     </div>
-    <div class="welcome-cards">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus aliquid eius quia expedita illo sequi optio labore assumenda.
+
+    <div class="welcome-cards welcome-cards-plant-thumbnail">
+        <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="welcome-cards-image-thumbnail">
+        <span class="welcome-cards-plant-name"> {{$plant->name}} </span>
+        <span class="welcome-cards-description"> Watered: {{$plant->watered_at}}</span>
+        
+    </div>
+
+      <div class="welcome-cards welcome-cards-flower-care">
+        <span> Flower care </span>
+        <p> Track your watering, fertilization and love for all of your plants </p>
       </div>
-      <div class="welcome-cards">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus aliquid eius quia expedita illo sequi optio labore assumenda.
-      </div>
+
   </div>
 </div>
          
            
                
-                    
         
     
     

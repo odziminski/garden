@@ -1,12 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Raleway&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Raleway&display=swap");
+* {
+    margin: 0;
+    padding: 0;
+}
 html,
 body {
+
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     height: 100%;
     width: 100%;
-    font-weight: 400;
 }
 .topnav {
     height: 80px;
@@ -44,6 +48,7 @@ body {
     margin-top: 5%;
     display: flex;
     flex-direction: row-reverse;
+    
 }
 .container > .image {
     flex: 1 0 0%;
@@ -83,6 +88,50 @@ body {
 .items-left {
     margin-left: 5%;
 }
+.welcome-cards {
+    margin-bottom: 5%;
+}
+.welcome-cards-plant-thumbnail {
+    object-fit: cover;
+    width: 449px;
+    height: 158px;
+    background: #ffffff;
+    box-shadow: 0px 10px 44px -10px rgba(51, 60, 28, 0.15);
+    border-radius: 10px;
+}
+
+.welcome-cards-image-thumbnail {
+    width: 124px !important;
+    height: 154px !important;
+    border-radius: 10px 0px 0px 10px;
+}
+.welcome-cards-plant-name {
+    position: absolute;
+    margin: 3%;
+
+    font-family: Raleway;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 28px;
+
+    color: #333c1c;
+}
+.welcome-cards-description {
+  position: absolute; 
+  top:50%;
+  margin: 3%;
+
+
+
+    font-family: Raleway;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 14px;
+
+    color: #333c1c;
+}
+
 /*
 .wrapper {
   display: table;

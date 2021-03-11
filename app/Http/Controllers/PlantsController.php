@@ -15,6 +15,20 @@ class PlantsController extends Controller
 {
     protected $dates = ['created_at', 'watered_at', 'fertilized_at'];
 
+    public function getRandomPlant()
+    {
+        $randomPlant = Plant::where('user_id',auth()->id())
+        ->inRandomOrder()
+        ->get()
+        ->first();
+        $randomPlant->watered_at = Carbon::parse($randomPlant->watered_at)
+        ->diffForHumans();
+        $randomPlant->fertilized_at = Carbon::parse($randomPlant->fertilized_at)
+        ->diffForHumans();
+        return view('welcome')->with('plant',$randomPlant);
+    }
+
+
     public function displaySinglePlant($id)
     {
         $plant = Plant::find($id);
@@ -180,7 +194,6 @@ class PlantsController extends Controller
         $token = env('TREFLE_TOKEN');
 
         $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();
-        //dd($response);
         if ($response['data']) {
             return $data = $response['data'][0];
         } else {
