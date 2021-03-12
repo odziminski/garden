@@ -15,19 +15,24 @@ class PlantsController extends Controller
 {
     protected $dates = ['created_at', 'watered_at', 'fertilized_at'];
 
+    public function getDateForHumans($date)
+    {
+        return $dateForHumans = Carbon::parse($date)->diffForHumans();
+    }
+
     public function getRandomPlant()
     {
         $randomPlant = Plant::where('user_id',auth()->id())
         ->inRandomOrder()
         ->get()
         ->first();
-        $randomPlant->watered_at = Carbon::parse($randomPlant->watered_at)
-        ->diffForHumans();
-        $randomPlant->fertilized_at = Carbon::parse($randomPlant->fertilized_at)
-        ->diffForHumans();
+        $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at); 
+        $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at); 
+
         return view('welcome')->with('plant',$randomPlant);
     }
 
+    
 
     public function displaySinglePlant($id)
     {
@@ -109,10 +114,8 @@ class PlantsController extends Controller
         ->get();
 
         foreach ($plants as $plant) {
-            $plant->watered_at = Carbon::parse($plant->watered_at)
-            ->diffForHumans();
-            $plant->fertilized_at = Carbon::parse($plant->fertilized_at)
-            ->diffForHumans();
+            $plant->watered_at = self::getDateForHumans($plant->watered_at);
+            $plant->fertilized_at = self::getDateForHumans($plant->fertilized_at);
         }
         return view('browse')->with('plants', $plants);
     }

@@ -475,7 +475,9 @@
     <div class="welcome-cards welcome-cards-plant-thumbnail">
         <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="welcome-cards-image-thumbnail">
         <span class="welcome-cards-plant-name"> {{$plant->name}} </span>
-        <span class="welcome-cards-description"> Watered: {{$plant->watered_at}}</span>
+        <span class="welcome-cards-description1"> Watered: {{$plant->watered_at}}</span>
+        <span class="welcome-cards-description2"> Fertilized: {{$plant->fertilized_at}}</span>
+
         
     </div>
 

@@ -19,11 +19,6 @@ body {
 .topnav .navbar-items-right {
     margin: 1%;
     float: right;
-    font-family: "Raleway";
-    font-style: normal;
-    font-weight: 600;
-    font-size: 1.5rem;
-    line-height: 1rem;
 }
 
 .topnav a {
@@ -45,6 +40,11 @@ body {
 }
 
 .container {
+  font-family: Raleway;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 42px;
     margin-top: 5%;
     display: flex;
     flex-direction: row-reverse;
@@ -64,26 +64,18 @@ body {
     padding: 6%;
     width: 449px;
     height: 164px;
-    color: #333c1c;
     background: #e0e7d0;
     box-shadow: 0px 10px 44px -10px rgba(51, 60, 28, 0.15);
     border-radius: 10px;
 }
 .welcome-cards-flower-care span {
     justify-content: center;
-    font-family: Raleway;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 32px;
-    line-height: 42px;
+  
 }
 
 .welcome-cards-flower-care p {
-    font-family: Raleway;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 42px;
+  font-size: 18px;
+  line-height: 25px;
 }
 .items-left {
     margin-left: 5%;
@@ -94,43 +86,39 @@ body {
 .welcome-cards-plant-thumbnail {
     object-fit: cover;
     width: 449px;
-    height: 158px;
+    height: 180px;
     background: #ffffff;
     box-shadow: 0px 10px 44px -10px rgba(51, 60, 28, 0.15);
     border-radius: 10px;
 }
 
 .welcome-cards-image-thumbnail {
-    width: 124px !important;
-    height: 154px !important;
+    width: 180px !important;
+    height: 180px !important;
     border-radius: 10px 0px 0px 10px;
 }
 .welcome-cards-plant-name {
     position: absolute;
     margin: 3%;
-
-    font-family: Raleway;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 28px;
-
-    color: #333c1c;
 }
-.welcome-cards-description {
+.welcome-cards-description1 {
+  font-size: 18px;
+  line-height: 20px;
   position: absolute; 
-  top:50%;
+  top:46%;
   margin: 3%;
 
-
-
-    font-family: Raleway;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 14px;
-
-    color: #333c1c;
 }
+.welcome-cards-description2 {
+  font-size: 18px;
+  line-height: 20px;
+  position: absolute; 
+  top:52%;
+  margin: 3%;
+
+}
+
+   
 
 /*
 .wrapper {
