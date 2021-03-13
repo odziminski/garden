@@ -475,15 +475,19 @@
     <div class="welcome-cards welcome-cards-plant-thumbnail">
         <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="welcome-cards-image-thumbnail">
         <span class="welcome-cards-plant-name"> {{$plant->name}} </span>
-        <span class="welcome-cards-description1"> Watered: {{$plant->watered_at}}</span>
-        <span class="welcome-cards-description2"> Fertilized: {{$plant->fertilized_at}}</span>
-
-        
+        <span class="welcome-cards-description"> Watering in {{$nextWatering}}</span>
+        <span class="welcome-cards-description"> Fertilizing in {{$nextFertilizing}}</span>
     </div>
 
-      <div class="welcome-cards welcome-cards-flower-care">
-        <span> Flower care </span>
-        <p> Track your watering, fertilization and love for all of your plants </p>
+      <div class="welcome-cards welcome-cards-bottom-card">
+        <span> {{$plant->name}} </span> <br />
+        <span class="welcome-cards-plant-species">is a monstera deliciosa </span> <br />
+        <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="welcome-cards-image-bottom -circle">
+
+        <span class="welcome-cards-plant-needs">will need watering in the next 2 days  <br />
+        was fertilized and watered 4 days ago is happy on average <br /> but if you miss one day, it’ll be sad </span>
+
+        
       </div>
 
   </div>

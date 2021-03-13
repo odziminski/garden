@@ -20,16 +20,31 @@ class PlantsController extends Controller
         return $dateForHumans = Carbon::parse($date)->diffForHumans();
     }
 
+    public function getNextCareDate($date,$interval)
+    {
+        return $nextCare = Carbon::parse($date)->addDays($interval);
+    }
+
     public function getRandomPlant()
     {
         $randomPlant = Plant::where('user_id',auth()->id())
         ->inRandomOrder()
         ->get()
         ->first();
+
         $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at); 
         $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at); 
+        
+        $nextWatering = self::getNextCareDate($randomPlant->watered_at,$randomPlant->watering_frequency)->diffForHumans();
+        $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at,$randomPlant->fertilizing_frequency)->diffForHumans();
 
-        return view('welcome')->with('plant',$randomPlant);
+
+        return view('welcome')->with([
+            'plant' => $randomPlant,
+            'nextWatering' => $nextWatering,
+            'nextFertilizing' => $nextFertilizing,
+        ]);
+
     }
 
     
@@ -39,14 +54,13 @@ class PlantsController extends Controller
         $plant = Plant::find($id);
 
         if ($plant->user_id == auth()->id()) {
-            $nextWatering = Carbon::parse($plant->watered_at)
-            ->addDays($plant->watering_frequency);
+            $nextWatering = self::getNextCareDate($plant->watered_at,$plant->watering_frequency);
             $lateForWatering = Carbon::parse(Carbon::now())
             ->diffInDays($nextWatering);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
                 
-            $nextFertilizing = Carbon::parse($plant->fertilized_at)
-            ->addDays($plant->fertilizing_frequency);
+            $nextFertilizing = self::getNextCareDate($plant->fertilized_at,$plant->fertilizing_frequency);
+
             $lateForFertilizing = Carbon::parse(Carbon::now())
             ->diffInDays($nextFertilizing);
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
