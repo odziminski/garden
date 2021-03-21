@@ -2,7 +2,6 @@
 
 
 @section('content')
-    <div class="container">
 @guest
 <a href="{{ route('login') }}">Login</a>
 <a href="{{ route('register') }}">Register</a>
@@ -466,7 +465,7 @@
             <path fill-rule="evenodd" clip-rule="evenodd" d="M187.052 107.537C186.169 107.661 185.286 107.786 184.404 107.91C185.287 107.786 186.17 107.661 187.052 107.537Z" fill="#333C1C"/>
             </svg>
     </div>
-    <div class="items-left">
+    <div>
     <div class="welcome-cards welcome-cards-flower-care">
       <span> Flower care </span>
       <p> Track your watering, fertilization and love for all of your plants </p>
@@ -477,27 +476,29 @@
         <span class="welcome-cards-plant-name"> {{$plant->name}} </span>
         <span class="welcome-cards-description"> Watering in {{$nextWatering}}</span>
         <span class="welcome-cards-description"> Fertilizing in {{$nextFertilizing}}</span>
+        <a href="{{ URL::to('plants/' . $plant->id) }}"> visit it </a>
+
     </div>
 
       <div class="welcome-cards welcome-cards-bottom-card">
         <span> {{$plant->name}} </span> <br />
-        <span class="welcome-cards-plant-species">is a monstera deliciosa </span> <br />
+        <span class="welcome-cards-plant-species">{{$trefleData['scientific_name']}} </span> <br />
         <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="welcome-cards-image-bottom -circle">
 
         <span class="welcome-cards-plant-needs">will need watering in the next 2 days  <br />
         was fertilized and watered 4 days ago is happy on average <br /> but if you miss one day, it’ll be sad </span>
 
-        
+
       </div>
 
   </div>
 </div>
-         
-           
-               
-        
-    
-    
-    
-@endauth    
+
+
+
+
+
+
+
+@endauth
 @endsection

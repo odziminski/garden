@@ -32,22 +32,25 @@ class PlantsController extends Controller
         ->get()
         ->first();
 
-        $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at); 
-        $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at); 
-        
+        $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at);
+        $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at);
+
         $nextWatering = self::getNextCareDate($randomPlant->watered_at,$randomPlant->watering_frequency)->diffForHumans();
         $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at,$randomPlant->fertilizing_frequency)->diffForHumans();
+
+        $trefleData= self::getTrefleData($randomPlant->species);
 
 
         return view('welcome')->with([
             'plant' => $randomPlant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
+            'trefleData' => $trefleData,
         ]);
 
     }
 
-    
+
 
     public function displaySinglePlant($id)
     {
@@ -58,7 +61,7 @@ class PlantsController extends Controller
             $lateForWatering = Carbon::parse(Carbon::now())
             ->diffInDays($nextWatering);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
-                
+
             $nextFertilizing = self::getNextCareDate($plant->fertilized_at,$plant->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse(Carbon::now())
@@ -83,7 +86,7 @@ class PlantsController extends Controller
     {
         $wateringFrequency = $request->input('watering_frequency');
         $fertilizingFrequency = $request->input('fertilizing_frequency');
-        
+
         if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
@@ -133,7 +136,7 @@ class PlantsController extends Controller
         }
         return view('browse')->with('plants', $plants);
     }
-    
+
     public function updateWatering($id)
     {
         $now = Carbon::now();
@@ -176,13 +179,13 @@ class PlantsController extends Controller
     {
         $wateringFrequency = $request->input('watering_frequency');
         $fertilizingFrequency = $request->input('fertilizing_frequency');
-         
+
         if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
             $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
         }
- 
+
         try {
             $plant = Plant::findOrFail($id)
                 ->update([
@@ -195,10 +198,10 @@ class PlantsController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo $err;
         }
-        
+
         return redirect()->route('browse');
     }
-   
+
     public function deletePlant($id)
     {
         $plant = Plant::find($id)->delete();
