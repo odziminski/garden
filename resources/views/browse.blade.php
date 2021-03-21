@@ -4,15 +4,11 @@
 @section('content')
 
 @if (!Auth::guest())
-<div class="text-center">
-<p> Plants total: {{$plants->count()}} </p>
-</div>
 
 <div class="container">
     <div class="row">
-        
         @foreach ($plants as $plant)
-        <div class="col-xs-12 col-sm-3">
+            <div class="col m1-5 ">
             <div class="card">
                 <a class="img-card" href="{{ URL::to('plants/' . $plant->id) }}">
                     <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"  /> </a>
@@ -21,9 +17,9 @@
                          @endif
                         <div class="card-content">
                         <h4 class="card-title">{{$plant->name}}</h4>
-                        <div>
+                        <div class="card-text">
                          Last watered: {{$plant->watered_at}} <br/>
-                         Last fertilized:{{$plant->fertilized_at}}        
+                         Last fertilized: {{$plant->fertilized_at}}
                     </div>
                 </div>
             </div>
