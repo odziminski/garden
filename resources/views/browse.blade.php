@@ -5,13 +5,11 @@
 
 @if (!Auth::guest())
 
-<div class="container">
-    <div class="row">
-        @foreach ($plants as $plant)
-            <div class="col m1-5 ">
+    <div class="parent">
+    @foreach ($plants as $plant)
             <div class="card">
-                <a class="img-card" href="{{ URL::to('plants/' . $plant->id) }}">
-                    <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"  /> </a>
+                <a  href="{{ URL::to('plants/' . $plant->id) }}">
+                    <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"  class="img-card" /> </a>
                         @if ($plant->need_watering || $plant->need_fertilizing)
                          <span class="red-dot-notification">!</span>
                          @endif
@@ -23,7 +21,6 @@
                     </div>
                 </div>
             </div>
-        </div>
         @endforeach
     </div>
 </div>

@@ -5,11 +5,11 @@
 
 @if (!Auth::guest())
 
-  <div class="card">
+  <div class="card-single-plant">
 
     <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}"/>
 
-      <div class="card-content text-center p-5">
+      <div class="">
           <h4 class="card-title">{{$plant->name}}</h4>
           <div class="text-right">
             @if ($trefleData ?? '')
