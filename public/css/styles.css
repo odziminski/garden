@@ -257,13 +257,32 @@ line-height: 14px;
     font-size:1em;
 }
 .card-single-plant {
-    padding:5%;
+    margin-right: 25%;
+    margin-left: 25%;
+    padding:1%;
     margin-bottom: 20px;
     line-height: 1.4;
     background-color: #fff;
     border-radius: 2px;
     box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
     transition: box-shadow .25s;
+}
+.font-italic{
+    font-style: italic;
+}
+.font-weight-bold{
+    font-weight: bold;
+}
+.card-single-plant img{
+    max-height: 30%;
+    max-width: 30%;
+    object-fit: cover;
+}
+.card-single-plant table{
+    text-align: center !important;
+    margin-left: auto;
+    margin-right: auto;
+
 }
 /*
 .wrapper {
