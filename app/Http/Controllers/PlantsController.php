@@ -32,25 +32,29 @@ class PlantsController extends Controller
         ->get()
         ->first();
 
-        $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at);
-        $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at);
+        if ($randomPlant){
+            $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at);
+            $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at);
+            $nextWatering = self::getNextCareDate($randomPlant->watered_at,$randomPlant->watering_frequency)->diffForHumans();
+            $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at,$randomPlant->fertilizing_frequency)->diffForHumans();
+            $trefleData= self::getTrefleData($randomPlant->species);
+            return view('welcome')->with([
+                'plant' => $randomPlant,
+                'nextWatering' => $nextWatering,
+                'nextFertilizing' => $nextFertilizing,
+                'trefleData' => $trefleData,
+            ]);
 
-        $nextWatering = self::getNextCareDate($randomPlant->watered_at,$randomPlant->watering_frequency)->diffForHumans();
-        $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at,$randomPlant->fertilizing_frequency)->diffForHumans();
+        } else {
+            return view('welcome');
+        }
 
-        $trefleData= self::getTrefleData($randomPlant->species);
 
 
-        return view('welcome')->with([
-            'plant' => $randomPlant,
-            'nextWatering' => $nextWatering,
-            'nextFertilizing' => $nextFertilizing,
-            'trefleData' => $trefleData,
-        ]);
+
+
 
     }
-
-
 
     public function displaySinglePlant($id)
     {

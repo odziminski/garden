@@ -19,7 +19,7 @@
               </p>
             </div>
             @endif
-            <table class="_width50">
+            <table class="_width75">
               <thead>
                 <tr>
                   <th>Last time watered</th>
@@ -34,7 +34,7 @@
                 <tr>
                 </tbody>
               </table>
-              <table class="_width50">
+              <table class="_width75">
                 <thead>
                   <tr>
                     <th>Next watering </th>
@@ -50,22 +50,27 @@
                   </tbody>
                 </table>
            @if ($plant->need_watering)
+            <div class="needs">
             <a href="{{ route('updateWatering',['id' => $plant->id]) }}" class="button">I have watered the plant</a>
               @if ($lateForWatering > 1)
-                <span> You're {{$lateForWatering}} days late for watering! </span>
+                <span class="caption"> You're {{$lateForWatering}} days late for watering! </span>
+            </div>
               @endif
           @else
-          <button class="disabled">No need to water yet</button>
+
+          <button class="_disabled">No need to water yet</button>
             @endif
             @if ($plant->need_fertilizing)
+            <div class="needs">
             <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}" class="button">I have fertilized the plant</a>
             @if ($lateForFertilizing > 1)
-
-                <span> You're {{$lateForFertilizing}} days late for fertilizing! </span> <br />
+                <span class="caption"> You're {{$lateForFertilizing}} days late for fertilizing! </span> <br />
+            </div>
           @endif
           @else
-          <button class="disabled">No need to fertilize yet</button> <br />
+          <button class="_disabled">No need to fertilize yet</button> <br />
             @endif
+            <br />
             <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}" >Edit the plant</a><br />
 
         <a href="#" onclick="openmodal('myModal')">Delete plant</a>

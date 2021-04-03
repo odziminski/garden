@@ -11,7 +11,7 @@
     <!-- Scripts -->
     <script src="https://rawgit.com/outboxcraft/beauter/master/beauter.min.js" defer></script>
     <!-- Fonts -->
-   
+
     <!-- Styles -->
     <link href="https://rawgit.com/outboxcraft/beauter/master/beauter.min.css" rel="stylesheet">
     <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
@@ -24,13 +24,13 @@
             <a class="brand text-black" href="{{route('welcome')}}">bloomify</a></li>
         @auth
         <li class="navbar-items-right text-black">
-            <a href="{{route('users')}}">Hello, {{Auth::user()->name}}!</a>
+            <a href="{{route('users')}}">Hello, gardener!</a>
         <li class="navbar-items-right ">
           <a href="{{route('add-plant')}}" class="text-black">Add a plant</a></li>
         <li class="navbar-items-right text-black">
             <a href="{{route('browse')}}" class="text-black">Your garden</a></li>
-            
-            
+
+
         @endauth
         <li class="-icon">
           <a href="javascript:void(0);" onclick="topnav('myTopnav2')">☰</a>
@@ -39,9 +39,9 @@
                 <a href="{{route('register')}}" class="text-black">Register</a></li>
                 <li class="navbar-items-right text-black">
                     <a href="{{route('login')}}" class="text-black">Login</a></li>
-                    
-                    
-            @endguest 
+
+
+            @endguest
         </li>
     </nav>
       </ul>
