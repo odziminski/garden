@@ -432,7 +432,7 @@
                 </clipPath>
             </defs>
         </svg>
-        <div class="card_login">
+        <div class="card_login card_centered">
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="login_content">

@@ -47,8 +47,6 @@ Route::post('/add-plant-query',[PlantsController::class, 'store'])->name('add-pl
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
 Route::put('/users/edit-profile',[UserController::class, 'editUserProfile'])->name('editUserProfile');

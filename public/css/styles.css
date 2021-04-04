@@ -325,15 +325,20 @@ body {
     color: black;
     display: block;
 }
+.card_centered{
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 120px;
+    left: 0;
+    right: 0;
+}
 .card_register{
     font-family: Raleway;
     font-style: normal;
     font-weight: 600;
     font-size: 14px;
     line-height: 150%;
-    position: absolute;
-    right: 220px;
-    top: 180px;
     width: 450px;
     height: 450px;
     background: #FFFFFF;
@@ -357,36 +362,22 @@ body {
     padding: 80px 100px 100px 100px;
 }
 .card_register button{
-    margin: -30px 30px 0 30px;
+    margin: -30px 60px 0 30px;
     float:right;
     overflow:hidden;
-    font-family: Raleway;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 12px;
-    line-height: 150%;
     border:none;
-    font-variant: small-caps;
 
     background: #E0E7D0;
     border-radius: 10px;
 }
 .card_login{
-
     font-family: Raleway;
     font-style: normal;
     font-weight: 600;
     font-size: 14px;
     line-height: 150%;
-    position: absolute;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 100px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    width: 350px;
-    height: 300px;
+    width: 400px;
+    height: 350px;
     background: #FFFFFF;
     box-shadow: 0px 10px 44px -10px rgba(51, 60, 28, 0.15);
     border-radius: 10px;
@@ -403,75 +394,14 @@ body {
 
 .login_content{
     margin: auto;
-    padding: 40px 40px 40px 40px;
+    padding: 60px 60px 60px 60px;
 }
 .card_login button{
-    margin: -30px 30px 0 30px;
+    margin: 0px 65px 0 30px;
     float:right;
-    overflow:hidden;
-    font-family: Raleway;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 12px;
-    line-height: 150%;
     border:none;
     font-variant: small-caps;
 
     background: #E0E7D0;
     border-radius: 10px;
 }
-/*
-.wrapper {
-  display: table;
-  height: 100%;
-  width: 100%;
-}
-
-.container-fostrap {
-  display: table-cell;
-  padding: 1em;
-  text-align: center;
-  vertical-align: middle;
-}
-.fostrap-logo {
-  width: 100px;
-  margin-bottom:15px
-}
-h1.heading {
-  color: #fff;
-  font-size: 1.15em;
-  font-weight: 900;
-  margin: 0 0 0.5em;
-  color: #505050;
-}
-@media (min-width: 450px) {
-  h1.heading {
-    font-size: 3.55em;
-  }
-}
-@media (min-width: 760px) {
-  h1.heading {
-    font-size: 3.05em;
-  }
-}
-@media (min-width: 900px) {
-  h1.heading {
-    font-size: 3.25em;
-    margin: 0 0 0.3em;
-  }
-}
-
-
-.text-margin-left{
-  margin-left:5% !important;
-}
-.single-image{
-  border-radius: 5%;
-  max-width: 30%;
-  max-height: 30%;
-
-
-}
-
-
-*/
