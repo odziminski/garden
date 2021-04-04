@@ -456,9 +456,8 @@
                     </span>
                     @enderror
 
-
                 </div>
-
+                <a href="{{ route('register') }}" class="small_gray_italic">Don't have an account yet?</a>
                 <button type="submit"> {{ __('Login') }} </button>
             </form>
         </div>

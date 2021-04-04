@@ -467,6 +467,7 @@
                     </span>
                     @enderror
                 </div>
+                <a href="{{route('login')}}" class="small_gray_italic">Already have an account?</a>
 
                 <button type="submit"> {{ __('Create an account') }} </button>
             </form>
