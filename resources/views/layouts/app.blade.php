@@ -14,7 +14,7 @@
 
     <!-- Styles -->
     <link href="https://rawgit.com/outboxcraft/beauter/master/beauter.min.css" rel="stylesheet">
-    <link href="{{ secure_asset('css/styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
 
 </head>
 <body>
@@ -46,7 +46,7 @@
     </nav>
       </ul>
 
-      <main class=>
+      <main class="py-4">
         @yield('content')
     </main>
 </html>
