@@ -50,10 +50,6 @@ class PlantsController extends Controller
         }
 
 
-
-
-
-
     }
 
     public function displaySinglePlant($id)

@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Raleway&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Raleway&display=swap");
-
 * {
     margin: 0;
     padding: 0;
@@ -17,6 +16,30 @@ body {
 .topnav {
     height: 80px;
     background-color: #ffffff !important;
+}
+.add_plant_text_center{
+    padding-top: 20px;
+    margin-top: 20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-flow:column nowrap;
+    text-align: center;
+    background: #FFFFFF;
+    box-shadow: 0 10px 44px -10px rgba(51, 60, 28, 0.15);
+    border-radius: 10px;
+    margin-left: 20%;
+    margin-right: 20%;
+
+}
+.card_thin{
+    margin-left: 40%;
+    margin-right: 40%;
+}
+.modalbox-modal-content{
+width:30%;
+
+
 }
 
 .topnav .navbar-items-right {
@@ -45,18 +68,17 @@ body {
 
 .container {
     height: 100vh;
-
     margin-top: 5%;
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;
 }
 
-.container > .image {
+.container>.image {
     flex: 1 0 0;
 }
 
-.container > .welcome-cards {
+.container>.welcome-cards {
     padding: 15px;
     flex-direction: column;
     flex: 2 0 0;
@@ -116,7 +138,6 @@ body {
 .welcome-cards-plant-name {
     font-size: 32px;
     line-height: 28px;
-
     color: #333c1c;
     flex-grow: 1;
     margin: 3%;
@@ -138,7 +159,6 @@ body {
     font-style: italic;
     margin-left: 20%;
     color: #333c1c;
-
 }
 
 .welcome-cards-plant-species {
@@ -157,11 +177,9 @@ body {
 
 .welcome-cards-bottom-card {
     position: relative;
-
     padding: 5%;
     width: 449px;
     height: 240px;
-
     background: #ffffff;
     box-shadow: 0 10px 44px -10px rgba(51, 60, 28, 0.15);
     border-radius: 10px;
@@ -171,12 +189,10 @@ body {
     position: absolute;
     top: 1%;
     right: 2%;
-
     justify-content: flex-start;
     width: 137px;
     height: 137px;
 }
-
 
 .parent {
     margin-left: 15%;
@@ -187,11 +203,9 @@ body {
     font-size: 32px;
     line-height: 42px;
     margin-top: 2%;
-
     display: grid;
     grid-gap: 1%;
     justify-items: center;
-
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: 1fr;
     grid-column-gap: 15px;
@@ -204,7 +218,6 @@ body {
 
 .card {
     word-wrap: break-word;
-
     height: 35rem;
     width: 25rem;
     margin-bottom: 1rem;
@@ -221,7 +234,6 @@ body {
 
 .img-card {
     object-fit: cover;
-
     width: 100%;
     height: 200px;
     border-top-left-radius: 2px;
@@ -270,7 +282,6 @@ body {
 .red-dot-notification {
     position: relative;
     bottom: 220px;
-
     background: red;
     color: white;
     width: 30px;
@@ -312,7 +323,6 @@ body {
     text-align: center !important;
     margin-left: auto;
     margin-right: auto;
-
 }
 
 .needs {
@@ -325,7 +335,8 @@ body {
     color: black;
     display: block;
 }
-.card_centered{
+
+.card_centered {
     position: absolute;
     margin-left: auto;
     margin-right: auto;
@@ -333,7 +344,8 @@ body {
     left: 0;
     right: 0;
 }
-.card_register{
+
+.card_register {
     font-family: Raleway;
     font-style: normal;
     font-weight: 600;
@@ -346,32 +358,36 @@ body {
     border-radius: 10px;
 }
 
-.card_register input{
-    width:275px;
-    height:40px;
+.card_register input {
+    width: 275px;
+    height: 40px;
     background: #FFFFFF;
     border: 2px solid #E0E7D0;
     box-sizing: border-box;
     border-radius: 10px;
 }
-::placeholder{
-    color:#D2D7C8;
+
+::placeholder {
+    color: #D2D7C8;
 }
-.register_content{
+
+.register_content {
     margin: auto;
     padding: 80px 100px 100px 100px;
 }
-.card_register button{
+
+.card_register button {
     margin: -30px 40px 0 0;
-
-    float:right;
-    overflow:hidden;
-    border:none;
-
+    float: right;
+}
+input[type="button"], button,input[type="submit"],.button {
+    overflow: hidden;
+    border: none;
     background: #E0E7D0;
     border-radius: 10px;
+    font-variant: small-caps;
 }
-.card_login{
+.card_login {
     font-family: Raleway;
     font-style: normal;
     font-weight: 600;
@@ -384,42 +400,45 @@ body {
     border-radius: 10px;
 }
 
-.card_login input{
-    width:275px;
-    height:40px;
+.card_login input {
+    width: 275px;
+    height: 40px;
     background: #FFFFFF;
     border: 2px solid #E0E7D0;
     box-sizing: border-box;
     border-radius: 10px;
 }
 
-.login_content{
+.login_content {
     margin: auto;
     padding: 60px 60px 60px 60px;
 }
-.card_login button{
-    margin: -15px 30px 0 30px;
-    float:right;
-    border:none;
-    font-variant: small-caps;
 
-    background: #E0E7D0;
-    border-radius: 10px;
+.card_login button {
+    margin: -15px 30px 0 30px;
+    float: right;
 }
-.small_gray_italic{
+
+.small_gray_italic {
     font-style: italic;
     font-weight: 600;
     font-size: 10px;
     line-height: 150%;
-
     color: #A9AE99;
 }
 
-.card_register a{
+.card_register a {
     margin-left: 30px;
 }
 
-.card_login a{
+.card_login a {
     margin-left: 25px;
-
+}
+.no_plants_added_yet{
+    margin-top: 100px;
+    text-align: center;
+}
+.no_plants_added_yet a{
+    color: #A9AE99;
+    text-decoration: none;
 }

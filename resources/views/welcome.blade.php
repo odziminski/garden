@@ -470,6 +470,7 @@
         </div>
 
             @auth
+                @if($plant ?? '')
         <div class="welcome-cards welcome-cards-plant-thumbnail">
             <img src= "{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="welcome-cards-image-thumbnail">
             <span class="welcome-cards-plant-name"> {{$plant->name}} </span>
@@ -492,4 +493,5 @@
       </div>
     </div>
 @endauth
+    @endif
 @endsection

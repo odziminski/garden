@@ -20,13 +20,12 @@ class UserController extends Controller
         return view('users')->with('user', $user);
     }
 
-    public function editUserProfile(UpdateProfileRequest $request)
+    public function editUserProfile(Request $request)
     {
         try {
-            $update = DB::table('users')
+            DB::table('users')
             ->whereId(auth()->id())
             ->update([
-                    'name' => $request->input('name'),
                     'email' => $request->input('email'),
                     'password' => Hash::make($request->input('password')),
                 ]);
@@ -34,5 +33,6 @@ class UserController extends Controller
             $err = $e->getPrevious()->getMessage();
             echo $err;
         }
+        return redirect()->route('users');
     }
 }

@@ -25,7 +25,6 @@ class UpdateProfileRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|unique:users|min:2|max:64',
             'email' => 'required|unique:users|min:3|max:254',
             'password' => 'required|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/|confirmed|min:6',
         ];
@@ -35,8 +34,6 @@ class UpdateProfileRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => 'A name is required!',
-            'name.min' => 'Name must at least 2 characters long!',
             'email.required' => 'Email is required!',
             'password' => 'Password is required!',
         ];
