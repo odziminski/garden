@@ -435,16 +435,18 @@
         <div class="card_login card_centered">
             <form method="POST" action="{{ route('login') }}">
                 @csrf
+
                 <div class="login_content">
-                    <label for="email">{{ __('Email') }}</label>
-                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
-                           name="email" placeholder="my-email@example.com"
-                           value="{{ old('email') }}" required autocomplete="email" autofocus>
                     @error('email')
                     <span class="_danger" role="alert">
                     <strong>{{ $message }}</strong>
                     </span>
                     @enderror
+                    <label for="email">{{ __('Email') }}</label>
+                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                           name="email" placeholder="my-email@example.com"
+                           value="{{ old('email') }}" required autocomplete="email" autofocus>
+
                     <label for="password">{{ __('Password') }}</label>
                     <input id="password" type="password" placeholder="********"
                            class="form-control @error('password') is-invalid @enderror"
@@ -456,9 +458,19 @@
                     </span>
                     @enderror
 
+                    <input type="checkbox" name="remember"
+                           id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    {{ __('Remember Me') }} <br />
+
+                    <a class="small_gray_italic" href="{{ route('password.request') }}">
+                        {{ __('Forgot Your Password?') }}
+                    </a> <br />
+                    <a href="{{ route('register') }}"
+                       class="small_gray_italic bottom">{{ __("Don't have an account yet?") }}</a>
+
+                    <button type="submit"> {{ __('Login') }} </button>
+
                 </div>
-                <a href="{{ route('register') }}" class="small_gray_italic">Don't have an account yet?</a>
-                <button type="submit"> {{ __('Login') }} </button>
             </form>
         </div>
     </div>

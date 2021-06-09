@@ -20,24 +20,24 @@ class PlantsController extends Controller
         return $dateForHumans = Carbon::parse($date)->diffForHumans();
     }
 
-    public function getNextCareDate($date,$interval)
+    public function getNextCareDate($date, $interval)
     {
         return $nextCare = Carbon::parse($date)->addDays($interval);
     }
 
     public function getRandomPlant()
     {
-        $randomPlant = Plant::where('user_id',auth()->id())
-        ->inRandomOrder()
-        ->get()
-        ->first();
+        $randomPlant = Plant::where('user_id', auth()->id())
+            ->inRandomOrder()
+            ->get()
+            ->first();
 
-        if ($randomPlant){
+        if ($randomPlant) {
             $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at);
             $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at);
-            $nextWatering = self::getNextCareDate($randomPlant->watered_at,$randomPlant->watering_frequency)->diffForHumans();
-            $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at,$randomPlant->fertilizing_frequency)->diffForHumans();
-            $trefleData= self::getTrefleData($randomPlant->species);
+            $nextWatering = self::getNextCareDate($randomPlant->watered_at, $randomPlant->watering_frequency)->diffForHumans();
+            $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at, $randomPlant->fertilizing_frequency)->diffForHumans();
+            $trefleData = self::getTrefleData($randomPlant->species);
             return view('welcome')->with([
                 'plant' => $randomPlant,
                 'nextWatering' => $nextWatering,
@@ -57,25 +57,25 @@ class PlantsController extends Controller
         $plant = Plant::find($id);
 
         if ($plant->user_id == auth()->id()) {
-            $nextWatering = self::getNextCareDate($plant->watered_at,$plant->watering_frequency);
+            $nextWatering = self::getNextCareDate($plant->watered_at, $plant->watering_frequency);
             $lateForWatering = Carbon::parse(Carbon::now())
-            ->diffInDays($nextWatering);
+                ->diffInDays($nextWatering);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
 
-            $nextFertilizing = self::getNextCareDate($plant->fertilized_at,$plant->fertilizing_frequency);
+            $nextFertilizing = self::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse(Carbon::now())
-            ->diffInDays($nextFertilizing);
+                ->diffInDays($nextFertilizing);
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
             $trefleData = $this->getTrefleData($plant->species);
             return view('plants')->with([
-            'plant' => $plant,
-            'nextWatering' => $nextWatering,
-            'nextFertilizing' => $nextFertilizing,
-            'lateForWatering' => $lateForWatering,
-            'lateForFertilizing' => $lateForFertilizing,
-            'trefleData' => $trefleData,
+                'plant' => $plant,
+                'nextWatering' => $nextWatering,
+                'nextFertilizing' => $nextFertilizing,
+                'lateForWatering' => $lateForWatering,
+                'lateForFertilizing' => $lateForFertilizing,
+                'trefleData' => $trefleData,
             ]);
         } else {
             return back();
@@ -91,8 +91,7 @@ class PlantsController extends Controller
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
             $uploadedFileUrl = $this->getTrefleData($request->input('species'));
-            if(!empty($uploadedFileUrl))
-            {
+            if (!empty($uploadedFileUrl)) {
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
             } else {
                 $uploadedFileUrl = asset("images/plant.png");
@@ -127,8 +126,8 @@ class PlantsController extends Controller
     public function displayPlants()
     {
         $plants = Plant::where('user_id', auth()->id())
-        ->orderBy('watered_at', 'asc')
-        ->get();
+            ->orderBy('watered_at', 'asc')
+            ->get();
 
         foreach ($plants as $plant) {
             $plant->watered_at = self::getDateForHumans($plant->watered_at);
@@ -142,10 +141,10 @@ class PlantsController extends Controller
         $now = Carbon::now();
         try {
             Plant::where('id', $id)
-            ->update([
-                'need_watering' => 0,
-                'watered_at' => $now,
-            ]);
+                ->update([
+                    'need_watering' => 0,
+                    'watered_at' => $now,
+                ]);
         } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
@@ -158,10 +157,10 @@ class PlantsController extends Controller
         $now = Carbon::now();
         try {
             Plant::where('id', $id)
-            ->update([
-                'need_fertilizing' => 0,
-                'fertilized_at' => $now,
-            ]);
+                ->update([
+                    'need_fertilizing' => 0,
+                    'fertilized_at' => $now,
+                ]);
         } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
@@ -189,11 +188,11 @@ class PlantsController extends Controller
         try {
             $plant = Plant::findOrFail($id)
                 ->update([
-                 'avatar' => $uploadedFileUrl,
-                 'name' => $request->input('name'),
-                 'watering_frequency' => $wateringFrequency,
-                 'fertilizing_frequency' => $fertilizingFrequency
-             ]);
+                    'avatar' => $uploadedFileUrl,
+                    'name' => $request->input('name'),
+                    'watering_frequency' => $wateringFrequency,
+                    'fertilizing_frequency' => $fertilizingFrequency
+                ]);
         } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
@@ -213,11 +212,11 @@ class PlantsController extends Controller
         $species = rawurlencode($species);
         $token = env('TREFLE_TOKEN');
 
-        $response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();
-        if ($response['data']) {
-            return $data = $response['data'][0];
-        } else {
-            return $data = [];
-        }
+        //$response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();
+//        if ($response) {
+//            return $data = $response['data'][0];
+//        } else {
+//            return $data = [];
+//        }
     }
 }

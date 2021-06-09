@@ -440,36 +440,32 @@
                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
                            name="email" placeholder="my-email@example.com"
                            value="{{ old('email') }}" required autocomplete="email" autofocus>
-                    @error('email')
-                    <span class="_danger" role="alert">
-                    <strong>{{ $message }}</strong>
-                    </span>
-                    @enderror
+
                     <label for="password">{{ __('Password') }}</label>
                     <input id="password" type="password" placeholder="********"
                            class="form-control @error('password') is-invalid @enderror"
                            name="password" required autocomplete="current-password">
-
-                    @error('password')
-                    <span class="_danger" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                    @enderror
-
                     <label for="password">{{ __('Repeat password') }}</label>
                     <input id="password-confirm" type="password" placeholder="********"
                            class="form-control" name="password_confirmation"
                            required autocomplete="new-password">
-
+                    @error('email')
+                    <span class=" _danger" role="alert">
+                    <strong>{{ $message }}</strong><br/>
+                    </span>
+                    @enderror
                     @error('password')
                     <span class="_danger" role="alert">
                         <strong>{{ $message }}</strong>
                     </span>
                     @enderror
                 </div>
-                <a href="{{route('login')}}" class="small_gray_italic">Already have an account?</a>
 
-                <button type="submit"> {{ __('Create an account') }} </button>
+                <div class="register_bottom">
+                    <a href="{{route('login')}}" class="small_gray_italic bottom">Already have an account?</a>
+
+                    <button type="submit"> {{ __('Create an account') }} </button>
+                </div>
             </form>
         </div>
     </div>

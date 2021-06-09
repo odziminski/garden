@@ -18,35 +18,36 @@
 
 </head>
 <body>
-    <nav>
+<nav>
     <ul class="topnav" id="myTopnav2">
         <li class="navbar-items-center text-black">
             <a class="brand text-black" href="{{route('welcome')}}">bloomify</a></li>
         @auth
-        <li class="navbar-items-right text-black">
-            <a href="{{route('users')}}">Hello, gardener!</a>
-        <li class="navbar-items-right ">
-          <a href="{{route('add-plant')}}" class="text-black">Add a plant</a></li>
-        <li class="navbar-items-right text-black">
-            <a href="{{route('browse')}}" class="text-black">Your garden</a></li>
+            <li class="navbar-items-right text-black">
+                <a href="{{route('users')}}">Hello, gardener!</a>
+            <li class="navbar-items-right ">
+                <a href="{{route('add-plant')}}" class="text-black">Add a plant</a></li>
+            <li class="navbar-items-right text-black">
+                <a href="{{route('browse')}}" class="text-black">Your garden</a></li>
 
 
         @endauth
         <li class="-icon">
-          <a href="javascript:void(0);" onclick="topnav('myTopnav2')">☰</a>
-          @guest
+            <a href="javascript:void(0);" onclick="topnav('myTopnav2')">☰</a>
+        @guest
             <li class="navbar-items-right text-black">
                 <a href="{{route('register')}}" class="text-black">Register</a></li>
-                <li class="navbar-items-right text-black">
-                    <a href="{{route('login')}}" class="text-black">Login</a></li>
+            <li class="navbar-items-right text-black">
+                <a href="{{route('login')}}" class="text-black">Login</a></li>
 
 
             @endguest
-        </li>
-    </nav>
-      </ul>
+            </li>
+    </ul>
+</nav>
+</body>
 
-      <main class="py-4">
-        @yield('content')
-    </main>
+<main class="py-4">
+    @yield('content')
+</main>
 </html>
