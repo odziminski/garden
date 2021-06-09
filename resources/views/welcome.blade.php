@@ -1387,7 +1387,7 @@
 {{--                            <span class="welcome-cards-plant-species">{{$trefleData['scientific_name']}} </span> <br/>--}}
 {{--                        @endif--}}
                         <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
-                             class="welcome-cards-image-bottom -circle">
+                             class="welcome-cards-image-bottom">
 
                         <span class="welcome-cards-plant-needs">will need watering in the next 2 days  <br/>
                             was fertilized and watered 4 days ago<br/>

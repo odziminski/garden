@@ -58,15 +58,16 @@ class PlantsController extends Controller
 
         if ($plant->user_id == auth()->id()) {
             $nextWatering = self::getNextCareDate($plant->watered_at, $plant->watering_frequency);
-            $lateForWatering = Carbon::parse(Carbon::now())
-                ->diffInDays($nextWatering);
+            $lateForWatering = Carbon::parse($nextWatering)
+                ->diffInDays(Carbon::now(),false);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
 
             $nextFertilizing = self::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency);
 
-            $lateForFertilizing = Carbon::parse(Carbon::now())
-                ->diffInDays($nextFertilizing);
+            $lateForFertilizing = Carbon::parse($nextFertilizing)
+                ->diffInDays(Carbon::now(),false);
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
+
 
             $trefleData = $this->getTrefleData($plant->species);
             return view('plants')->with([

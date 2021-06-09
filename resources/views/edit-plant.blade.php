@@ -15,9 +15,9 @@
                 </div>
             @endif
             <h4>Name of your plant</h4>
-            <input type="text" class="form-control" name="name" id="name" placeholder="{{ $plant->name }}"> <br/>
+            <input type="text" class="form-control" name="name" id="name" value="{{ $plant->name }}"> <br/>
             <h4>What's the species of your plant?</h4>
-            <input type="text" class="form-control" name="species" placeholder="{{ $plant->species }}"> <br/>
+            <input type="text" class="form-control" name="species" value="{{ $plant->species }}"> <br/>
             <h4>Watering frequency required?</h4>
             <div class="text-left">
                 <input type="radio" name="watering_frequency"

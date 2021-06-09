@@ -28,9 +28,19 @@
                     </div>
                 @endif
                 <div class="_alignLeft m15">
+                    <div class="bold-text">Stats</div>
+                    <p>Overall health state is
+                        @if ($lateForWatering + $lateForFertilizing >= 6)
+                            bad
+                        @else
+                            good
+                        @endif
+                    </p>
+
                     <p>Next watering will be at {{$nextWatering}}</p>
                     <p>Next fertilizing will be at {{$nextFertilizing}}</p>
                 </div>
+
                 <div class="buttons">
                     @if ($plant->need_watering)
                         <div class="needs">
@@ -40,7 +50,7 @@
                             </button>
                         </div>
                     @else
-                        <button class="_disabled  button-white">Water
+                        <button class="display-none">Water
                             <a href="#"></a>
                         </button>
                     @endif
@@ -52,17 +62,17 @@
                             </button>
                         </div>
                     @else
-                        <button class="_disabled  button-white">Fertilize
+                        <button class="display-none">Fertilize
                             <a href="#"></a>
                         </button> <br/>
                     @endif
 
-                <br/>
-                <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">
-                    <button>Edit</button>
-                </a>
+                    <br/>
+                    <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">
+                        <button>Edit</button>
+                    </a>
 
-                <button onclick="openmodal('myModal')">Delete</button>
+                    <button onclick="openmodal('myModal')">Delete</button>
                 </div>
                 <div id="myModal" class="modalbox-modal ">
                     <div class="modalbox-modal-content">
@@ -74,6 +84,7 @@
                 </div>
             </div>
         </div>
+
 
     @endif
 @endsection
