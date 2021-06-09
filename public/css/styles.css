@@ -294,9 +294,11 @@ width:30%;
 }
 
 .card-single-plant {
-    display:flex;
+    display: flex;
+    justify-content: center;
+    min-height: 450px;
     flex-direction: column;
-    width: 600px;
+    width: 700px;
     height: 655px;
     margin-right: 25%;
     margin-left: 25%;
@@ -311,6 +313,7 @@ width:30%;
 .button-white{
     align-self: flex-end;
 }
+
 .card-single-plant h4{
     font-family: Raleway;
     font-style: normal;
@@ -328,16 +331,19 @@ width:30%;
 }
 
 .card-single-plant img {
-    max-height: 30%;
-    max-width: 30%;
+    max-height: 50%;
+    max-width: 50%;
     object-fit: cover;
-}
-
-.card-single-plant table {
-    text-align: center !important;
+    display: block;
     margin-left: auto;
     margin-right: auto;
+    width: 50%;
+
 }
+.m15{
+    margin:15px;
+}
+
 
 .needs {
     height: 150px;
