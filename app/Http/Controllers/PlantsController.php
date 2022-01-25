@@ -15,14 +15,14 @@ class PlantsController extends Controller
 {
     protected $dates = ['created_at', 'watered_at', 'fertilized_at'];
 
-    public function getDateForHumans($date)
+    public function getDateForHumans($date): string
     {
-        return $dateForHumans = Carbon::parse($date)->diffForHumans();
+        return Carbon::parse($date)->diffForHumans();
     }
 
-    public function getNextCareDate($date, $interval)
+    public function getNextCareDate($date, $interval): Carbon
     {
-        return $nextCare = Carbon::parse($date)->addDays($interval);
+        return Carbon::parse($date)->addDays($interval);
     }
 
     public function getRandomPlant()
@@ -204,7 +204,7 @@ class PlantsController extends Controller
 
     public function deletePlant($id)
     {
-        $plant = Plant::find($id)->delete();
+        Plant::find($id)->delete();
         return redirect()->route('browse');
     }
 
