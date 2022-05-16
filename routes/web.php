@@ -55,3 +55,4 @@ Route::get('/delete-plant/{id}',[PlantsController::class, 'deletePlant'])->name(
 Route::get('/edit-plant/{id}',[PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
 Route::patch('/edit-plant-query/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
 
+Route::get('/test', [App\Http\Controllers\HistoryController::class, 'test'])->name('test');
