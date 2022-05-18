@@ -21,8 +21,11 @@ class Needs extends Model
         'need_watering',
         'need_fertilizing',
     ];
-    public function needs()
+    public function plant()
     {
-        return $this->hasOne(Plant::class);
+        return $this->belongsTo(Plant::class);
     }
+
+    
+    
 }

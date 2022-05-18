@@ -27,17 +27,16 @@ class Plant extends Model
         'created_at',
         'name',
         'species',
-        'watering_frequency',
-        'fertilizing_frequency',
-        'watered_at',
-        'fertilized_at',
-        'need_watering',
-        'need_fertilizing',
     ];
 
 
     public function users()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function needs()
+    {
+        return $this->hasOne(Needs::class);
     }
 }

@@ -10,20 +10,20 @@ class History extends Model
     use HasFactory;
 
     protected $table = "history";
-    
+    protected $dates = ['watered_at', 'fertilized_at'];
+
     public $primaryKey  = 'id';
     public $timestamps = false;
 
     protected $fillable = [
         'plant_id',
-        'watering_frequency',
-        'fertilizing_frequency',
-        'need_watering',
-        'need_fertilizing',
+        'watered_at',
+        'fertilized_at'
     ];
-    public function needs()
+
+    public function plant()
     {
-        return $this->hasOne(Plant::class);
+        return $this->belongsTo(Plant::class);
     }
     
 }

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
 use Illuminate\Support\Facades\URL;
 use App\Models\Plant;
+use App\Models\History;
+use App\Models\Needs;
 use Cloudinary;
 use Illuminate\Support\Facades\Http;
 
@@ -85,8 +87,8 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-        $wateringFrequency = $request->input('watering_frequency');
-        $fertilizingFrequency = $request->input('fertilizing_frequency');
+        // $wateringFrequency = $request->input('watering_frequency');
+        // $fertilizingFrequency = $request->input('fertilizing_frequency');
 
         if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
@@ -100,17 +102,29 @@ class PlantsController extends Controller
 
         }
         try {
+            $now = Carbon::now();
             $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
                 'species' => $request->input('species'),
-                'created_at' => Carbon::now(),
-                'watered_at' => Carbon::now(),
-                'watering_frequency' => $wateringFrequency,
-                'fertilized_at' => Carbon::now(),
-                'fertilizing_frequency' => $fertilizingFrequency
+                'created_at' => $now,
+                
             ]);
+            if ($plant->id){
+                $history = History::create([
+                    'plant_id' => $plant->id,
+                     'watered_at' => $now,
+                     'fertilized_at' => $now
+                ]);
+
+                $needs = Needs::create([
+                    'plant_id' => $plant->id,
+                    'watering_frequency' => $request->input('watering_frequency'),
+                    'fertilizing_frequency' => $request->input('fertilizing_frequency')
+                ]);
+            }
+            
         } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
@@ -127,9 +141,8 @@ class PlantsController extends Controller
     public function displayPlants()
     {
         $plants = Plant::where('user_id', auth()->id())
-            ->orderBy('watered_at', 'asc')
-            ->get();
-
+            ->orderBy(History::select('watered_at')->whereColumn('history.plant_id','plants.id'))
+            ->paginate(100);
         foreach ($plants as $plant) {
             $plant->watered_at = self::getDateForHumans($plant->watered_at);
             $plant->fertilized_at = self::getDateForHumans($plant->fertilized_at);
