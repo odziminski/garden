@@ -93,7 +93,7 @@ class PlantsController extends Controller
         if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
-            $uploadedFileUrl = $this->getTrefleData($request->input('species'));
+            // $uploadedFileUrl = $this->getTrefleData($request->input('species'));
             if (!empty($uploadedFileUrl)) {
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
             } else {
@@ -194,7 +194,7 @@ class PlantsController extends Controller
         $fertilizingFrequency = $request->input('fertilizing_frequency');
 
         if ($request->hasFile('avatar')) {
-            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $uploadedFileUrl = ($request->file('avatar')->storeOFnCloudinary('user_uploads'))->getSecurePath();
         } else {
             $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
         }

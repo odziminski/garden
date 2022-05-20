@@ -42,8 +42,8 @@ class checkForWatering extends Command
         DB::connection()
         ->getPdo()
         ->exec('
-        UPDATE plants SET need_watering = 1 WHERE 
-        DATE_ADD(plants.watered_at, INTERVAL plants.watering_frequency DAY) <= CURRENT_TIMESTAMP()
+        UPDATE needs INNER JOIN history ON history.plant_id = needs.plant_id SET need_watering = 1 WHERE needs.plant_id = history.plant_id AND
+        DATE_ADD(history.watered_at, INTERVAL needs.watering_frequency DAY) <= CURRENT_TIMESTAMP()
         ');
     }
 
