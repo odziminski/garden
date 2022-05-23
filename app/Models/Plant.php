@@ -39,4 +39,9 @@ class Plant extends Model
     {
         return $this->hasOne(Needs::class);
     }
+
+    public function history()
+    {
+        return $this->hasOne(History::class);
+    }
 }
