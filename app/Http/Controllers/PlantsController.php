@@ -87,9 +87,6 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-        // $wateringFrequency = $request->input('watering_frequency');
-        // $fertilizingFrequency = $request->input('fertilizing_frequency');
-
         if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
@@ -153,7 +150,7 @@ class PlantsController extends Controller
             }
         }
 
-        return view('browse')->with('plants');
+        return view('browse')->with('plants',$plants);
     }
 
     
@@ -194,6 +191,9 @@ class PlantsController extends Controller
     public function deletePlant($id)
     {
         Plant::find($id)->delete();
+        Needs::where('plant_id',$id)->delete();
+        History::where('plant_id',$id)->delete();
+        
         return redirect()->route('browse');
     }
 
