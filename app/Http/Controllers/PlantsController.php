@@ -143,6 +143,7 @@ class PlantsController extends Controller
         ->get()
         ->where('user_id', auth()->id())
         ->sortByDesc('history.watered_at');
+
         foreach ($plants as $plant) {
             if(isset($plant->history->watered_at)){
                 $plant->watered_at = self::getDateForHumans($plant->history->watered_at);
@@ -164,7 +165,10 @@ class PlantsController extends Controller
 
     public function displayEditPlant($id)
     {
-        $plant = Plant::find($id);
+        $plant = Plant::with('history','needs')
+        ->get()
+        ->where('id', $id)
+        ->first();
         return view('edit-plant')->with('plant', $plant);
     }
 

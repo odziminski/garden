@@ -21,15 +21,15 @@
             <h4>Watering frequency required?</h4>
             <div class="text-left">
                 <input type="radio" name="watering_frequency"
-                       value="15" {{ ($plant->watering_frequency==15)? "checked" : "" }} > Very low <br/>
+                       value="15" {{ ($plant->needs->watering_frequency==15)? "checked" : "" }} > Very low <br/>
                 <input type="radio" name="watering_frequency"
-                       value="10" {{ ($plant->watering_frequency==10)? "checked" : "" }}> Low <br/>
+                       value="10" {{ ($plant->needs->watering_frequency==10)? "checked" : "" }}> Low <br/>
                 <input type="radio" name="watering_frequency"
-                       value="6" {{ ($plant->watering_frequency==6)? "checked" : "" }}> Moderate <br/>
+                       value="6" {{ ($plant->needs->watering_frequency==6)? "checked" : "" }}> Moderate <br/>
                 <input type="radio" name="watering_frequency"
-                       value="4" {{ ($plant->watering_frequency==4)? "checked" : "" }}> High <br/>
+                       value="4" {{ ($plant->needs->watering_frequency==4)? "checked" : "" }}> High <br/>
                 <input type="radio" name="watering_frequency"
-                       value="2" {{ ($plant->watering_frequency==2)? "checked" : "" }}> Very high <br/> <br/>
+                       value="2" {{ ($plant->needs->watering_frequency==2)? "checked" : "" }}> Very high <br/> <br/>
             </div>
 
             <h4>Fertilizing frequency required?</h4>
