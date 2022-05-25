@@ -56,29 +56,32 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-        $plant = Plant::find($id);
-
+        $plant = Plant::with('history','needs')
+        ->get()
+        ->where('id', $id)
+        ->first();
+        // dd($plant);
         if ($plant->user_id == auth()->id()) {
-            $nextWatering = self::getNextCareDate($plant->watered_at, $plant->watering_frequency);
+            $nextWatering = self::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
             $lateForWatering = Carbon::parse($nextWatering)
                 ->diffInDays(Carbon::now(),false);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
 
-            $nextFertilizing = self::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency);
+            $nextFertilizing = self::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse($nextFertilizing)
                 ->diffInDays(Carbon::now(),false);
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
 
-            $trefleData = $this->getTrefleData($plant->species);
+            // $trefleData = $this->getTrefleData($plant->species);
             return view('plants')->with([
                 'plant' => $plant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
                 'lateForWatering' => $lateForWatering,
                 'lateForFertilizing' => $lateForFertilizing,
-                'trefleData' => $trefleData,
+                // 'trefleData' => $trefleData,
             ]);
         } else {
             return back();
@@ -136,11 +139,10 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $plants = Plant::with('history')
+        $plants = Plant::with('history','needs')
         ->get()
         ->where('user_id', auth()->id())
         ->sortByDesc('history.watered_at');
-
         foreach ($plants as $plant) {
             if(isset($plant->history->watered_at)){
                 $plant->watered_at = self::getDateForHumans($plant->history->watered_at);
@@ -148,8 +150,13 @@ class PlantsController extends Controller
             if(isset($plant->history->fertilized_at)){
                 $plant->fertilized_at = self::getDateForHumans($plant->history->fertilized_at);
             }
+            if (isset($plant->needs->need_watering)){
+                $plant->need_watering = $plant->needs->need_watering;
+            }
+            if (isset($plant->needs->need_fertilizing)){
+                $plant->need_fertilizing = $plant->needs->need_fertilizing;
+            }
         }
-
         return view('browse')->with('plants',$plants);
     }
 
