@@ -19,21 +19,21 @@
             <input type="text" name="species" value="{{ old('species') }}"> <br/>
             <h5>Watering frequency required?</h5>
             <div class="text-left">
-                <input type="radio" name="watering_frequency" value="15"> Very low <br/>
-                <input type="radio" name="watering_frequency" value="10"> Low <br/>
-                <input type="radio" name="watering_frequency" value="6"> Moderate <br/>
-                <input type="radio" name="watering_frequency" value="4"> High <br/>
-                <input type="radio" name="watering_frequency" value="2"> Very high <br/>
+                <input type="radio" name="watering_frequency" value="15">  Very low 
+                <input type="radio" name="watering_frequency" value="10">  Low 
+                <input type="radio" name="watering_frequency" value="6">  Moderate 
+                <input type="radio" name="watering_frequency" value="4">  High 
+                <input type="radio" name="watering_frequency" value="2">  Very high <br/>
             </div>
 
             <h5>Fertilizing frequency required?</h5>
             <div class="text-left">
 
-                <input type="radio" name="fertilizing_frequency" value="15"> Very low <br/>
-                <input type="radio" name="fertilizing_frequency" value="10"> Low <br/>
-                <input type="radio" name="fertilizing_frequency" value="6"> Moderate <br/>
-                <input type="radio" name="fertilizing_frequency" value="4"> High <br/>
-                <input type="radio" name="fertilizing_frequency" value="2"> Very high <br/><br/>
+                <input type="radio" name="fertilizing_frequency" value="15">  Very low 
+                <input type="radio" name="fertilizing_frequency" value="10">  Low 
+                <input type="radio" name="fertilizing_frequency" value="6">  Moderate 
+                <input type="radio" name="fertilizing_frequency" value="4">  High 
+                <input type="radio" name="fertilizing_frequency" value="2">  Very high <br/><br/>
 
             </div>
             <h5>Picture of your plant </h5> <br/>

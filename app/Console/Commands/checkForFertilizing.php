@@ -42,8 +42,8 @@ class checkForFertilizing extends Command
         DB::connection()
         ->getPdo()
         ->exec('
-        UPDATE plants SET need_fertilizing = 1 WHERE 
-        DATE_ADD(plants.fertilized_at, INTERVAL plants.fertilizing_frequency DAY) <= CURRENT_TIMESTAMP()
+        UPDATE needs INNER JOIN history ON history.plant_id = needs.plant_id SET need_fertilizing = 1 WHERE needs.plant_id = history.plant_id AND
+        DATE_ADD(history.fertilized_at, INTERVAL needs.fertilizing_frequency DAY) <= CURRENT_TIMESTAMP()
         ');
     }
 }

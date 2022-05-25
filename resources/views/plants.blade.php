@@ -7,26 +7,12 @@
         <div class="container">
             <div class="card-single-plant _alignCenter">
                 <h4>{{$plant->name}}</h4>
-                @if ($trefleData)
 
-                    <h6 class="font-italic"> {{$trefleData['scientific_name']}} </h6>
-                @else
+                
                     <h6 class="font-italic"> {{$plant->species}} </h6>
-                @endif
 
                 <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}"/>
-                @if ($trefleData ?? '')
-                    <div class="_alignLeft">
-                        Facts:
-                        <p> Also called <span class="font-weight-bold">{{$trefleData['common_name']}}</span>.
-                            Is a species of the <span class="font-weight-bold"> {{$trefleData['family']}}</span> family.
-                        </p>
-                        <p> Synonyms:
-                            <span class="font-italic"> {{$trefleData['synonyms'][0]}} </span>
-                            or <span class="font-italic"> {{$trefleData['synonyms'][1]}} </span>
-                        </p>
-                    </div>
-                @endif
+                  
                 <div class="_alignLeft m15">
                     <div class="bold-text">Stats</div>
                     <p>Overall health state is
@@ -42,7 +28,7 @@
                 </div>
 
                 <div class="buttons">
-                    @if ($plant->need_watering)
+                    @if ($plant->needs->need_watering)
                         <div class="needs">
                             <button class="button-white">
                                 <a href="{{ route('updateWatering',['id' => $plant->id]) }}"
@@ -54,7 +40,7 @@
                             <a href="#"></a>
                         </button>
                     @endif
-                    @if ($plant->need_fertilizing)
+                    @if ($plant->needs->need_fertilizing)
                         <div class="needs">
                             <button class="button-white">
                                 <a href="{{ route('updateFertilizing',['id' => $plant->id]) }}"

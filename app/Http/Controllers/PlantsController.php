@@ -8,12 +8,14 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
 use Illuminate\Support\Facades\URL;
 use App\Models\Plant;
+use App\Models\History;
+use App\Models\Needs;
 use Cloudinary;
 use Illuminate\Support\Facades\Http;
 
 class PlantsController extends Controller
 {
-    protected $dates = ['created_at', 'watered_at', 'fertilized_at'];
+    protected $dates = ['created_at'];
 
     public function getDateForHumans($date): string
     {
@@ -54,29 +56,32 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-        $plant = Plant::find($id);
-
+        $plant = Plant::with('history','needs')
+        ->get()
+        ->where('id', $id)
+        ->first();
+        // dd($plant);
         if ($plant->user_id == auth()->id()) {
-            $nextWatering = self::getNextCareDate($plant->watered_at, $plant->watering_frequency);
+            $nextWatering = self::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
             $lateForWatering = Carbon::parse($nextWatering)
                 ->diffInDays(Carbon::now(),false);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
 
-            $nextFertilizing = self::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency);
+            $nextFertilizing = self::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse($nextFertilizing)
                 ->diffInDays(Carbon::now(),false);
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
 
-            $trefleData = $this->getTrefleData($plant->species);
+            // $trefleData = $this->getTrefleData($plant->species);
             return view('plants')->with([
                 'plant' => $plant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
                 'lateForWatering' => $lateForWatering,
                 'lateForFertilizing' => $lateForFertilizing,
-                'trefleData' => $trefleData,
+                // 'trefleData' => $trefleData,
             ]);
         } else {
             return back();
@@ -85,13 +90,10 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-        $wateringFrequency = $request->input('watering_frequency');
-        $fertilizingFrequency = $request->input('fertilizing_frequency');
-
         if ($request->hasFile('avatar')) {
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
-            $uploadedFileUrl = $this->getTrefleData($request->input('species'));
+            // $uploadedFileUrl = $this->getTrefleData($request->input('species'));
             if (!empty($uploadedFileUrl)) {
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
             } else {
@@ -100,17 +102,28 @@ class PlantsController extends Controller
 
         }
         try {
+            $now = Carbon::now();
             $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
                 'species' => $request->input('species'),
-                'created_at' => Carbon::now(),
-                'watered_at' => Carbon::now(),
-                'watering_frequency' => $wateringFrequency,
-                'fertilized_at' => Carbon::now(),
-                'fertilizing_frequency' => $fertilizingFrequency
+                'created_at' => $now,
+                
             ]);
+                $history = History::create([
+                    'plant_id' => $plant->id,
+                     'watered_at' => $now,
+                     'fertilized_at' => $now
+                ]);
+
+                $needs = Needs::create([
+                    'plant_id' => $plant->id,
+                    'watering_frequency' => $request->input('watering_frequency'),
+                    'fertilizing_frequency' => $request->input('fertilizing_frequency')
+                ]);
+            
+            
         } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
@@ -126,52 +139,36 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $plants = Plant::where('user_id', auth()->id())
-            ->orderBy('watered_at', 'asc')
-            ->get();
+        $plants = Plant::with('history','needs')
+        ->get()
+        ->where('user_id', auth()->id())
+        ->sortByDesc('history.watered_at');
 
         foreach ($plants as $plant) {
-            $plant->watered_at = self::getDateForHumans($plant->watered_at);
-            $plant->fertilized_at = self::getDateForHumans($plant->fertilized_at);
+            if(isset($plant->history->watered_at)){
+                $plant->watered_at = self::getDateForHumans($plant->history->watered_at);
+            }
+            if(isset($plant->history->fertilized_at)){
+                $plant->fertilized_at = self::getDateForHumans($plant->history->fertilized_at);
+            }
+            if (isset($plant->needs->need_watering)){
+                $plant->need_watering = $plant->needs->need_watering;
+            }
+            if (isset($plant->needs->need_fertilizing)){
+                $plant->need_fertilizing = $plant->needs->need_fertilizing;
+            }
         }
-        return view('browse')->with('plants', $plants);
+        return view('browse')->with('plants',$plants);
     }
 
-    public function updateWatering($id)
-    {
-        $now = Carbon::now();
-        try {
-            Plant::where('id', $id)
-                ->update([
-                    'need_watering' => 0,
-                    'watered_at' => $now,
-                ]);
-        } catch (\Exception $e) {
-            $err = $e->getPrevious()->getMessage();
-            echo $err;
-        }
-        return redirect()->route('plants', $id);
-    }
-
-    public function updateFertilizing($id)
-    {
-        $now = Carbon::now();
-        try {
-            Plant::where('id', $id)
-                ->update([
-                    'need_fertilizing' => 0,
-                    'fertilized_at' => $now,
-                ]);
-        } catch (\Exception $e) {
-            $err = $e->getPrevious()->getMessage();
-            echo $err;
-        }
-        return redirect()->route('plants', $id);
-    }
+    
 
     public function displayEditPlant($id)
     {
-        $plant = Plant::find($id);
+        $plant = Plant::with('history','needs')
+        ->get()
+        ->where('id', $id)
+        ->first();
         return view('edit-plant')->with('plant', $plant);
     }
 
@@ -205,6 +202,9 @@ class PlantsController extends Controller
     public function deletePlant($id)
     {
         Plant::find($id)->delete();
+        Needs::where('plant_id',$id)->delete();
+        History::where('plant_id',$id)->delete();
+        
         return redirect()->route('browse');
     }
 

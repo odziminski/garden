@@ -12,6 +12,7 @@
         @else
             <div class="parent">
                 @foreach ($plants as $plant)
+
                     <div class="card">
                         <a href="{{ URL::to('plants/' . $plant->id) }}">
                             <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="img-card"/> </a>
