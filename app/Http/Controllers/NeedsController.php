@@ -3,15 +3,9 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use DB;
-use Illuminate\Http\Request;
-use App\Http\Requests\StorePlantRequest;
-use Illuminate\Support\Facades\URL;
 use App\Models\Needs;
 use App\Models\History;
-use Cloudinary;
-use Illuminate\Support\Facades\Http;
-use App\Model;
+use App\Models\Plant;
 
 class NeedsController extends Controller
 {
@@ -22,41 +16,46 @@ class NeedsController extends Controller
 
     public function updateWatering($id)
     {
-        try {
-            Needs::where('plant_id', $id)
-                ->update([
+        
+            $plant = Plant::find($id);
+
+            $needs = Needs::where('plant_id', $id)->first();
+                $needs->update([
                     'need_watering' => 0,
                 ]);
 
-            History::where('plant_id', $id)
-                ->update([
+            $history = History::where('plant_id', $id)->first();
+                $history->update([
                     'watered_at' => Carbon::now(),
                 ]);
 
-        } catch (\Exception $e) {
-            $err = $e->getPrevious()->getMessage();
-            echo $err;
-        }
-        return redirect()->route('plants', $id);
+                $plant->watered_at = $history->watered_at;
+                $plant->watering_frequency = $needs->watering_frequency;
+       
+        return Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->format('l, j-m-Y ');
+        print Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->format('l, j-m-Y ');
+        
     }
 
     public function updateFertilizing($id)
     {
-        try {
-             Needs::where('plant_id', $id)
-                ->update([
-                    'need_fertilizing' => 0,
-                ]);
+        $plant = Plant::find($id);
 
-             History::where('plant_id', $id)
-                ->update([
-                    'fertilized_at' => Carbon::now(),
-                ]);
-        } catch (\Exception $e) {
-            $err = $e->getPrevious()->getMessage();
-            echo $err;
-        }
-        return redirect()->route('plants', $id);
+        $needs = Needs::where('plant_id', $id)->first();
+            $needs->update([
+                'need_fertilizing' => 0,
+            ]);
+
+        $history = History::where('plant_id', $id)->first();
+            $history->update([
+                'fertilized_at' => Carbon::now(),
+            ]);
+
+            $plant->fertilized_at = $history->fertilized_at;
+            $plant->fertilizing_frequency = $needs->fertilizing_frequency;
+   
+    return Plant::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency)->format('l, j-m-Y ');
+    
     }
     
 }

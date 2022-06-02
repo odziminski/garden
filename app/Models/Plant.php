@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use CloudinaryLabs\CloudinaryLaravel\MediaAlly;
 use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon;
+
 
 class Plant extends Model
 {
@@ -43,5 +44,15 @@ class Plant extends Model
     public function history()
     {
         return $this->hasOne(History::class);
+    }
+
+    public static function getDateForHumans($date): string
+    {
+        return Carbon::parse($date)->diffForHumans();
+    }
+
+    public static function getNextCareDate($date, $interval): Carbon
+    {
+        return Carbon::parse($date)->addDays($interval);
     }
 }

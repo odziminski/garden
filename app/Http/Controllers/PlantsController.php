@@ -3,29 +3,17 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use DB;
-use Illuminate\Http\Request;
 use App\Http\Requests\StorePlantRequest;
-use Illuminate\Support\Facades\URL;
 use App\Models\Plant;
 use App\Models\History;
 use App\Models\Needs;
-use Cloudinary;
-use Illuminate\Support\Facades\Http;
+
 
 class PlantsController extends Controller
 {
     protected $dates = ['created_at'];
 
-    public function getDateForHumans($date): string
-    {
-        return Carbon::parse($date)->diffForHumans();
-    }
-
-    public function getNextCareDate($date, $interval): Carbon
-    {
-        return Carbon::parse($date)->addDays($interval);
-    }
+   
 
     public function getRandomPlant()
     {
@@ -35,11 +23,11 @@ class PlantsController extends Controller
             ->first();
 
         if ($randomPlant) {
-            $randomPlant->watered_at = self::getDateForHumans($randomPlant->watered_at);
-            $randomPlant->fertilized_at = self::getDateForHumans($randomPlant->fertilized_at);
-            $nextWatering = self::getNextCareDate($randomPlant->watered_at, $randomPlant->watering_frequency)->diffForHumans();
-            $nextFertilizing = self::getNextCareDate($randomPlant->fertilized_at, $randomPlant->fertilizing_frequency)->diffForHumans();
-            $trefleData = self::getTrefleData($randomPlant->species);
+            $randomPlant->watered_at = Plant::getDateForHumans($randomPlant->watered_at);
+            $randomPlant->fertilized_at = Plant::getDateForHumans($randomPlant->fertilized_at);
+            $nextWatering = Plant::getNextCareDate($randomPlant->watered_at, $randomPlant->watering_frequency)->diffForHumans();
+            $nextFertilizing = Plant::getNextCareDate($randomPlant->fertilized_at, $randomPlant->fertilizing_frequency)->diffForHumans();
+            $trefleData = Plant::getTrefleData($randomPlant->species);
             return view('welcome')->with([
                 'plant' => $randomPlant,
                 'nextWatering' => $nextWatering,
@@ -60,14 +48,14 @@ class PlantsController extends Controller
         ->get()
         ->where('id', $id)
         ->first();
-        // dd($plant);
+
         if ($plant->user_id == auth()->id()) {
-            $nextWatering = self::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
+            $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
             $lateForWatering = Carbon::parse($nextWatering)
                 ->diffInDays(Carbon::now(),false);
             $nextWatering = $nextWatering->format('l, j-m-Y ');
 
-            $nextFertilizing = self::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
+            $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse($nextFertilizing)
                 ->diffInDays(Carbon::now(),false);
@@ -146,10 +134,10 @@ class PlantsController extends Controller
 
         foreach ($plants as $plant) {
             if(isset($plant->history->watered_at)){
-                $plant->watered_at = self::getDateForHumans($plant->history->watered_at);
+                $plant->watered_at = Plant::getDateForHumans($plant->history->watered_at);
             }
             if(isset($plant->history->fertilized_at)){
-                $plant->fertilized_at = self::getDateForHumans($plant->history->fertilized_at);
+                $plant->fertilized_at = Plant::getDateForHumans($plant->history->fertilized_at);
             }
             if (isset($plant->needs->need_watering)){
                 $plant->need_watering = $plant->needs->need_watering;
