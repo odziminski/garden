@@ -4,23 +4,22 @@
     $(document).on('click', '#fertilizing', function(event) {
         event.preventDefault();
 
-        getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing');
+        getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing','.nextFertilizing');
 
     });
     $(document).on('click', '#watering', function(event) {
         event.preventDefault();
-        getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering');
+        getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering','.nextWatering');
 
     });
-    var getMessage = function(route, word, buttonClass) {
+    var getMessage = function(route, word, buttonClass, spanClass) {
         $.ajax({
             type: 'GET',
             url: route,
             success: function(data) {
+                $(spanClass).text(data);
                 $(buttonClass).fadeOut();
-
                 $('.alert').show()
-
 
             }
         });
@@ -45,17 +44,9 @@
         <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}" />
 
         <div class="_alignLeft m15">
-            <div class="bold-text">Stats</div>
-            <p>Overall health state is
-                @if ($lateForWatering + $lateForFertilizing >= 6)
-                bad
-                @else
-                good
-                @endif
-            </p>
 
-            <p>Next watering will be at {{$nextWatering}}</p>
-            <p>Next fertilizing will be at {{$nextFertilizing}}</p>
+            <p>Next watering will be at <span class="nextWatering">{{$nextWatering}}</span></p>
+            <p>Next fertilizing will be at <span class="nextFertilizing">{{$nextFertilizing}}</span></p>
         </div>
 
         <div class="alert alert-custom" hidden>
