@@ -27,12 +27,12 @@ class PlantsController extends Controller
             $randomPlant->fertilized_at = Plant::getDateForHumans($randomPlant->fertilized_at);
             $nextWatering = Plant::getNextCareDate($randomPlant->watered_at, $randomPlant->watering_frequency)->diffForHumans();
             $nextFertilizing = Plant::getNextCareDate($randomPlant->fertilized_at, $randomPlant->fertilizing_frequency)->diffForHumans();
-            $trefleData = Plant::getTrefleData($randomPlant->species);
+            // $trefleData = Plant::getTrefleData($randomPlant->species);
             return view('welcome')->with([
                 'plant' => $randomPlant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
-                'trefleData' => $trefleData,
+                // 'trefleData' => $trefleData,
             ]);
 
         } else {
@@ -157,6 +157,7 @@ class PlantsController extends Controller
         ->get()
         ->where('id', $id)
         ->first();
+        
         return view('edit-plant')->with('plant', $plant);
     }
 

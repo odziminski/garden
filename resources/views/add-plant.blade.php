@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="add_plant_text_center">
-        <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}">
+        <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}" class="form-group">
             @csrf
             @if ($errors->any())
                 <div class="text-danger">
@@ -19,21 +19,15 @@
             <input type="text" name="species" value="{{ old('species') }}"> <br/>
             <h5>Watering frequency required?</h5>
             <div class="text-left">
-                <input type="radio" name="watering_frequency" value="15">  Very low 
-                <input type="radio" name="watering_frequency" value="10">  Low 
-                <input type="radio" name="watering_frequency" value="6">  Moderate 
-                <input type="radio" name="watering_frequency" value="4">  High 
-                <input type="radio" name="watering_frequency" value="2">  Very high <br/>
+            <input type="number" class="form-control" name="watering_frequency" value="{{ old('watering_frequency') }}">
+
             </div>
 
             <h5>Fertilizing frequency required?</h5>
             <div class="text-left">
 
-                <input type="radio" name="fertilizing_frequency" value="15">  Very low 
-                <input type="radio" name="fertilizing_frequency" value="10">  Low 
-                <input type="radio" name="fertilizing_frequency" value="6">  Moderate 
-                <input type="radio" name="fertilizing_frequency" value="4">  High 
-                <input type="radio" name="fertilizing_frequency" value="2">  Very high <br/><br/>
+            <input type="number" class="form-control" name="fertilizing_frequency" value="{{ old('fertilizing_frequency') }}">
+
 
             </div>
             <h5>Picture of your plant </h5> <br/>

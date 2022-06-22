@@ -20,31 +20,12 @@
             <input type="text" class="form-control" name="species" value="{{ $plant->species }}"> <br/>
             <h4>Watering frequency required?</h4>
             <div class="text-left">
-                <input type="radio" name="watering_frequency"
-                       value="15" {{ ($plant->needs->watering_frequency==15)? "checked" : "" }} > Very low <br/>
-                <input type="radio" name="watering_frequency"
-                       value="10" {{ ($plant->needs->watering_frequency==10)? "checked" : "" }}> Low <br/>
-                <input type="radio" name="watering_frequency"
-                       value="6" {{ ($plant->needs->watering_frequency==6)? "checked" : "" }}> Moderate <br/>
-                <input type="radio" name="watering_frequency"
-                       value="4" {{ ($plant->needs->watering_frequency==4)? "checked" : "" }}> High <br/>
-                <input type="radio" name="watering_frequency"
-                       value="2" {{ ($plant->needs->watering_frequency==2)? "checked" : "" }}> Very high <br/> <br/>
+            <input type="number" class="form-control" name="watering_frequency" value="{{ $plant->needs->watering_frequency }}">
+
             </div>
 
             <h4>Fertilizing frequency required?</h4>
-
-                <input type="radio" name="fertilizing_frequency"
-                       value="15" {{ ($plant->fertilizing_frequency==15)? "checked" : "" }}> Very low <br/>
-                <input type="radio" name="fertilizing_frequency"
-                       value="10" {{ ($plant->fertilizing_frequency==10)? "checked" : "" }}> Low <br/>
-                <input type="radio" name="fertilizing_frequency"
-                       value="6" {{ ($plant->fertilizing_frequency==6)? "checked" : "" }}> Moderate <br/>
-                <input type="radio" name="fertilizing_frequency"
-                       value="4" {{ ($plant->fertilizing_frequency==4)? "checked" : "" }}> High <br/>
-                <input type="radio" name="fertilizing_frequency"
-                       value="2" {{ ($plant->fertilizing_frequency==2)? "checked" : "" }}> Very high <br/>
-
+            <input type="number" class="form-control" name="fertilizing_frequency" value="{{ $plant->needs->fertilizing_frequency }}">
 
             <h4>Picture of your plant </h4>
             <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"/> <br />
