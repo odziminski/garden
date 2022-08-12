@@ -9,8 +9,9 @@ use App\Models\History;
 use App\Models\Needs;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\File\File;
+use Illuminate\Support\Facades\Http;
+
 
 class PlantsController extends Controller
 {
@@ -78,24 +79,22 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-        // if ($request->has('webcamAvatar')) {
-        // dd($request->input());
-        // dd($request->webcamAvatar);
-        // }
+
         if ($request->webcamAvatar) {
             $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $plantIdData = self::identifyPlant($request->webcamAvatar, true);
         } else if ($request->hasFile('avatar')) {
+            $plantIdData = self::identifyPlant($request->file('avatar'), false);
 
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
-            // $uploadedFileUrl = $this->getTrefleData($request->input('species'));
-            if (!empty($uploadedFileUrl)) {
+            if (!empty($uploadedFileUrl)) 
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
-            } else {
+             else 
                 $uploadedFileUrl = asset("images/plant.png");
-            }
-        }
+         }
         try {
+            dd($plantIdData);
             $now = Carbon::now();
             $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
@@ -236,5 +235,37 @@ class PlantsController extends Controller
             true // Mark it as test, since the file isn't from real HTTP POST.
         );
         return $file;
+    }
+
+    public function identifyPlant($base64Image, $alreadyEncoded)
+    {
+        if (!$alreadyEncoded) {
+            $base64Image = base64_encode(file_get_contents($base64Image));
+        }
+        $params = [
+            "api_key" => env('PLANTID_API_KEY'),
+            "images" => [$base64Image],
+            "modifiers" => ["crops_simple", "similar_images"],
+            "plant_language" => "en",
+            "plant_details" => [
+                "common_names",
+                "url",
+                "name_authority",
+                "wiki_description",
+                "taxonomy",
+                "synonyms"
+            ]
+        ];
+        $apiURL = 'https://api.plant.id/v2/identify';
+
+
+        $header = [
+            "Content-Type" => "application/json"
+        ];
+
+        $response = Http::withHeaders($header)->post($apiURL, $params);
+        $responseBody = json_decode($response->getBody());
+
+        return ($responseBody);
     }
 }
