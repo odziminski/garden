@@ -7,7 +7,10 @@ use App\Http\Requests\StorePlantRequest;
 use App\Models\Plant;
 use App\Models\History;
 use App\Models\Needs;
-
+use Illuminate\Support\Str;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\File\File;
 
 class PlantsController extends Controller
 {
@@ -75,7 +78,14 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-        if ($request->hasFile('avatar')) {
+        // if ($request->has('webcamAvatar')) {
+        // dd($request->input());
+        // dd($request->webcamAvatar);
+        // }
+        if ($request->webcamAvatar) {
+            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
+        } else if ($request->hasFile('avatar')) {
+
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
             // $uploadedFileUrl = $this->getTrefleData($request->input('species'));
@@ -202,5 +212,29 @@ class PlantsController extends Controller
         //        } else {
         //            return $data = [];
         //        }
+    }
+
+    public function prepareWebcamAvatar($webcamImage)
+    {
+
+
+        // decode the base64 file
+        $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $webcamImage));
+
+        // save it to temporary dir first.
+        $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
+        file_put_contents($tmpFilePath, $fileData);
+
+        // this just to help us get file info.
+        $tmpFile = new File($tmpFilePath);
+
+        $file = new UploadedFile(
+            $tmpFile->getPathname(),
+            $tmpFile->getFilename(),
+            $tmpFile->getMimeType(),
+            0,
+            true // Mark it as test, since the file isn't from real HTTP POST.
+        );
+        return $file;
     }
 }
