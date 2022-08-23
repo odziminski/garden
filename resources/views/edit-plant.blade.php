@@ -27,9 +27,10 @@
               <h4>Fertilizing frequency required?</h4>
               <input type="number" class="form-control" name="fertilizing_frequency" value="{{ $plant->needs->fertilizing_frequency }}">
 
-              <h4>Picture of your plant </h4>
+               <!-- <h4>Picture of your plant </h4>
               <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" /> <br />
-              <input type="file" name="avatar" accept="image/png, image/jpeg"> <br /> <br />
+              <input type="file" name="avatar" accept="image/png, image/jpeg"> -->
+              <br /> <br />
               <input type="submit" value="Add"> <br />
 
        </form>
