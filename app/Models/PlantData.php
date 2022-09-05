@@ -11,12 +11,12 @@ class PlantData extends Model
     use HasFactory;
 
     protected $table = "plant_data";
-    
+
     public $primaryKey  = 'id';
     public $timestamps = false;
 
     protected $fillable = [
-        
+
             'plant_id',
             'plant_name',
             'common_name',
@@ -28,8 +28,11 @@ class PlantData extends Model
             'taxonomy_kingdom',
             'taxonomy_order',
             'taxonomy_phylum'
-        
+
     ];
 
-    
+    public function plant()
+    {
+        return $this->belongsTo(Plant::class);
+    }
 }

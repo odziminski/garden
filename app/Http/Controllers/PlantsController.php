@@ -46,7 +46,7 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-        $plant = Plant::with('history', 'needs')
+        $plant = Plant::with('history', 'needs', 'plantData')
             ->get()
             ->where('id', $id)
             ->first();
@@ -64,14 +64,12 @@ class PlantsController extends Controller
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
 
-            // $trefleData = $this->getTrefleData($plant->species);
             return view('plants')->with([
                 'plant' => $plant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
                 'lateForWatering' => $lateForWatering,
                 'lateForFertilizing' => $lateForFertilizing,
-                // 'trefleData' => $trefleData,
             ]);
         } else {
             return back();
@@ -172,7 +170,7 @@ class PlantsController extends Controller
 
     public function displayEditPlant($id)
     {
-        $plant = Plant::with('history', 'needs')
+        $plant = Plant::with('history', 'needs', 'plant_data')
             ->get()
             ->where('id', $id)
             ->first();
@@ -212,7 +210,7 @@ class PlantsController extends Controller
         Plant::find($id)->delete();
         Needs::where('plant_id', $id)->delete();
         History::where('plant_id', $id)->delete();
-
+        PlantData::where('plant_id', $id)->delete();
         return redirect()->route('browse');
     }
 

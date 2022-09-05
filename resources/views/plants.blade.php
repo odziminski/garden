@@ -1,22 +1,22 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <script type="text/javascript" charset="utf-8">
-    $(document).on('click', '#fertilizing', function(event) {
+    $(document).on('click', '#fertilizing', function (event) {
         event.preventDefault();
 
-        getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing','.nextFertilizing');
+        getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing', '.nextFertilizing');
 
     });
-    $(document).on('click', '#watering', function(event) {
+    $(document).on('click', '#watering', function (event) {
         event.preventDefault();
-        getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering','.nextWatering');
+        getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering', '.nextWatering');
 
     });
-    var getMessage = function(route, word, buttonClass, spanClass) {
+    let getMessage = function (route, word, buttonClass, spanClass) {
         $.ajax({
             type: 'GET',
             url: route,
-            success: function(data) {
+            success: function (data) {
                 $(spanClass).text(data);
                 $(buttonClass).fadeOut();
                 $('.alert').show()
@@ -30,69 +30,70 @@
 
 @section('content')
 
-@if (!Auth::guest())
+    @if (!Auth::guest())
+        @dd($plant);
+        <div class="container">
 
-<div class="container">
+            <div class="card-single-plant _alignCenter">
 
-    <div class="card-single-plant _alignCenter">
-
-        <h4>{{$plant->name}}</h4>
+                <h4>{{$plant->name}}</h4>
 
 
-        <h6 class="font-italic"> {{$plant->species}} </h6>
+                <h6 class="font-italic"> {{$plant->species}} </h6>
 
-        <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}" />
+                <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}"/>
 
-        <div class="_alignLeft m15">
+                <div class="_alignLeft m15">
 
-            <p>Next watering will be at <span class="nextWatering">{{$nextWatering}}</span></p>
-            <p>Next fertilizing will be at <span class="nextFertilizing">{{$nextFertilizing}}</span></p>
+                    <p>Next watering will be at <span class="nextWatering">{{$nextWatering}}</span></p>
+                    <p>Next fertilizing will be at <span class="nextFertilizing">{{$nextFertilizing}}</span></p>
+                </div>
+
+                <div class="alert alert-custom" hidden>
+                    <strong>Success!</strong>
+                </div>
+                <div class="buttons">
+                    @if ($plant->needs->need_watering)
+                        <div class="needs">
+                            <button class="button-white" id="watering" style="text-decoration: none; color:#333C1C">
+                                HYDRATE</a>
+                            </button>
+                        </div>
+                    @else
+                        <button class="display-none">Water
+                            <a href="#"></a>
+                        </button>
+                    @endif
+                    @if ($plant->needs->need_fertilizing)
+                        <div class="needs">
+                            <button class="button-white" id="fertilizing" style="text-decoration: none; color:#333C1C">
+                                FERTILIZE
+                            </button>
+                        </div>
+                    @else
+                        <button class="display-none">Fertilize
+                            <a href="#"></a>
+                        </button> <br/>
+                    @endif
+
+                    <br/>
+                    <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">
+                        <button>Edit</button>
+                    </a>
+
+                    <button onclick="openmodal('myModal')">Delete</button>
+                </div>
+                <div id="myModal" class="modalbox-modal ">
+                    <div class="modalbox-modal-content">
+                        <span class="-close" id="modalbox-close">✖</span>
+                        <p>Are you sure you want to delete <span class="font-weight-bold">{{$plant->name}}</span>?<br/>
+                            <a href="{{ route('deletePlant',['id' => $plant->id]) }}" class="_box _pink">Delete</a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="alert alert-custom" hidden>
-                <strong>Success!</strong>
-            </div>
-        <div class="buttons">
-            @if ($plant->needs->need_watering)
-            <div class="needs">
-                <button class="button-white" id="watering" style="text-decoration: none; color:#333C1C">HYDRATE</a>
-                </button>
-            </div>
-            @else
-            <button class="display-none">Water
-                <a href="#"></a>
-            </button>
-            @endif
-            @if ($plant->needs->need_fertilizing)
-            <div class="needs">
-                <button class="button-white" id="fertilizing" style="text-decoration: none; color:#333C1C">FERTILIZE</a>
-                </button>
-            </div>
-            @else
-            <button class="display-none">Fertilize
-                <a href="#"></a>
-            </button> <br />
-            @endif
-            
-            <br />
-            <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">
-                <button>Edit</button>
-            </a>
-
-            <button onclick="openmodal('myModal')">Delete</button>
-        </div>
-        <div id="myModal" class="modalbox-modal ">
-            <div class="modalbox-modal-content">
-                <span class="-close" id="modalbox-close">✖</span>
-                <p>Are you sure you want to delete <span class="font-weight-bold">{{$plant->name}}</span>?<br />
-                    <a href="{{ route('deletePlant',['id' => $plant->id]) }}" class="_box _pink">Delete</a>
-                </p>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-
-@endif
+    @endif
 @endsection
