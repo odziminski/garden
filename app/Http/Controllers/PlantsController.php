@@ -20,7 +20,6 @@ class PlantsController extends Controller
     protected $dates = ['created_at'];
 
 
-
     public function getRandomPlant()
     {
         $randomPlant = Plant::where('user_id', auth()->id())
@@ -81,20 +80,20 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-
+        $noImage = false;
         if ($request->webcamAvatar) {
             $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
             $plantIdData = self::identifyPlant($request->webcamAvatar, true);
         } else if ($request->hasFile('avatar')) {
             $plantIdData = self::identifyPlant($request->file('avatar'), false);
-            // dd($plantIdData);
-
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
             if (!empty($uploadedFileUrl))
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
-            else
+            else {
                 $uploadedFileUrl = asset("images/plant.png");
+                $noImage = true;
+            }
         }
 
         try {
@@ -118,19 +117,21 @@ class PlantsController extends Controller
                 'watering_frequency' => $request->input('watering_frequency'),
                 'fertilizing_frequency' => $request->input('fertilizing_frequency')
             ]);
-            PlantData::create([
-                'plant_id' => $plant->id,
-                'plant_name' => $plantIdData->plant_name,
-                'common_name' => $plantIdData->common_name,
-                'wikipedia_url' => $plantIdData->wikipedia_url,
-                'wikipedia_description' => $plantIdData->wikipedia_description,
-                'taxonomy_class' => $plantIdData->taxonomy_class,
-                'taxonomy_family' => $plantIdData->taxonomy_family,
-                'taxonomy_genus' => $plantIdData->taxonomy_genus,
-                'taxonomy_kingdom' => $plantIdData->taxonomy_kingdom,
-                'taxonomy_order' => $plantIdData->taxonomy_order,
-                'taxonomy_phylum' => $plantIdData->taxonomy_phylum,
-            ]);
+            if (!$noImage) {
+                PlantData::create([
+                    'plant_id' => $plant->id,
+                    'plant_name' => $plantIdData->plant_name,
+                    'common_name' => $plantIdData->common_name,
+                    'wikipedia_url' => $plantIdData->wikipedia_url,
+                    'wikipedia_description' => $plantIdData->wikipedia_description,
+                    'taxonomy_class' => $plantIdData->taxonomy_class,
+                    'taxonomy_family' => $plantIdData->taxonomy_family,
+                    'taxonomy_genus' => $plantIdData->taxonomy_genus,
+                    'taxonomy_kingdom' => $plantIdData->taxonomy_kingdom,
+                    'taxonomy_order' => $plantIdData->taxonomy_order,
+                    'taxonomy_phylum' => $plantIdData->taxonomy_phylum,
+                ]);
+            }
         } catch (QueryException $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
@@ -169,7 +170,6 @@ class PlantsController extends Controller
     }
 
 
-
     public function displayEditPlant($id)
     {
         $plant = Plant::with('history', 'needs')
@@ -192,7 +192,7 @@ class PlantsController extends Controller
         }
 
         try {
-            $plant = Plant::findOrFail($id)
+            Plant::findOrFail($id)
                 ->update([
                     'avatar' => $uploadedFileUrl,
                     'name' => $request->input('name'),
@@ -263,19 +263,19 @@ class PlantsController extends Controller
                 "synonyms"
             ]
         ];
-       
+
         $response = Http::withHeaders($header)->post($apiURL, $params);
         $responseBody = json_decode($response->getBody());
-        
+
         return (object)([
             'plant_name' => $responseBody->suggestions[0]->plant_name,
             'common_name' => $responseBody->suggestions[0]->plant_details->common_names[0],
             'taxonomy_class' => $responseBody->suggestions[0]->plant_details->taxonomy->class,
-            'taxonomy_family' =>  $responseBody->suggestions[0]->plant_details->taxonomy->family,
-            'taxonomy_genus' =>  $responseBody->suggestions[0]->plant_details->taxonomy->genus,
-            'taxonomy_kingdom' =>  $responseBody->suggestions[0]->plant_details->taxonomy->kingdom,
-            'taxonomy_order' =>  $responseBody->suggestions[0]->plant_details->taxonomy->order,
-            'taxonomy_phylum' =>  $responseBody->suggestions[0]->plant_details->taxonomy->phylum,
+            'taxonomy_family' => $responseBody->suggestions[0]->plant_details->taxonomy->family,
+            'taxonomy_genus' => $responseBody->suggestions[0]->plant_details->taxonomy->genus,
+            'taxonomy_kingdom' => $responseBody->suggestions[0]->plant_details->taxonomy->kingdom,
+            'taxonomy_order' => $responseBody->suggestions[0]->plant_details->taxonomy->order,
+            'taxonomy_phylum' => $responseBody->suggestions[0]->plant_details->taxonomy->phylum,
             'wikipedia_url' => $responseBody->suggestions[0]->plant_details->url,
             'wikipedia_description' => $responseBody->suggestions[0]->plant_details->wiki_description->value,
         ]);

@@ -17,7 +17,7 @@
         </div>
         @endif
         <h5>Name of your plant</h5>
-        <input type="text" name="name" id="name" value="{{ old('name') }}" id="name"> </br>
+        <input type="text" name="name" id="name" value="{{ old('name') }}"> <br />
         <button type="button" onclick="generateName()">Randomize name</button><br />
         <h5>What's the species of your plant?</h5>
         <input type="text" name="species" value="{{ old('species') }}" id="species">
@@ -56,9 +56,8 @@
 
     </form>
 </div>
-</div>
 
-<script language="JavaScript">
+<script>
     function startWebcam() {
         Webcam.set({
             width: 490,
