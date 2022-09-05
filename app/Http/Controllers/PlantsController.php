@@ -7,16 +7,17 @@ use App\Http\Requests\StorePlantRequest;
 use App\Models\Plant;
 use App\Models\History;
 use App\Models\Needs;
+use App\Models\PlantData;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\File\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Database\QueryException;
 
 
 class PlantsController extends Controller
 {
     protected $dates = ['created_at'];
-
 
 
     public function getRandomPlant()
@@ -45,7 +46,7 @@ class PlantsController extends Controller
 
     public function displaySinglePlant($id)
     {
-        $plant = Plant::with('history', 'needs')
+        $plant = Plant::with('history', 'needs', 'plantData')
             ->get()
             ->where('id', $id)
             ->first();
@@ -63,14 +64,12 @@ class PlantsController extends Controller
             $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
 
-            // $trefleData = $this->getTrefleData($plant->species);
             return view('plants')->with([
                 'plant' => $plant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
                 'lateForWatering' => $lateForWatering,
                 'lateForFertilizing' => $lateForFertilizing,
-                // 'trefleData' => $trefleData,
             ]);
         } else {
             return back();
@@ -79,22 +78,23 @@ class PlantsController extends Controller
 
     public function store(StorePlantRequest $request)
     {
-
+        $noImage = false;
         if ($request->webcamAvatar) {
             $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
             $plantIdData = self::identifyPlant($request->webcamAvatar, true);
         } else if ($request->hasFile('avatar')) {
             $plantIdData = self::identifyPlant($request->file('avatar'), false);
-
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
-            if (!empty($uploadedFileUrl)) 
+            if (!empty($uploadedFileUrl))
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
-             else 
+            else {
                 $uploadedFileUrl = asset("images/plant.png");
-         }
+                $noImage = true;
+            }
+        }
+
         try {
-            dd($plantIdData);
             $now = Carbon::now();
             $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
@@ -104,18 +104,33 @@ class PlantsController extends Controller
                 'created_at' => $now,
 
             ]);
-            $history = History::create([
+            History::create([
                 'plant_id' => $plant->id,
                 'watered_at' => $now,
                 'fertilized_at' => $now
             ]);
 
-            $needs = Needs::create([
+            Needs::create([
                 'plant_id' => $plant->id,
                 'watering_frequency' => $request->input('watering_frequency'),
                 'fertilizing_frequency' => $request->input('fertilizing_frequency')
             ]);
-        } catch (\Exception $e) {
+            if (!$noImage) {
+                PlantData::create([
+                    'plant_id' => $plant->id,
+                    'plant_name' => $plantIdData->plant_name,
+                    'common_name' => $plantIdData->common_name,
+                    'wikipedia_url' => $plantIdData->wikipedia_url,
+                    'wikipedia_description' => $plantIdData->wikipedia_description,
+                    'taxonomy_class' => $plantIdData->taxonomy_class,
+                    'taxonomy_family' => $plantIdData->taxonomy_family,
+                    'taxonomy_genus' => $plantIdData->taxonomy_genus,
+                    'taxonomy_kingdom' => $plantIdData->taxonomy_kingdom,
+                    'taxonomy_order' => $plantIdData->taxonomy_order,
+                    'taxonomy_phylum' => $plantIdData->taxonomy_phylum,
+                ]);
+            }
+        } catch (QueryException $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
         }
@@ -153,10 +168,9 @@ class PlantsController extends Controller
     }
 
 
-
     public function displayEditPlant($id)
     {
-        $plant = Plant::with('history', 'needs')
+        $plant = Plant::with('history', 'needs', 'plant_data')
             ->get()
             ->where('id', $id)
             ->first();
@@ -176,7 +190,7 @@ class PlantsController extends Controller
         }
 
         try {
-            $plant = Plant::findOrFail($id)
+            Plant::findOrFail($id)
                 ->update([
                     'avatar' => $uploadedFileUrl,
                     'name' => $request->input('name'),
@@ -196,35 +210,18 @@ class PlantsController extends Controller
         Plant::find($id)->delete();
         Needs::where('plant_id', $id)->delete();
         History::where('plant_id', $id)->delete();
-
+        PlantData::where('plant_id', $id)->delete();
         return redirect()->route('browse');
     }
 
-    public function getTrefleData($species)
-    {
-        $species = rawurlencode($species);
-        $token = env('TREFLE_TOKEN');
-
-        //$response = Http::get('https://trefle.io/api/v1/species/search?token='.$token.'&q='.$species)->json();
-        //        if ($response) {
-        //            return $data = $response['data'][0];
-        //        } else {
-        //            return $data = [];
-        //        }
-    }
 
     public function prepareWebcamAvatar($webcamImage)
     {
-
-
-        // decode the base64 file
         $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $webcamImage));
 
-        // save it to temporary dir first.
         $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
         file_put_contents($tmpFilePath, $fileData);
 
-        // this just to help us get file info.
         $tmpFile = new File($tmpFilePath);
 
         $file = new UploadedFile(
@@ -232,7 +229,7 @@ class PlantsController extends Controller
             $tmpFile->getFilename(),
             $tmpFile->getMimeType(),
             0,
-            true // Mark it as test, since the file isn't from real HTTP POST.
+            true
         );
         return $file;
     }
@@ -242,6 +239,14 @@ class PlantsController extends Controller
         if (!$alreadyEncoded) {
             $base64Image = base64_encode(file_get_contents($base64Image));
         }
+
+        $apiURL = 'https://api.plant.id/v2/identify';
+
+
+        $header = [
+            "Content-Type" => "application/json"
+        ];
+
         $params = [
             "api_key" => env('PLANTID_API_KEY'),
             "images" => [$base64Image],
@@ -256,16 +261,21 @@ class PlantsController extends Controller
                 "synonyms"
             ]
         ];
-        $apiURL = 'https://api.plant.id/v2/identify';
-
-
-        $header = [
-            "Content-Type" => "application/json"
-        ];
 
         $response = Http::withHeaders($header)->post($apiURL, $params);
         $responseBody = json_decode($response->getBody());
 
-        return ($responseBody);
+        return (object)([
+            'plant_name' => $responseBody->suggestions[0]->plant_name,
+            'common_name' => $responseBody->suggestions[0]->plant_details->common_names[0],
+            'taxonomy_class' => $responseBody->suggestions[0]->plant_details->taxonomy->class,
+            'taxonomy_family' => $responseBody->suggestions[0]->plant_details->taxonomy->family,
+            'taxonomy_genus' => $responseBody->suggestions[0]->plant_details->taxonomy->genus,
+            'taxonomy_kingdom' => $responseBody->suggestions[0]->plant_details->taxonomy->kingdom,
+            'taxonomy_order' => $responseBody->suggestions[0]->plant_details->taxonomy->order,
+            'taxonomy_phylum' => $responseBody->suggestions[0]->plant_details->taxonomy->phylum,
+            'wikipedia_url' => $responseBody->suggestions[0]->plant_details->url,
+            'wikipedia_description' => $responseBody->suggestions[0]->plant_details->wiki_description->value,
+        ]);
     }
 }

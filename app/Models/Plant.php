@@ -45,6 +45,10 @@ class Plant extends Model
     {
         return $this->hasOne(History::class);
     }
+    public function plantData()
+    {
+        return $this->hasOne(PlantData::class);
+    }
 
     public static function getDateForHumans($date): string
     {
