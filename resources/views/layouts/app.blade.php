@@ -15,40 +15,13 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
 </head>
 <body>
-{{--<nav>--}}
-{{--    <ul class="topnav" id="myTopnav2">--}}
-{{--        <li class="navbar-items-center text-black">--}}
-{{--            <a class="brand text-black" href="{{route('welcome')}}">bloomify</a></li>--}}
-{{--        @auth--}}
-{{--            <li class="navbar-items-right text-black">--}}
-{{--                <a href="{{route('users')}}">Hello, gardener!</a>--}}
-{{--            <li class="navbar-items-right ">--}}
-{{--                <a href="{{route('add-plant')}}" class="text-black">Add a plant</a></li>--}}
-{{--            <li class="navbar-items-right text-black">--}}
-{{--                <a href="{{route('browse')}}" class="text-black">Your garden</a></li>--}}
-
-
-{{--        @endauth--}}
-{{--        <li class="-icon">--}}
-{{--            <a href="javascript:void(0);" onclick="topnav('myTopnav2')">☰</a>--}}
-{{--        @guest--}}
-{{--            <li class="navbar-items-right text-black">--}}
-{{--                <a href="{{route('register')}}" class="text-black">Register</a></li>--}}
-{{--            <li class="navbar-items-right text-black">--}}
-{{--                <a href="{{route('login')}}" class="text-black">Login</a></li>--}}
-
-
-{{--            @endguest--}}
-{{--            </li>--}}
-{{--    </ul>--}}
-{{--</nav>--}}
-
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{route('welcome')}}">bloomify</a>
+        <a class="navbar-brand brand" href="{{route('welcome')}}">bloomify</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -92,4 +65,3 @@
 <main class="py-4">
     @yield('content')
 </main>
-</html>

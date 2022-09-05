@@ -56,7 +56,7 @@
                     @if ($plant->needs->need_watering)
                         <div class="needs">
                             <button class="button-white" id="watering" style="text-decoration: none; color:#333C1C">
-                                HYDRATE</a>
+                                HYDRATE
                             </button>
                         </div>
                     @else
