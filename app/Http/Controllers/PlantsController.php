@@ -22,10 +22,16 @@ class PlantsController extends Controller
 
     public function getRandomPlant()
     {
-        $randomPlant = Plant::where('user_id', auth()->id())
-            ->inRandomOrder()
+//        $randomPlant = Plant::where('user_id', auth()->id())
+//            ->inRandomOrder()
+//            ->get()
+//            ->first();
+
+        $randomPlant = Plant::with('history', 'needs', 'plantData')
             ->get()
+            ->where('id', 741)
             ->first();
+//        dd($randomPlant);
 
         if ($randomPlant) {
             $randomPlant->watered_at = Plant::getDateForHumans($randomPlant->watered_at);
