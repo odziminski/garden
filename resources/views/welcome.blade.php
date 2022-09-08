@@ -10,6 +10,15 @@
         }
     </style>
     <body>
+    <?php
+    if (!Auth::check()){
+        $plant->name = 'Sweet boo';
+        $plant->plantData->plant_name = 'monstera deliciosa';
+        $nextWatering = '3 days from now';
+        $nextFertilizing = '15 days from now';
+    }
+    ?>
+
     <div class="container-fluid text-center">
         <div class="row content">
             <div class="col">
@@ -17,30 +26,39 @@
                     <div class="mt-1">
                         <h2 class="heading">Flower care 🌼</h2><br><h5>Track your watering, fertilization and love for
                             all of your plants.<br/> Get notified when they require your care. </h5>
-                        <div class="">
-
-                        </div>
+                        <div class=""></div>
                     </div>
                 </div>
-                <div class="card p-3 mb-2">
+
+                <div class="card p-3 mb-2 mr-5">
                     <div class="d-flex justify-content-between">
                         <div class="d-flex flex-row align-items-center">
                         </div>
                     </div>
                     <div class="mt-2">
-                        <h4 class="heading">{{$plant->name}} is a <br>{{$plant->plantData->plant_name}}</h4>
-                        <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
-                             class="plant_image_card">
+                        <h4 class="heading">
+                                {{$plant->name}} is a <br>{{$plant->plantData->plant_name}}
+                            </h4>
+
+                        @auth
+                            <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
+                                 class="plant_image_card">
+                        @endauth @guest
+                            <img src="{{asset('images/monstera.png')}}">
+                        @endguest
+
                         <div class="d-flex flex-row align-items-end">
                         </div>
                         is happy on average, but if you miss one day, it'll be sad <br/> <br/>
-                        watering in: {{$nextWatering}}
+                        watering in:
+                            {{$nextWatering}}
                         <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50"
                                      aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
-                            fertilizing in: {{$nextFertilizing}}
+                            fertilizing in:
+                                {{$nextFertilizing}}
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="75"
                                      aria-valuemin="75" aria-valuemax="100"></div>
@@ -1412,6 +1430,7 @@
                           fill="#333C1C"/>
                 </svg>
             </div>
+
             <div class="text-left">
 
                 <div class="col">
@@ -1422,11 +1441,6 @@
         </div>
     </div>
 
-    {{--    <footer class="container-fluid text-center">--}}
-    {{--        <p>Footer Text</p>--}}
-    {{--    </footer>--}}
-
     </body>
 
-    {{--    @endauth--}}
 @endsection
