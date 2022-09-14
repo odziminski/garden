@@ -53,3 +53,100 @@
     max-width: 200px;
     max-height: 200px;
 }
+
+/* your CSS goes here*/
+body {
+    background: #eee
+}
+
+#regForm {
+    background-color: #ffffff;
+    font-family: Raleway;
+    padding: 40px;
+    border-radius: 10px;
+}
+
+h1 {
+    text-align: center
+}
+
+input {
+    padding: 10px;
+    width: 100%;
+    font-size: 17px;
+    font-family: Raleway;
+    border: 1px solid #aaaaaa
+}
+
+input.invalid {
+    background-color: #ffdddd
+}
+
+.tab {
+    display: none
+}
+
+button, input[type="file"],input[type="submit"]{
+    border-radius: 8px;
+    background-color: darkgreen;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 17px;
+    font-family: Raleway;
+    cursor: pointer
+}
+
+button:hover {
+    opacity: 0.8
+}
+
+
+
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+/* Hide the browser's default radio button */
+
+.container input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
+/* Create a custom radio button */
+
+
+
+
+.custom-file-input{
+    opacity: 0;
+    width: 0.1px;
+    height: 0.1px;
+    position: absolute;
+}
+.file-input label {
+    display: block;
+    position: relative;
+    width: 200px;
+    height: 50px;
+    background-color: darkgreen;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 17px;
+    font-family: Raleway;
+    cursor: pointer
+}

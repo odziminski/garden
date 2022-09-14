@@ -106,7 +106,6 @@ class PlantsController extends Controller
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
-                'species' => $request->input('species'),
                 'created_at' => $now,
 
             ]);

@@ -30,7 +30,6 @@ class StorePlantRequest extends FormRequest
     {
         return [
             'name' => 'required|min:3|max:64',
-            'species' => 'required|min:2',
              'watering_frequency' => 'required',
             'fertilizing_frequency' => 'required'
         ];

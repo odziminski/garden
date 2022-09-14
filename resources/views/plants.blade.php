@@ -31,7 +31,6 @@
 @section('content')
 
     @if (!Auth::guest())
-        @dd($plant);
         <div class="container">
 
             <div class="card-single-plant _alignCenter">
