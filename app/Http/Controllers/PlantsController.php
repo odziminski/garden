@@ -150,11 +150,10 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $plants = Plant::with('history', 'needs')
+        $plants = Plant::with('history', 'needs','plantData')
             ->get()
             ->where('user_id', auth()->id())
             ->sortByDesc('history.watered_at');
-
         foreach ($plants as $plant) {
             if (isset($plant->history->watered_at)) {
                 $plant->watered_at = Plant::getDateForHumans($plant->history->watered_at);

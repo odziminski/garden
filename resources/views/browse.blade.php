@@ -4,33 +4,38 @@
 @section('content')
 
     @auth
-        @if (count($plants) == 0)
-            <div class="no_plants_added_yet">
-                <h1>No plants added yet 😔</h1>
-                <a href="{{route('add-plant')}}"><h2>add your first plant</h2></a>
-            </div>
-        @else
-            <div class="parent">
+        <div class="container mx-auto mt-4">
+            <div class="row">
                 @foreach ($plants as $plant)
+                    <div class="col-md-3">
+                        <div class="card" style="width: 14rem;">
+                            <a href="{{ URL::to('plants/' . $plant->id) }}">
+                                <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
+                                     class="card-img-top"/> </a>
+                            <div class="card-body">
+                                <h5 class="card-title">{{$plant->name}}</h5>
+                                <hr/>
+                                {{--                                @if (isset($plant->plantData->plant_name)) <h6 class="card-subtitle mb-2 text-muted">--}}
+                                {{--                                        {{$plant->plantData->plant_name}}--}}
+                                {{--                               </h6>--}}
+                                {{--                                @endif--}}
+                                {{--                                <hr />--}}
 
-                    <div class="card">
-                        <a href="{{ URL::to('plants/' . $plant->id) }}">
-                            <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" class="img-card"/> </a>
-                        @if ($plant->need_watering || $plant->need_fertilizing)
-                            <span class="red-dot-notification">!</span>
-                        @endif
-                        <div class="card-content">
-                            <h4 class="card-title">{{$plant->name}}</h4>
-                            <div class="card-text">
-                                Last watered: {{$plant->watered_at}} <br/>
-                                Last fertilized: {{$plant->fertilized_at}}
+                                {{--                                <p class="card-text">--}}
+                                {{--                                    @if ($plant->watered_at === $plant->fertilized_at)--}}
+                                {{--                                        Last time you took care of it: {{$plant->watered_at}} </p>--}}
+                                {{--                                    @else--}}
+                                {{--                                    Last time watered: {{$plant->watered_at}} <br/>--}}
+                                {{--                                    Last time fertilized: {{$plant->fertilized_at}}</p>--}}
+                                {{--                                @endif--}}
+                                <a href="#" class="btn ">Watered</a>
+                                <a href="#" class="btn "> Fertilized</a>
                             </div>
                         </div>
                     </div>
                 @endforeach
             </div>
-            </div>
-        @endif
+        </div>
 
     @endauth
 

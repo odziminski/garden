@@ -21,22 +21,40 @@
                             </ul>
                         </div>
                     @endif
+
                     <label class="container">
-                        <input type="file" name="avatar" accept="image/png, image/jpeg" class="custom-file-input">
-                        Upload a photo of your plant
-                        <input id="file-upload" type="file"/>
+                        <h5>Plant name </h5>
 
-                        <br/>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" aria-describedby="basic-addon2" name="name"
+                                   id="name"
+                                   value="{{ old('name') }}" placeholder="How do you call your plant?">
+                            <div class="input-group-append">
+                                <button onclick="generateName()" class="btn btn-outline-secondary" type="button">↻
+                                    Random
+                                </button>
+                            </div>
+                        </div>
+                        <hr/>
 
-                        <span class="checkmark"></span>
-                    </label>
-                    <label class="container">Take a webcam snapshot <br/>
-                        <button type="button" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal" onClick="startWebcam()">
-                            Open a webcam
-                            <span class="checkmark"></span>
 
-                        </button>
+                        <h5>Plant photo:</h5>
+                        <label class="container">
+                            <button type="button" data-bs-toggle="modal"
+                                    data-bs-target="#exampleModal" onClick="startWebcam()">
+                                Open a webcam
+                                <span class="checkmark"></span>
+
+                            </button>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <div class="field upload">
+                                    <label>Choose file</label>
+                                    <input type="file" name="avatar" accept="image/png, image/jpeg">
+                                </div>
+
+                                <span class="checkmark"></span>
+                            </div>
+                        </label>
 
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -80,23 +98,20 @@
                                 <span class="checkmark"></span>
                             </div>
                         </div>
-                    </label>
-                    <hr/>
+                        <hr/>
 
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" aria-describedby="basic-addon2" name="name" id="name"
-                               value="{{ old('name') }}" placeholder="How do you call your plant?">
-                        <div class="input-group-append">
-                            <button onclick="generateName()" type="button">Randomize</button>
-                        </div>
-                    </div>
-                    <hr/>
-                    <input type="number" class="form-control" name="watering_frequency"
-                           value="{{ old('watering_frequency') }}" placeholder="Watering frequency (interval in days)">
-                    <input type="number" class="form-control" name="fertilizing_frequency"
-                           value="{{ old('fertilizing_frequency') }}"
-                           placeholder="Fertilizing frequency (interval in days)"> <br/>
-                    <input type="submit" value="Submit">
+                        <h5>How often do you water it? (in days):</h5>
+                        <input type="number" class="form-control" name="watering_frequency"
+                               value="{{ old('watering_frequency') }}"
+                               placeholder="Days"> <br/>
+                        <h5>How often do you fertilize it?  (in days):</h5>
+
+                        <input type="number" class="form-control" name="fertilizing_frequency"
+                               value="{{ old('fertilizing_frequency') }}"
+                               placeholder="Days"> <br/>
+                        <input type="submit" value="Submit">
+                    </label>
+
                 </form>
             </div>
         </div>

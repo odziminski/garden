@@ -44,7 +44,7 @@
                             <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
                                  class="plant_image_card">
                         @endauth @guest
-                            <img src="{{asset('images/monstera.png')}}">
+                            <img src="{{asset('images/plant.png')}}">
                         @endguest
 
                         <div class="d-flex flex-row align-items-end">
