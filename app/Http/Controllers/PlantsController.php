@@ -150,7 +150,7 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $plants = Plant::with('history', 'needs','plantData')
+        $plants = Plant::with('history', 'needs', 'plantData')
             ->get()
             ->where('user_id', auth()->id())
             ->sortByDesc('history.watered_at');
@@ -163,12 +163,21 @@ class PlantsController extends Controller
             }
             if (isset($plant->needs->need_watering)) {
                 $plant->need_watering = $plant->needs->need_watering;
+                $nextWatering = Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->diffForHumans();
+
             }
             if (isset($plant->needs->need_fertilizing)) {
                 $plant->need_fertilizing = $plant->needs->need_fertilizing;
+                $nextFertilizing = Plant::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency)->diffForHumans();
+
             }
         }
-        return view('browse')->with('plants', $plants);
+//        return view('browse')->with('plants', [$plants,$nextWatering,$nextFertilizing]);
+        return view('browse')->with([
+            'plants' => $plants,
+            'nextWatering' => $nextWatering,
+            'nextFertilizing' => $nextFertilizing,
+        ]);
     }
 
 
