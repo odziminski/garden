@@ -183,7 +183,7 @@ class PlantsController extends Controller
 
     public function displayEditPlant($id)
     {
-        $plant = Plant::with('history', 'needs', 'plant_data')
+        $plant = Plant::with('history', 'needs')
             ->get()
             ->where('id', $id)
             ->first();
@@ -257,7 +257,7 @@ class PlantsController extends Controller
 
 
         $header = [
-            "Content-Type" => "application/json"
+            "Content-Type" => "application/json",
         ];
 
         $params = [

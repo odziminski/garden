@@ -33,6 +33,6 @@ class PlantData extends Model
 
     public function plant()
     {
-        return $this->belongsTo(Plant::class);
+        return $this->belongsTo(Plant::class,'plant_id');
     }
 }
