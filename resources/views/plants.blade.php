@@ -34,68 +34,7 @@
 @section('content')
 
     @if (!Auth::guest())
-        {{--        <div class="container">--}}
 
-        {{--            <div class="card-single-plant _alignCenter">--}}
-
-        {{--                <h4>{{$plant->name}}</h4>--}}
-
-
-        {{--                <h6 class="font-italic"> {{$plant->species}} </h6>--}}
-
-        {{--                <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}"/>--}}
-
-        {{--                <div class="_alignLeft m15">--}}
-
-        {{--                    <p>Next watering will be at <span class="nextWatering">{{$nextWatering}}</span></p>--}}
-        {{--                    <p>Next fertilizing will be at <span class="nextFertilizing">{{$nextFertilizing}}</span></p>--}}
-        {{--                </div>--}}
-
-        {{--                <div class="alert alert-custom" hidden>--}}
-        {{--                    <strong>Success!</strong>--}}
-        {{--                </div>--}}
-        {{--                <div class="buttons">--}}
-        {{--                    @if ($plant->needs->need_watering)--}}
-        {{--                        <div class="needs">--}}
-        {{--                            <button class="button-white" id="watering" style="text-decoration: none; color:#333C1C">--}}
-        {{--                                HYDRATE--}}
-        {{--                            </button>--}}
-        {{--                        </div>--}}
-        {{--                    @else--}}
-        {{--                        <button class="display-none">Water--}}
-        {{--                            <a href="#"></a>--}}
-        {{--                        </button>--}}
-        {{--                    @endif--}}
-        {{--                    @if ($plant->needs->need_fertilizing)--}}
-        {{--                        <div class="needs">--}}
-        {{--                            <button class="button-white" id="fertilizing" style="text-decoration: none; color:#333C1C">--}}
-        {{--                                FERTILIZE--}}
-        {{--                            </button>--}}
-        {{--                        </div>--}}
-        {{--                    @else--}}
-        {{--                        <button class="display-none">Fertilize--}}
-        {{--                            <a href="#"></a>--}}
-        {{--                        </button> <br/>--}}
-        {{--                    @endif--}}
-
-        {{--                    <br/>--}}
-        {{--                    <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">--}}
-        {{--                        <button>Edit</button>--}}
-        {{--                    </a>--}}
-
-        {{--                    <button onclick="openmodal('myModal')">Delete</button>--}}
-        {{--                </div>--}}
-        {{--                <div id="myModal" class="modalbox-modal ">--}}
-        {{--                    <div class="modalbox-modal-content">--}}
-        {{--                        <span class="-close" id="modalbox-close">✖</span>--}}
-        {{--                        <p>Are you sure you want to delete <span class="font-weight-bold">{{$plant->name}}</span>?<br/>--}}
-        {{--                            <a href="{{ route('deletePlant',['id' => $plant->id]) }}" class="_box _pink">Delete</a>--}}
-        {{--                        </p>--}}
-
-        {{--                    </div>--}}
-        {{--                </div>--}}
-        {{--            </div>--}}
-        {{--        </div>--}}
         <div class="container mt-5">
             <div class="row d-flex justify-content-center align-items-center">
                 <div class="col-md-6">
@@ -137,13 +76,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    {{--                                    <?php--}}
-                                    {{--                                    echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 200));--}}
-                                    {{--                                    ?>--}}
-                                    {{--                                    ... <a href="{{$plant->plantData->wikipedia_url}}" target="_blank">read more</a>--}}
-
-                                </h6>
                             @endif
                             <hr/>
 
@@ -156,12 +88,13 @@
                                         @if ($plant->plantData->wikipedia_description && $plant->plantData->wikipedia_url)
 
                                             <?php
-                                            echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 100));
+                                            echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 250));
                                             ?>
                                             ... <a href="{{$plant->plantData->wikipedia_url}}" target="_blank">Read
                                                 more</a>
-                                            @endif
+                                        @endif
                                     </h6>
+                                    <br/>
                                     <h5>Taxonomy</h5>
                                     <h6><em>{{$plant->plantData->taxonomy_kingdom}}
                                             ➤ {{$plant->plantData->taxonomy_phylum}}
@@ -170,23 +103,44 @@
                                             ➤ {{$plant->plantData->taxonomy_family}}
                                             ➤ {{$plant->plantData->taxonomy_genus}}
                                             ➤ {{$plant->plantData->plant_name}}</em></h6>
-
-
-                                    {{--                            Next watering should be at : {{$nextWatering}} <br />--}}
-                                    {{--                            Next fertilizing should be at : {{$nextFertilizing}}<br/>--}}
                                 </div>
-                                <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}"><h6
-                                        style="display: inline">Edit</h6></a>
-                                <a href="#"><h6 style="display: inline">Delete</h6></a>
-                            @else
-                                <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}"><h6
-                                        style="display: inline">Edit</h6></a>
-                                <a href="#"><h6 style="display: inline">Delete</h6></a>
-                                <h6> Next watering should be at: {{$nextWatering}}</h6>
-                                <h6> Next fertilizing should be at: {{$nextFertilizing}}</h6>
+                                <br/>
                             @endif
+                            <h6> Next watering should be at: {{$nextWatering}}</h6>
+                            <h6> Next fertilizing should be at: {{$nextFertilizing}}</h6>
+                            <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}" role="button">Edit</a>
+                            <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
 
+                            <!-- First modal dialog -->
+                            <div class="modal fade" id="modal" aria-hidden="true" aria-labelledby="..." tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        ...
+                                        <div class="modal-footer">
+                                            <!-- Toogle to second dialog -->
+                                            <button class="btn btn-primary" data-bs-target="#modal2"
+                                                    data-bs-toggle="modal" data-bs-dismiss="modal">Open #modal2
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Second modal dialog -->
+                            <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="..." tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        ...
+                                        <div class="modal-footer">
+                                            <!-- Toogle to first dialog, `data-bs-dismiss` attribute can be omitted - clicking on link will close dialog anyway -->
+                                            <a class="btn btn-primary" href="#modal" data-bs-toggle="modal"
+                                               role="button">Open #modal</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+
                         <div class="card-footer text-muted">
                             @if($plant->needs->need_watering)
                                 <button class="btn " id="watering" style="width:49%"> Watered</button>
