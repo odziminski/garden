@@ -60,7 +60,7 @@
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                                    <h5 class="modal-title" id="exampleModalLabel"></h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                             aria-label="Close"></button>
                                                 </div>
@@ -76,68 +76,67 @@
                                             </div>
                                         </div>
                                     </div>
-                            @endif
-                            <hr/>
+                                    @endif
+                                    <hr/>
 
-                            <p class="card-text">
+                                    <p class="card-text">
 
-                                <!-- Button trigger modal -->
-                            @if ($plant->plantData)
-                                <div>
-                                    <h6>
-                                        @if ($plant->plantData->wikipedia_description && $plant->plantData->wikipedia_url)
+                                        <!-- Button trigger modal -->
+                                    @if ($plant->plantData)
+                                        <div>
+                                            <h6>
+                                                @if ($plant->plantData->wikipedia_description && $plant->plantData->wikipedia_url)
 
-                                            <?php
-                                            echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 250));
-                                            ?>
-                                            ... <a href="{{$plant->plantData->wikipedia_url}}" target="_blank">Read
-                                                more</a>
-                                        @endif
-                                    </h6>
-                                    <br/>
-                                    <h5>Taxonomy</h5>
-                                    <h6><em>{{$plant->plantData->taxonomy_kingdom}}
-                                            ➤ {{$plant->plantData->taxonomy_phylum}}
-                                            ➤ {{$plant->plantData->taxonomy_class}}
-                                            ➤ {{$plant->plantData->taxonomy_order}}
-                                            ➤ {{$plant->plantData->taxonomy_family}}
-                                            ➤ {{$plant->plantData->taxonomy_genus}}
-                                            ➤ {{$plant->plantData->plant_name}}</em></h6>
-                                </div>
-                                <br/>
-                            @endif
-                            <h6> Next watering should be at: {{$nextWatering}}</h6>
-                            <h6> Next fertilizing should be at: {{$nextFertilizing}}</h6>
-                            <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}" role="button">Edit</a>
-                            <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
+                                                    <?php
+                                                    echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 250));
+                                                    ?>
+                                                    ... <a href="{{$plant->plantData->wikipedia_url}}" target="_blank">Read
+                                                        more</a>
+                                                @endif
+                                            </h6>
+                                            <br/>
+                                            <h5>Taxonomy</h5>
+                                            <h6><em>{{$plant->plantData->taxonomy_kingdom}}
+                                                    ➤ {{$plant->plantData->taxonomy_phylum}}
+                                                    ➤ {{$plant->plantData->taxonomy_class}}
+                                                    ➤ {{$plant->plantData->taxonomy_order}}
+                                                    ➤ {{$plant->plantData->taxonomy_family}}
+                                                    ➤ {{$plant->plantData->taxonomy_genus}}
+                                                    ➤ {{$plant->plantData->plant_name}}</em></h6>
+                                        </div>
+                                        <br/>
+                                    @endif
+                                    <h6> Next watering should be at: {{$nextWatering}}</h6>
+                                    <h6> Next fertilizing should be at: {{$nextFertilizing}}</h6>
+                                    <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
+                                       role="button">Edit</a>
+                                    <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
 
-                            <!-- First modal dialog -->
-                            <div class="modal fade" id="modal" aria-hidden="true" aria-labelledby="..." tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        ...
-                                        <div class="modal-footer">
-                                            <!-- Toogle to second dialog -->
-                                            <button class="btn btn-primary" data-bs-target="#modal2"
-                                                    data-bs-toggle="modal" data-bs-dismiss="modal">Open #modal2
-                                            </button>
+                                    <!-- First modal dialog -->
+                                    <div class="modal fade" id="modal" aria-hidden="true" aria-labelledby="..."
+                                         tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete {{$plant->name}}?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Close
+                                                    </button>
+                                                    <a href="{{route('deletePlant',['id' => $plant->id])}}">
+                                                        <button type="button" class="btn btn-danger">Delete</button>
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <!-- Second modal dialog -->
-                            <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="..." tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        ...
-                                        <div class="modal-footer">
-                                            <!-- Toogle to first dialog, `data-bs-dismiss` attribute can be omitted - clicking on link will close dialog anyway -->
-                                            <a class="btn btn-primary" href="#modal" data-bs-toggle="modal"
-                                               role="button">Open #modal</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    <!-- Second modal dialog -->
+
                         </div>
 
 
