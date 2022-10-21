@@ -155,7 +155,14 @@ button:hover {
 }
 
 
+.hidden {
+    display:none;
+}
 
+.visible {
+    display:inline-block;
+    width:40%;
+}
 
 
 

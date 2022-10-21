@@ -1,37 +1,39 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
-
-
-<script type="text/javascript" charset="utf-8">
-    $(document).on('click', '#fertilizing', function (event) {
-        event.preventDefault();
-
-        getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing', '.nextFertilizing');
-
-    });
-    $(document).on('click', '#watering', function (event) {
-        event.preventDefault();
-        getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering', '.nextWatering');
-
-    });
-    let getMessage = function (route, word, buttonClass, spanClass) {
-        $.ajax({
-            type: 'GET',
-            url: route,
-            success: function (data) {
-                $(spanClass).text(data);
-                $(buttonClass).fadeOut();
-                $('.alert').show()
-
-            }
-        });
-    }
-</script>
 @extends('layouts.app')
 
 
 @section('content')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).on('click', '#fertilizing', function (event) {
+            event.preventDefault();
+
+            getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing', '#nextFertilizing');
+
+        });
+        $(document).on('click', '#watering', function (event) {
+            event.preventDefault();
+            getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering', '#nextWatering');
+
+        });
+        let getMessage = function (route, word, buttonClass, spanClass) {
+            $.ajax({
+                type: 'GET',
+                url: route,
+                success: function () {
+                    $(buttonClass).fadeOut("normal", function () {
+                        $(this).remove();
+                    });
+                    $(spanClass).addClass('visible');
+
+                }
+            });
+        }
+    </script>
+
 
     @if (!Auth::guest())
 
@@ -83,8 +85,8 @@
                                         </div>
                                         <br/>
                                     @endif
-                                    <h6> Next watering should be at: {{$nextWatering}}</h6>
-                                    <h6> Next fertilizing should be at: {{$nextFertilizing}}</h6>
+                                    <h5> Next watering should be at: {{$nextWatering}}</h5>
+                                    <h5> Next fertilizing should be at: {{$nextFertilizing}}</h5> 
                                     <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
                                        role="button">Edit</a>
                                     <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
@@ -119,20 +121,28 @@
                         <div class="card-footer text-muted">
                             @if($plant->needs->need_watering)
                                 <button class="btn " id="watering" style="width:49%"> Watered</button>
+                                <div class="hidden" id="nextWatering">
+                                    <h6 title="Next watering should be at: {{$nextWatering}}">
+                                        Doesn't need watering yet ℹ
+                                        ️</h6>
+                                </div>
                             @else
-                                <h6 style="width:40%; display:inline;"
-                                    title="Next watering should be at: {{$nextWatering}}">Doesn't need
-                                    watering yet
-                                    ℹ️</h6>
+                                <h6 class="visible"
+                                    title="Next watering should be at: {{$nextWatering}}">
+                                    Doesn't need watering yet ℹ️
+                                </h6>
                             @endif
                             @if($plant->needs->need_fertilizing)
                                 <button class="btn " id="fertilizing" style="width:49%"> Fertilized</button>
+                                <div class="hidden" id="nextFertilizing">
+                                    <h6 title="Next fertilizing should be at: {{$nextFertilizing}}">
+                                        Doesn't need fertilizing yet ℹ️</h6>
+                                </div>
                             @else
 
-                                <h6 style="width:40%; display:inline;"
+                                <h6 class="visible"
                                     title="Next fertilizing should be at: {{$nextFertilizing}}">
-                                    Doesn't need fertilizing
-                                    yet ℹ️</h6>
+                                    Doesn't need fertilizing yet ℹ️</h6>
                             @endif
                         </div>
                     </div>
