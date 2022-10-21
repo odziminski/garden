@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Http\Requests\StorePlantRequest;
-use App\Models\Plant;
 use App\Models\History;
 use App\Models\Needs;
+use App\Models\Plant;
 use App\Models\PlantData;
-use Illuminate\Support\Str;
-use Illuminate\Http\UploadedFile;
-use Symfony\Component\HttpFoundation\File\File;
-use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\File\File;
 
 
 class PlantsController extends Controller
@@ -196,7 +196,11 @@ class PlantsController extends Controller
         $wateringFrequency = $request->input('watering_frequency');
         $fertilizingFrequency = $request->input('fertilizing_frequency');
 
-        if ($request->hasFile('avatar')) {
+        if ($request->webcamAvatar) {
+            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $plantIdData = self::identifyPlant($request->webcamAvatar, true);
+        } else if ($request->hasFile('avatar')) {
+            $plantIdData = self::identifyPlant($request->file('avatar'), false);
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
             $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
