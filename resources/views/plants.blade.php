@@ -85,8 +85,19 @@
                                         </div>
                                         <br/>
                                     @endif
-                                    <h5> Next watering should be at: {{$nextWatering}}</h5>
-                                    <h5> Next fertilizing should be at: {{$nextFertilizing}}</h5>
+                                    <h5> watering in:
+                                        {{$nextWatering}} </h5>
+                                    <div>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50"
+                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div> <br />
+                                        <h5> fertilizing in:
+                                            {{$nextFertilizing}} </h5>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="75"
+                                                 aria-valuemin="75" aria-valuemax="100"></div>
+                                        </div> </div> <br />
                                     <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
                                        role="button">Edit</a>
                                     <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
