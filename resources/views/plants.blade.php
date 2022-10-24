@@ -86,18 +86,21 @@
                                         <br/>
                                     @endif
                                     <h5> watering in:
-                                        {{$nextWatering}} </h5>
+                                        {{$nextWatering->diffForHumans()}} </h5>
                                     <div>
                                         <div class="progress">
-                                            <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50"
-                                                 aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div> <br />
+                                            <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <br/>
                                         <h5> fertilizing in:
-                                            {{$nextFertilizing}} </h5>
+                                            {{$nextFertilizing->diffForHumans()}} </h5>
                                         <div class="progress">
-                                            <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="75"
+                                            <div class="progress-bar" role="progressbar" style="width: 50%"
+                                                 aria-valuenow="75"
                                                  aria-valuemin="75" aria-valuemax="100"></div>
-                                        </div> </div> <br />
+                                        </div>
+                                    </div>
+                                    <br/>
                                     <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
                                        role="button">Edit</a>
                                     <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
@@ -133,13 +136,13 @@
                             @if($plant->needs->need_watering)
                                 <button class="btn " id="watering" style="width:49%"> Watered</button>
                                 <div class="hidden" id="nextWatering">
-                                    <h6 title="Next watering should be at: {{$nextWatering}}">
+                                    <h6 title="Next watering should be at: {{$nextWatering->format('l, j-m-Y ')}}">
                                         Doesn't need watering yet ℹ
                                         ️</h6>
                                 </div>
                             @else
                                 <h6 class="visible"
-                                    title="Next watering should be at: {{$nextWatering}}">
+                                    title="Next watering should be at: {{$nextFertilizing->format('l, j-m-Y ')}}">
                                     Doesn't need watering yet ℹ️
                                 </h6>
                             @endif

@@ -61,13 +61,11 @@ class PlantsController extends Controller
             $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
             $lateForWatering = Carbon::parse($nextWatering)
                 ->diffInDays(Carbon::now(), false);
-            $nextWatering = $nextWatering->format('l, j-m-Y ');
 
             $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse($nextFertilizing)
                 ->diffInDays(Carbon::now(), false);
-            $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
 
             return view('plants')->with([
