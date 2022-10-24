@@ -32,13 +32,13 @@
             </ul>
             <ul class="navbar-nav">
                 @auth
-                    <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="{{route('browse')}}">your garden</a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{route('add-plant')}}">add a plant</a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{route('browse')}}">your garden</a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false"> hello, gardener! </a>
