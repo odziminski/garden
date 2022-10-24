@@ -24,9 +24,10 @@
                 type: 'GET',
                 url: route,
                 success: function () {
-                    $(buttonClass).fadeOut("normal", function () {
+                    $(buttonClass).fadeOut("xfast", function () {
                         $(this).remove();
                     });
+                    window.setTimeout(3000);
                     $(spanClass).addClass('visible');
 
                 }
@@ -86,7 +87,7 @@
                                         <br/>
                                     @endif
                                     <h5> Next watering should be at: {{$nextWatering}}</h5>
-                                    <h5> Next fertilizing should be at: {{$nextFertilizing}}</h5> 
+                                    <h5> Next fertilizing should be at: {{$nextFertilizing}}</h5>
                                     <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
                                        role="button">Edit</a>
                                     <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
