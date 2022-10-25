@@ -12,7 +12,7 @@ class Plant extends Model
 {
     use HasFactory, Notifiable;
     protected $table = "plants";
-    
+
     public $primaryKey  = 'id';
     public $timestamps = false;
 
@@ -45,6 +45,7 @@ class Plant extends Model
     {
         return $this->hasOne(History::class);
     }
+
     public function plantData()
     {
         return $this->hasOne(PlantData::class);

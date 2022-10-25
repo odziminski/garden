@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Http\Requests\StorePlantRequest;
-use App\Models\Plant;
 use App\Models\History;
 use App\Models\Needs;
+use App\Models\Plant;
 use App\Models\PlantData;
-use Illuminate\Support\Str;
-use Illuminate\Http\UploadedFile;
-use Symfony\Component\HttpFoundation\File\File;
-use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\File\File;
 
 
 class PlantsController extends Controller
@@ -22,9 +22,14 @@ class PlantsController extends Controller
 
     public function getRandomPlant()
     {
-        $randomPlant = Plant::where('user_id', auth()->id())
-            ->inRandomOrder()
+//        $randomPlant = Plant::where('user_id', auth()->id())
+//            ->inRandomOrder()
+//            ->get()
+//            ->first();
+
+        $randomPlant = Plant::with('history', 'needs', 'plantData')
             ->get()
+            ->where('id', 741)
             ->first();
 
         if ($randomPlant) {
@@ -55,13 +60,11 @@ class PlantsController extends Controller
             $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
             $lateForWatering = Carbon::parse($nextWatering)
                 ->diffInDays(Carbon::now(), false);
-            $nextWatering = $nextWatering->format('l, j-m-Y ');
 
             $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
 
             $lateForFertilizing = Carbon::parse($nextFertilizing)
                 ->diffInDays(Carbon::now(), false);
-            $nextFertilizing = $nextFertilizing->format('l, j-m-Y ');
 
 
             return view('plants')->with([
@@ -100,7 +103,6 @@ class PlantsController extends Controller
                 'avatar' => $uploadedFileUrl,
                 'user_id' => auth()->user()->id,
                 'name' => $request->input('name'),
-                'species' => $request->input('species'),
                 'created_at' => $now,
 
             ]);
@@ -145,11 +147,12 @@ class PlantsController extends Controller
 
     public function displayPlants()
     {
-        $plants = Plant::with('history', 'needs')
+        $plants = Plant::with('history', 'needs', 'plantData')
             ->get()
             ->where('user_id', auth()->id())
             ->sortByDesc('history.watered_at');
-
+        $nextWatering = "";
+        $nextFertilizing = "";
         foreach ($plants as $plant) {
             if (isset($plant->history->watered_at)) {
                 $plant->watered_at = Plant::getDateForHumans($plant->history->watered_at);
@@ -159,18 +162,27 @@ class PlantsController extends Controller
             }
             if (isset($plant->needs->need_watering)) {
                 $plant->need_watering = $plant->needs->need_watering;
+                $nextWatering = Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->diffForHumans();
+
             }
             if (isset($plant->needs->need_fertilizing)) {
                 $plant->need_fertilizing = $plant->needs->need_fertilizing;
+                $nextFertilizing = Plant::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency)->diffForHumans();
+
             }
         }
-        return view('browse')->with('plants', $plants);
+//        return view('browse')->with('plants', [$plants,$nextWatering,$nextFertilizing]);
+        return view('browse')->with([
+            'plants' => $plants,
+            'nextWatering' => $nextWatering,
+            'nextFertilizing' => $nextFertilizing,
+        ]);
     }
 
 
     public function displayEditPlant($id)
     {
-        $plant = Plant::with('history', 'needs', 'plant_data')
+        $plant = Plant::with('history', 'needs')
             ->get()
             ->where('id', $id)
             ->first();
@@ -183,7 +195,11 @@ class PlantsController extends Controller
         $wateringFrequency = $request->input('watering_frequency');
         $fertilizingFrequency = $request->input('fertilizing_frequency');
 
-        if ($request->hasFile('avatar')) {
+        if ($request->webcamAvatar) {
+            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $plantIdData = self::identifyPlant($request->webcamAvatar, true);
+        } else if ($request->hasFile('avatar')) {
+            $plantIdData = self::identifyPlant($request->file('avatar'), false);
             $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
         } else {
             $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
@@ -244,7 +260,7 @@ class PlantsController extends Controller
 
 
         $header = [
-            "Content-Type" => "application/json"
+            "Content-Type" => "application/json",
         ];
 
         $params = [

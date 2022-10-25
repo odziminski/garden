@@ -57,3 +57,7 @@ Route::get('/edit-plant/{id}',[PlantsController::class, 'displayEditPlant'])->na
 Route::patch('/edit-plant-query/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
 
 Route::get('/test',[PlantDataController::class, 'test']);
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

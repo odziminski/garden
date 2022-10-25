@@ -20,36 +20,14 @@ class PlantsSeeder extends Seeder
      * @return void
      */
 
-    public function getRandomPlantName()
-    {
-        $samplePlants = [
-            'Aloe',
-            'Peace lily',
-            'Mother-in-law’s Tongue',
-            'Zanzibar Gem',
-            'Maidenhair',
-            'Rubber Plant',
-            'Begonia',
-            'Belladonna Lily',
-            'Eternal flame',
-            'Beach Spider Lily',
-            'African Violet',
-            'Queens Tears',
-            'Madagascar Jasmine',
-            'Moth Orchid',
-            'Winter Cherry'
-        ];
-         
-        return Arr::random($samplePlants);
-    }
+
 
     public function run()
     {
        $plant = Plant::create([
             'user_id' => 1,
             'avatar' => "http://127.0.0.1:8000/images/plant.png",
-            'name' => self::getRandomPlantName(),
-            'species' => self::getRandomPlantName(),
+            'name' => 'test',
             'created_at' => Carbon::now()->subDays(rand(1, 55)),
         ]);
 

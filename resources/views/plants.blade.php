@@ -1,98 +1,168 @@
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-
-<script type="text/javascript" charset="utf-8">
-    $(document).on('click', '#fertilizing', function (event) {
-        event.preventDefault();
-
-        getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing', '.nextFertilizing');
-
-    });
-    $(document).on('click', '#watering', function (event) {
-        event.preventDefault();
-        getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering', '.nextWatering');
-
-    });
-    let getMessage = function (route, word, buttonClass, spanClass) {
-        $.ajax({
-            type: 'GET',
-            url: route,
-            success: function (data) {
-                $(spanClass).text(data);
-                $(buttonClass).fadeOut();
-                $('.alert').show()
-
-            }
-        });
-    }
-</script>
 @extends('layouts.app')
 
 
 @section('content')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
+
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).on('click', '#fertilizing', function (event) {
+            event.preventDefault();
+
+            getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing', '#nextFertilizing');
+
+        });
+        $(document).on('click', '#watering', function (event) {
+            event.preventDefault();
+            getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering', '#nextWatering');
+
+        });
+        let getMessage = function (route, word, buttonClass, spanClass) {
+            $.ajax({
+                type: 'GET',
+                url: route,
+                success: function () {
+                    $(buttonClass).fadeOut("xfast", function () {
+                        $(this).remove();
+                    });
+                    window.setTimeout(3000);
+                    $(spanClass).addClass('visible');
+
+                }
+            });
+        }
+    </script>
+
 
     @if (!Auth::guest())
-        @dd($plant);
-        <div class="container">
 
-            <div class="card-single-plant _alignCenter">
+        <div class="container mt-5">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <a href="{{ URL::to('plants/' . $plant->id) }}">
+                            <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
+                                 class="card-img-top"/> </a>
+                        <div class="card-body" id="card-body">
+                            <h5 class="card-title">{{$plant->name}}</h5>
 
-                <h4>{{$plant->name}}</h4>
+
+                            @if (isset($plant->plantData->plant_name))
+                                <h6 class="card-subtitle mb-2 text-muted">
+
+                                    {{$plant->plantData->plant_name}}, also called {{$plant->plantData->common_name}}
 
 
-                <h6 class="font-italic"> {{$plant->species}} </h6>
+                                    <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal"> <i
+                                            class="fa fa-plus" aria-hidden="true"></i> </a>
 
-                <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}" alt="{{$plant->name}}"/>
+                                    @endif
+                                    <hr/>
 
-                <div class="_alignLeft m15">
+                                    <p class="card-text">
+                                    @if ($plant->plantData)
+                                        <div>
+                                            <h6>
+                                                @if ($plant->plantData->wikipedia_description && $plant->plantData->wikipedia_url)
 
-                    <p>Next watering will be at <span class="nextWatering">{{$nextWatering}}</span></p>
-                    <p>Next fertilizing will be at <span class="nextFertilizing">{{$nextFertilizing}}</span></p>
-                </div>
+                                                    <?php
+                                                    echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 250));
+                                                    ?>
+                                                    ... <a href="{{$plant->plantData->wikipedia_url}}" target="_blank">Read
+                                                        more</a>
+                                                @endif
+                                            </h6>
+                                            <br/>
+                                            <h5>Taxonomy</h5>
+                                            <h6><em>{{$plant->plantData->taxonomy_kingdom}}
+                                                    ➤ {{$plant->plantData->taxonomy_phylum}}
+                                                    ➤ {{$plant->plantData->taxonomy_class}}
+                                                    ➤ {{$plant->plantData->taxonomy_order}}
+                                                    ➤ {{$plant->plantData->taxonomy_family}}
+                                                    ➤ {{$plant->plantData->taxonomy_genus}}
+                                                    ➤ {{$plant->plantData->plant_name}}</em></h6>
+                                        </div>
+                                        <br/>
+                                    @endif
+                                    <h5> watering in:
+                                        {{$nextWatering->diffForHumans()}} </h5>
+                                    <div>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <br/>
+                                        <h5> fertilizing in:
+                                            {{$nextFertilizing->diffForHumans()}} </h5>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: 50%"
+                                                 aria-valuenow="75"
+                                                 aria-valuemin="75" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
+                                       role="button">Edit</a>
+                                    <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
 
-                <div class="alert alert-custom" hidden>
-                    <strong>Success!</strong>
-                </div>
-                <div class="buttons">
-                    @if ($plant->needs->need_watering)
-                        <div class="needs">
-                            <button class="button-white" id="watering" style="text-decoration: none; color:#333C1C">
-                                HYDRATE</a>
-                            </button>
+                                    <!-- First modal dialog -->
+                                    <div class="modal fade" id="modal" aria-hidden="true" aria-labelledby="..."
+                                         tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete {{$plant->name}}?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Close
+                                                    </button>
+                                                    <a href="{{route('deletePlant',['id' => $plant->id])}}">
+                                                        <button type="button" class="btn btn-danger">Delete</button>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                         </div>
-                    @else
-                        <button class="display-none">Water
-                            <a href="#"></a>
-                        </button>
-                    @endif
-                    @if ($plant->needs->need_fertilizing)
-                        <div class="needs">
-                            <button class="button-white" id="fertilizing" style="text-decoration: none; color:#333C1C">
-                                FERTILIZE
-                            </button>
+
+
+                        <div class="card-footer text-muted">
+                            @if($plant->needs->need_watering)
+                                <button class="btn " id="watering" style="width:49%"> Watered</button>
+                                <div class="hidden" id="nextWatering">
+                                    <h6 title="Next watering should be at: {{$nextWatering->format('l, j-m-Y ')}}">
+                                        Doesn't need watering yet ℹ
+                                        ️</h6>
+                                </div>
+                            @else
+                                <h6 class="visible"
+                                    title="Next watering should be at: {{$nextFertilizing->format('l, j-m-Y ')}}">
+                                    Doesn't need watering yet ℹ️
+                                </h6>
+                            @endif
+                            @if($plant->needs->need_fertilizing)
+                                <button class="btn " id="fertilizing" style="width:49%"> Fertilized</button>
+                                <div class="hidden" id="nextFertilizing">
+                                    <h6 title="Next fertilizing should be at: {{$nextFertilizing}}">
+                                        Doesn't need fertilizing yet ℹ️</h6>
+                                </div>
+                            @else
+
+                                <h6 class="visible"
+                                    title="Next fertilizing should be at: {{$nextFertilizing}}">
+                                    Doesn't need fertilizing yet ℹ️</h6>
+                            @endif
                         </div>
-                    @else
-                        <button class="display-none">Fertilize
-                            <a href="#"></a>
-                        </button> <br/>
-                    @endif
-
-                    <br/>
-                    <a href="{{ route('displayEditPlant',['id' => $plant->id]) }}">
-                        <button>Edit</button>
-                    </a>
-
-                    <button onclick="openmodal('myModal')">Delete</button>
-                </div>
-                <div id="myModal" class="modalbox-modal ">
-                    <div class="modalbox-modal-content">
-                        <span class="-close" id="modalbox-close">✖</span>
-                        <p>Are you sure you want to delete <span class="font-weight-bold">{{$plant->name}}</span>?<br/>
-                            <a href="{{ route('deletePlant',['id' => $plant->id]) }}" class="_box _pink">Delete</a>
-                        </p>
-
                     </div>
                 </div>
             </div>
+
         </div>
 
     @endif
