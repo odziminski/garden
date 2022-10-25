@@ -9,7 +9,7 @@
     <div class="container mt-5">
         <div class="row d-flex justify-content-center align-items-center">
             <div class="col-md-6">
-                <form method="POST" enctype="multipart/form-data" action="{{ route('add-plant-query') }}" id="regForm">
+                <form method="POST" enctype="multipart/form-data" action="{{ route('editPlant',['id' => $plant->id]) }}" id="regForm">
                     @csrf
                     @if ($errors->any())
                         <div class="text-danger">
