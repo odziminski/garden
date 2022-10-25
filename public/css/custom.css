@@ -287,5 +287,14 @@ button:hover {
     filter: invert(78%) sepia(79%) saturate(5336%) hue-rotate(86deg) brightness(118%) contrast(119%);
 }
 
+.no_plants_added_yet{
+    margin-top: 100px;
+    text-align: center;
+}
+.no_plants_added_yet a{
+    color: #A9AE99;
+    text-decoration: none;
+}
+
 
 

@@ -31,7 +31,6 @@ class PlantsController extends Controller
             ->get()
             ->where('id', 741)
             ->first();
-//        dd($randomPlant);
 
         if ($randomPlant) {
             $randomPlant->watered_at = Plant::getDateForHumans($randomPlant->watered_at);
@@ -152,6 +151,8 @@ class PlantsController extends Controller
             ->get()
             ->where('user_id', auth()->id())
             ->sortByDesc('history.watered_at');
+        $nextWatering = "";
+        $nextFertilizing = "";
         foreach ($plants as $plant) {
             if (isset($plant->history->watered_at)) {
                 $plant->watered_at = Plant::getDateForHumans($plant->history->watered_at);
