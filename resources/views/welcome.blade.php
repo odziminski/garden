@@ -11,7 +11,7 @@
     </style>
     <body>
     <?php
-    if (!Auth::check()){
+    if (!Auth::check()) {
         $plant->name = 'Sweet boo';
         $plant->plantData->plant_name = 'monstera deliciosa';
         $nextWatering = '3 days from now';
@@ -37,8 +37,10 @@
                     </div>
                     <div class="mt-2">
                         <h4 class="heading">
-                                {{$plant->name}} is a <br>{{$plant->plantData->plant_name}}
-                            </h4>
+                            {{$plant->name}} @if ($plant->plantData)
+                                is a <br>{{$plant->plantData->plant_name}}
+                            @endif
+                        </h4>
 
                         @auth
                             <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
@@ -50,17 +52,19 @@
                         <div class="d-flex flex-row align-items-end">
                         </div>
                         is happy on average, but if you miss one day, it'll be sad <br/> <br/>
-                        watering in:
-                            {{$nextWatering}}
+                        scheduled watering
+                        {{$wordWatering}}
+                        {{$nextWatering->diffForHumans()}}
                         <div>
                             <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50"
-                                     aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar" role="progressbar" style="width: {{$wateringPercentage}}%" aria-valuenow="{{$wateringPercentage}}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
-                            fertilizing in:
-                                {{$nextFertilizing}}
+                            scheduled fertilizing
+                            {{$wordFertilizing}}
+                            {{$nextFertilizing->diffForHumans()}}
                             <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="75"
+                                <div class="progress-bar" role="progressbar" style="width: {{$fertilizingPercentage}}%"
+                                     aria-valuenow="{{$fertilizingPercentage}}"
                                      aria-valuemin="75" aria-valuemax="100"></div>
                             </div>
                         </div>

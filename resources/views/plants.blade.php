@@ -85,14 +85,14 @@
                                         </div>
                                         <br/>
                                     @endif
-                                    <h5>scheduled watering in:
+                                    <h5>scheduled watering {{$wordWatering}}
                                         {{$nextWatering->diffForHumans()}} </h5>
                                     <div>
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" style="width: {{$wateringPercentage}}%" aria-valuenow="{{$wateringPercentage}}" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
                                         <br/>
-                                        <h5>scheduled fertilizing in:
+                                        <h5>scheduled fertilizing {{$wordFertilizing}}
                                             {{$nextFertilizing->diffForHumans()}} </h5>
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" style="width: {{$fertilizingPercentage}}%"
