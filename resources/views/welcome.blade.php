@@ -57,13 +57,17 @@
                         {{$nextWatering->diffForHumans()}}
                         <div>
                             <div class="progress">
-                                <div class="progress-bar <?php if($wateringPercentage == 100) echo " bg-danger" ?>" role="progressbar" style="width: {{$wateringPercentage}}%" aria-valuenow="{{$wateringPercentage}}" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar <?php if($wateringPercentage == 100) echo " bg-danger" ?>"
+                                     role="progressbar" style="width: {{$wateringPercentage}}%"
+                                     aria-valuenow="{{$wateringPercentage}}" aria-valuemin="0"
+                                     aria-valuemax="100"></div>
                             </div>
                             scheduled fertilizing
                             {{$wordFertilizing}}
                             {{$nextFertilizing->diffForHumans()}}
                             <div class="progress">
-                                <div class="progress-bar <?php if($fertilizingPercentage == 100) echo " bg-danger" ?>" role="progressbar" style="width: {{$fertilizingPercentage}}%"
+                                <div class="progress-bar <?php if($fertilizingPercentage == 100) echo " bg-danger" ?>"
+                                     role="progressbar" style="width: {{$fertilizingPercentage}}%"
                                      aria-valuenow="{{$fertilizingPercentage}}"
                                      aria-valuemin="75" aria-valuemax="100"></div>
                             </div>
