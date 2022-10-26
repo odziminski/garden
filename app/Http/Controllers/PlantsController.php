@@ -27,7 +27,6 @@ class PlantsController extends Controller
             ->get()
             ->first();
 
-
         if ($plant) {
             $plant->watered_at = Plant::getDateForHumans($plant->watered_at);
             $plant->fertilized_at = Plant::getDateForHumans($plant->fertilized_at);
@@ -216,13 +215,17 @@ class PlantsController extends Controller
         }
 
         try {
-            Plant::findOrFail($id)
-                ->update([
-                    'avatar' => $uploadedFileUrl,
-                    'name' => $request->input('name'),
-                    'watering_frequency' => $wateringFrequency,
-                    'fertilizing_frequency' => $fertilizingFrequency
-                ]);
+            $plant = Plant::findOrFail($id);
+            $plant->update([
+                'avatar' => $uploadedFileUrl,
+                'name' => $request->input('name')
+            ]);
+
+            $needs = Needs::where('plant_id', $plant->id)->first();
+            $needs->update([
+                'watering_frequency' => $request->input('watering_frequency'),
+                'fertilizing_frequency' => $request->input('fertilizing_frequency')
+            ]);
         } catch (\Exception $e) {
             $err = $e->getPrevious()->getMessage();
             echo $err;
