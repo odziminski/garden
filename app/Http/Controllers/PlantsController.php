@@ -22,26 +22,32 @@ class PlantsController extends Controller
 
     public function getRandomPlant()
     {
-//        $randomPlant = Plant::where('user_id', auth()->id())
-//            ->inRandomOrder()
-//            ->get()
-//            ->first();
-
-        $randomPlant = Plant::with('history', 'needs', 'plantData')
+        $plant = Plant::where('user_id', auth()->id())
+            ->inRandomOrder()
             ->get()
-            ->where('id', 741)
             ->first();
 
-        if ($randomPlant) {
-            $randomPlant->watered_at = Plant::getDateForHumans($randomPlant->watered_at);
-            $randomPlant->fertilized_at = Plant::getDateForHumans($randomPlant->fertilized_at);
-            $nextWatering = Plant::getNextCareDate($randomPlant->watered_at, $randomPlant->watering_frequency)->diffForHumans();
-            $nextFertilizing = Plant::getNextCareDate($randomPlant->fertilized_at, $randomPlant->fertilizing_frequency)->diffForHumans();
+        if ($plant) {
+            $plant->watered_at = Plant::getDateForHumans($plant->watered_at);
+            $plant->fertilized_at = Plant::getDateForHumans($plant->fertilized_at);
+
+            $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
+            $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
+
+            $wateringPercentage = $this->getPercentageOfCareDate($plant->history->watered_at->valueOf(), $nextWatering->valueOf());
+            $fertilizingPercentage = $this->getPercentageOfCareDate($plant->history->fertilized_at->valueOf(), $nextFertilizing->valueOf());
+
+            $wordWatering = $nextWatering->isPast() ? 'was' : 'in';
+            $wordFertilizing = $nextFertilizing->isPast() ? 'was' : 'in';
 
             return view('welcome')->with([
-                'plant' => $randomPlant,
+                'plant' => $plant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
+                'wateringPercentage' => $wateringPercentage,
+                'fertilizingPercentage' => $fertilizingPercentage,
+                'wordWatering' => $wordWatering,
+                'wordFertilizing' => $wordFertilizing,
             ]);
         } else {
             return view('welcome');
@@ -57,21 +63,25 @@ class PlantsController extends Controller
 
         if ($plant->user_id == auth()->id()) {
             $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
-            $lateForWatering = Carbon::parse($nextWatering)
-                ->diffInDays(Carbon::now(), false);
+//            $lateForWatering = Carbon::parse($nextWatering)
+//                ->diffInDays(Carbon::now(), false);
 
             $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
 
-            $lateForFertilizing = Carbon::parse($nextFertilizing)
-                ->diffInDays(Carbon::now(), false);
-
-
+//            $lateForFertilizing = Carbon::parse($nextFertilizing)
+//                ->diffInDays(Carbon::now(), false);
+            $wateringPercentage = $this->getPercentageOfCareDate($plant->history->watered_at->valueOf(), $nextWatering->valueOf());
+            $fertilizingPercentage = $this->getPercentageOfCareDate($plant->history->fertilized_at->valueOf(), $nextFertilizing->valueOf());
+            $wordWatering = $nextWatering->isPast() ? 'was' : 'in';
+            $wordFertilizing = $nextFertilizing->isPast() ? 'was' : 'in';
             return view('plants')->with([
                 'plant' => $plant,
                 'nextWatering' => $nextWatering,
                 'nextFertilizing' => $nextFertilizing,
-                'lateForWatering' => $lateForWatering,
-                'lateForFertilizing' => $lateForFertilizing,
+                'wateringPercentage' => $wateringPercentage,
+                'fertilizingPercentage' => $fertilizingPercentage,
+                'wordWatering' => $wordWatering,
+                'wordFertilizing' => $wordFertilizing,
             ]);
         } else {
             return back();
@@ -231,6 +241,21 @@ class PlantsController extends Controller
         History::where('plant_id', $id)->delete();
         PlantData::where('plant_id', $id)->delete();
         return redirect()->route('browse');
+    }
+
+    public function getPercentageOfCareDate($from, $to): int
+    {
+        $now = Carbon::now()->valueOf();
+
+
+        $datediffA = round(($to - $from) / (60 * 60 * 24), 0);
+        $datediffB = round(($now - $from) / (60 * 60 * 24), 0);
+
+        $percentage = ($datediffB * 100) / $datediffA;
+
+        if ($percentage < 100) {
+            return (int)$percentage;
+        } else return 100;
     }
 
 

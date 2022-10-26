@@ -85,19 +85,25 @@
                                         </div>
                                         <br/>
                                     @endif
-                                    <h5> watering in:
+                                    <h5>scheduled watering {{$wordWatering}}
                                         {{$nextWatering->diffForHumans()}} </h5>
                                     <div>
                                         <div class="progress">
-                                            <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div
+                                                class="progress-bar <?php if($wateringPercentage == 100) echo " bg-danger" ?>"
+                                                role="progressbar" style="width: {{$wateringPercentage}}%"
+                                                aria-valuenow="{{$wateringPercentage}}" aria-valuemin="0"
+                                                aria-valuemax="100"></div>
                                         </div>
                                         <br/>
-                                        <h5> fertilizing in:
+                                        <h5>scheduled fertilizing {{$wordFertilizing}}
                                             {{$nextFertilizing->diffForHumans()}} </h5>
                                         <div class="progress">
-                                            <div class="progress-bar" role="progressbar" style="width: 50%"
-                                                 aria-valuenow="75"
-                                                 aria-valuemin="75" aria-valuemax="100"></div>
+                                            <div
+                                                class="progress-bar <?php if($fertilizingPercentage == 100) echo " bg-danger" ?>"
+                                                role="progressbar" style="width: {{$fertilizingPercentage}}%"
+                                                aria-valuenow="{{$fertilizingPercentage}}"
+                                                aria-valuemin="75" aria-valuemax="100"></div>
                                         </div>
                                     </div>
                                     <br/>
