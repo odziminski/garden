@@ -4,7 +4,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
 
-
+    <?php
+    $agent = new \Jenssegers\Agent\Agent;
+    ?>
 
     <div class="container mt-5">
         <div class="row d-flex justify-content-center align-items-center">
@@ -39,12 +41,58 @@
 
                         <h5>Plant photo:</h5>
                         <label class="container">
-                            <button type="button" data-bs-toggle="modal"
-                                    data-bs-target="#exampleModal" onClick="startWebcam()">
-                                Open a webcam
-                                <span class="checkmark"></span>
+                            @if (!$agent->isDesktop())
+                                <button type="button" data-bs-toggle="modal"
+                                        data-bs-target="#exampleModal" onClick="startWebcam()">
+                                    Open a webcam
+                                    <span class="checkmark"></span>
 
-                            </button>
+                                </button>
+                                <div class="modal fade" id="exampleModal" tabindex="-1"
+                                     aria-labelledby="exampleModalLabel"
+                                     aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Webcam snapshot</h5>
+
+                                            </div>
+                                            <div class="modal-body">
+
+                                                <div class="row" style="visibility:hidden;" id="snapshot">
+                                                    <div class="col-md-12">
+                                                        <div id="myCamera"></div>
+                                                        <br/>
+                                                        <input type="button" value="Take Snapshot"
+                                                               onClick="takeSnapshot()">
+                                                        <input type="hidden" name="webcamAvatar" class="image-tag"
+                                                               hidden>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" data-bs-dismiss="modal">
+                                                        Save changes
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="button" value="Click to start a webcam" onClick="startWebcam()"> <br/>
+                                    <br/>
+                                    <div class="row" style="visibility:hidden;" id="snapshot">
+                                        <div class="col-md-6">
+                                            <div id="myCamera"></div>
+                                            <br/>
+                                            <input type="button" value="Take Snapshot" onClick="takeSnapshot()">
+                                            <input type="hidden" name="webcamAvatar" class="image-tag" hidden>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div id="results"></div>
+                                        </div>
+                                        <span class="checkmark"></span>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="btn-group" role="group" aria-label="Basic example">
                                 <div class="field upload">
                                     <label>Choose file</label>
@@ -56,54 +104,15 @@
                         </label>
 
                         <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                             aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Webcam snapshot</h5>
 
-                                    </div>
-                                    <div class="modal-body">
 
-                                        <div class="row" style="visibility:hidden;" id="snapshot">
-                                            <div class="col-md-12">
-                                                <div id="myCamera"></div>
-                                                <br/>
-                                                <input type="button" value="Take Snapshot" onClick="takeSnapshot()">
-                                                <input type="hidden" name="webcamAvatar" class="image-tag" hidden>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" data-bs-dismiss="modal">
-                                                Save changes
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="button" value="Click to start a webcam" onClick="startWebcam()"> <br/>
-                            <br/>
-                            <div class="row" style="visibility:hidden;" id="snapshot">
-                                <div class="col-md-6">
-                                    <div id="myCamera"></div>
-                                    <br/>
-                                    <input type="button" value="Take Snapshot" onClick="takeSnapshot()">
-                                    <input type="hidden" name="webcamAvatar" class="image-tag" hidden>
-                                </div>
-                                <div class="col-md-6">
-                                    <div id="results"></div>
-                                </div>
-                                <span class="checkmark"></span>
-                            </div>
-                        </div>
                         <hr/>
 
                         <h5>How often do you water it? (in days):</h5>
                         <input type="number" class="form-control" name="watering_frequency"
                                value="{{ old('watering_frequency') }}"
                                placeholder="Days"> <br/>
-                        <h5>How often do you fertilize it?  (in days):</h5>
+                        <h5>How often do you fertilize it? (in days):</h5>
 
                         <input type="number" class="form-control" name="fertilizing_frequency"
                                value="{{ old('fertilizing_frequency') }}"
