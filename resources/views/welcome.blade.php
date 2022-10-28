@@ -40,7 +40,8 @@
                             {{$plant->name}} @if ($plant->plantData)
                                 is a <br>{{$plant->plantData->plant_name}}
                             @endif
-                            <a class="text-muted" href="{{ URL::to('plants/' . $plant->id) }}"> visit it </a>
+                            <a class="text-muted" href="{{ URL::to('plants/' . $plant->id) }}"> <br />
+                                visit it </a>
 
                         </h4>
 
