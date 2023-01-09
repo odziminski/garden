@@ -33,7 +33,18 @@ class PlantTest extends TestCase
         $this->assertFileDoesNotExist($tmpFilePath);
     }
 
-    
+    public function testGetPercentageOfCareDate()
+    {
+        $from = Carbon::parse('2022-01-01')->valueOf();
+        $to = Carbon::parse('2022-02-01')->valueOf();
+
+        $result = (new PlantsController())->getPercentageOfCareDate($from, $to);
+
+
+        $this->assertIsInt($result);
+
+        $this->assertEquals(100, $result);
+    }
 
 
 }
