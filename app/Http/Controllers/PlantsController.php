@@ -88,7 +88,7 @@ class PlantsController extends Controller
         }
     }
 
-    public function store(StorePlantRequest $request)
+    public function store(StorePlantRequest $request, $auth = null)
     {
         $noImage = false;
         if ($request->webcamAvatar) {
@@ -110,7 +110,7 @@ class PlantsController extends Controller
             $now = Carbon::now();
             $plant = Plant::create([
                 'avatar' => $uploadedFileUrl,
-                'user_id' => auth()->user()->id,
+                'user_id' => $auth ? $auth : auth()->user()->id,
                 'name' => $request->input('name'),
                 'created_at' => $now,
 
