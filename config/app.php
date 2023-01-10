@@ -164,6 +164,8 @@ return [
         Intervention\Image\ImageServiceProvider::class,
         CloudinaryLabs\CloudinaryLaravel\CloudinaryServiceProvider::class,
         MathiasGrimm\LaravelDotEnvGen\DotEnvGenServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
+
 
 
 
@@ -234,6 +236,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Image' => Intervention\Image\Facades\Image::class,
         'Cloudinary' => CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class,
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
+
 
     ],
 
