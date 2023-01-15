@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Model;
+use App\Models\Plant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -13,8 +13,7 @@ class PlantFactory extends Factory
      *
      * @var string
      */
-    protected $model = \App\Models\Plant::class;
-
+    protected $model = Plant::class;
 
     /**
      * Define the model's default state.
@@ -24,8 +23,8 @@ class PlantFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $faker->text(50),
-            'created_at' => $faker->text(200)
+            'name' => $this->faker->name,
+            'user_id' => 1,
         ];
     }
 }

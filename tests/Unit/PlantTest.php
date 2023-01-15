@@ -7,10 +7,13 @@ use App\Http\Requests\StorePlantRequest;
 use App\Models\History;
 use App\Models\Needs;
 use App\Models\Plant;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Jenssegers\Agent\Agent;
 use Tests\TestCase;
 
 
@@ -39,7 +42,7 @@ class PlantTest extends TestCase
         $this->assertFileDoesNotExist($tmpFilePath);
     }
 
-    public function testGetPercentageOfCareDate() : void
+    public function testGetPercentageOfCareDate(): void
     {
         $from = Carbon::parse('2022-01-01')->valueOf();
         $to = Carbon::parse('2022-02-01')->valueOf();
@@ -52,7 +55,7 @@ class PlantTest extends TestCase
         $this->assertEquals(100, $result);
     }
 
-    public function testStore() : void
+    public function testStore(): void
     {
         $request = new StorePlantRequest([
             'name' => 'Test plant',
@@ -75,5 +78,77 @@ class PlantTest extends TestCase
         $plant->delete();
 
     }
+
+
+    public function testPlantAdditionPageIsAccessible()
+    {
+        $response = $this->get(route('add-plant'));
+
+        $response->assertStatus(200);
+    }
+
+    public function testPlantAdditionFormSubmission()
+    {
+        $testUser = User::find(1);
+        Auth::login($testUser);
+
+        $name = 'Integration Test Rose';
+
+        $plantData = [
+            'name' => $name,
+            'watering_frequency' => 3,
+            'fertilizing_frequency' => 15,
+        ];
+
+        $response = $this->post(route('add-plant-query'), $plantData);
+        $response->assertStatus(302);
+        $this->assertDatabaseHas('plants', [
+            'name' => $name,
+        ]);
+        Plant::where('name',$name)->delete();
+
+    }
+
+
+    public function testWebcamFunctionality()
+    {
+        $agent = new Agent();
+        if (!$agent->isMobile()) {
+            $response = $this->get(route('add-plant-query'));
+            $response->assertSee('Open a webcam');
+        }
+    }
+
+    public function testPlantPageContainsCorrectData()
+    {
+        $plant =  Plant::factory()->create();
+
+        $response = $this->get(route('welcome'));
+
+        $response->assertSee($plant->name);
+        $response->assertSee('scheduled watering');
+        $response->assertSee('scheduled fertilizing');
+    }
+
+    public function testPlantPageShowsCorrectMessagesForAuthenticatedUser()
+    {
+        $testUser = User::find(1);
+        Auth::login($testUser);
+
+        $plant = Plant::factory()->create();
+        $response = $this->get(route('welcome'));
+
+        $response->assertSee('visit it');
+    }
+
+    public function testPlantPageShowsCorrectMessagesForGuest()
+    {
+        Auth::logout();
+        $response = $this->get(route('welcome'));
+
+
+        $response->assertSee('visit it');
+    }
+
 
 }
