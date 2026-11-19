@@ -29,7 +29,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('checkForFertilizing')
             ->everyMinute()->withoutOverlapping(5);
         $schedule->command('email:care')
-            ->dailyAt('10:10')->withoutOverlapping(60);
+            ->everyMinute()->withoutOverlapping(5);
     }
 
     /**

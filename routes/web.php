@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NeedsController;
 use App\Http\Controllers\PlantsController;
+use App\Http\Controllers\ReminderSettingsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/users', [UserController::class, 'displayUserData'])->name('users');
     Route::put('/users/edit-profile', [UserController::class, 'editUserProfile'])->name('editUserProfile');
+    Route::put('/users/reminders', [ReminderSettingsController::class, 'update'])->name('reminders.update');
 
     Route::middleware('can:manage,plant')->group(function () {
         Route::get('/plants/{plant}', [PlantsController::class, 'displaySinglePlant'])->name('plants');
