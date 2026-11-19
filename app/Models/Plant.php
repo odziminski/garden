@@ -27,7 +27,6 @@ class Plant extends Model
         'user_id',
         'created_at',
         'name',
-        'species',
     ];
 
 
@@ -49,6 +48,26 @@ class Plant extends Model
     public function plantData()
     {
         return $this->hasOne(PlantData::class);
+    }
+
+    public function avatarUrl(): string
+    {
+        return $this->avatar === 'plant.png' ? asset('images/plant.png') : $this->avatar;
+    }
+
+    public function nextWatering(): ?Carbon
+    {
+        return $this->nextCareDate($this->history?->watered_at, $this->needs?->watering_frequency);
+    }
+
+    public function nextFertilizing(): ?Carbon
+    {
+        return $this->nextCareDate($this->history?->fertilized_at, $this->needs?->fertilizing_frequency);
+    }
+
+    private function nextCareDate(?Carbon $previous, ?int $days): ?Carbon
+    {
+        return $previous && $days > 0 ? $previous->copy()->addDays($days) : null;
     }
 
     public static function getDateForHumans($date): string

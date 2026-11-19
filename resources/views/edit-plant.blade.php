@@ -11,7 +11,7 @@
     <div class="container mt-5">
         <div class="row d-flex justify-content-center align-items-center">
             <div class="col-md-6">
-                <form method="POST" enctype="multipart/form-data" action="{{ route('editPlant',['id' => $plant->id]) }}"
+                <form method="POST" enctype="multipart/form-data" action="{{ route('editPlant',$plant) }}"
                       id="regForm">
                     @csrf
                     @if ($errors->any())
@@ -108,12 +108,12 @@
 
                         <h5>How often do you water it? (in days):</h5>
                         <input type="number" class="form-control" name="watering_frequency"
-                               value="{{ $plant->needs->watering_frequency }}"
+                               value="{{ old('watering_frequency', $plant->needs?->watering_frequency) }}"
                                placeholder="Days"> <br/>
                         <h5>How often do you fertilize it? (in days):</h5>
 
                         <input type="number" class="form-control" name="fertilizing_frequency"
-                               value="{{ $plant->needs->fertilizing_frequency }}"
+                               value="{{ old('fertilizing_frequency', $plant->needs?->fertilizing_frequency) }}"
                                placeholder="Days"> <br/>
                         <input type="submit" value="Submit">
                     </label>

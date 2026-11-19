@@ -1,175 +1,81 @@
 @extends('layouts.app')
 
-
 @section('content')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <img src="{{ $plant->avatarUrl() }}" class="card-img-top" alt="{{ $plant->name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $plant->name }}</h5>
+                        @if ($plant->plantData)
+                            <h6 class="card-subtitle text-muted">
+                                {{ $plant->plantData->plant_name }}
+                                @if ($plant->plantData->common_name)
+                                    ({{ $plant->plantData->common_name }})
+                                @endif
+                            </h6>
+                            @if ($plant->plantData->wikipedia_description)
+                                <p>{{ $plant->plantData->wikipedia_description }}</p>
+                            @endif
+                            @if (parse_url($plant->plantData->wikipedia_url, PHP_URL_SCHEME) === 'https')
+                                <a href="{{ $plant->plantData->wikipedia_url }}" target="_blank"
+                                   rel="noopener noreferrer">Read more</a>
+                            @endif
+                            <h6 class="mt-3">Taxonomy</h6>
+                            <p>
+                                {{ implode(' ➤ ', array_filter($plant->plantData->only([
+                                    'taxonomy_kingdom', 'taxonomy_phylum', 'taxonomy_class', 'taxonomy_order',
+                                    'taxonomy_family', 'taxonomy_genus', 'plant_name',
+                                ]))) }}
+                            </p>
+                        @endif
 
-
-    <script type="text/javascript" charset="utf-8">
-        $(document).on('click', '#fertilizing', function (event) {
-            event.preventDefault();
-
-            getMessage("{{ route('updateFertilizing',['id' => $plant->id]) }}", 'fertilized', '#fertilizing', '#nextFertilizing');
-
-        });
-        $(document).on('click', '#watering', function (event) {
-            event.preventDefault();
-            getMessage("{{ route('updateWatering',['id' => $plant->id]) }}", 'watered', '#watering', '#nextWatering');
-
-        });
-        let getMessage = function (route, word, buttonClass, spanClass) {
-            $.ajax({
-                type: 'GET',
-                url: route,
-                success: function () {
-                    $(buttonClass).fadeOut("xfast", function () {
-                        $(this).remove();
-                    });
-                    window.setTimeout(3000);
-                    $(spanClass).addClass('visible');
-
-                }
-            });
-        }
-    </script>
-
-
-    @if (!Auth::guest())
-
-        <div class="container mt-5">
-            <div class="row d-flex justify-content-center align-items-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <a href="{{ URL::to('plants/' . $plant->id) }}">
-                            <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
-                                 class="card-img-top"/> </a>
-                        <div class="card-body" id="card-body">
-                            <h5 class="card-title">{{$plant->name}}</h5>
-
-
-                            @if (isset($plant->plantData->plant_name))
-                                <h6 class="card-subtitle mb-2 text-muted">
-
-                                    {{$plant->plantData->plant_name}}, also called {{$plant->plantData->common_name}}
-
-
-                                    <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal"> <i
-                                            class="fa fa-plus" aria-hidden="true"></i> </a>
-
-                                    @endif
-                                    <hr/>
-
-                                    <p class="card-text">
-                                    @if ($plant->plantData)
-                                        <div>
-                                            <h6>
-                                                @if ($plant->plantData->wikipedia_description && $plant->plantData->wikipedia_url)
-
-                                                    <?php
-                                                    echo substr($plant->plantData->wikipedia_description, 0, strpos($plant->plantData->wikipedia_description, ' ', 250));
-                                                    ?>
-                                                    ... <a href="{{$plant->plantData->wikipedia_url}}" target="_blank">Read
-                                                        more</a>
-                                                @endif
-                                            </h6>
-                                            <br/>
-                                            <h5>Taxonomy</h5>
-                                            <h6><em>{{$plant->plantData->taxonomy_kingdom}}
-                                                    ➤ {{$plant->plantData->taxonomy_phylum}}
-                                                    ➤ {{$plant->plantData->taxonomy_class}}
-                                                    ➤ {{$plant->plantData->taxonomy_order}}
-                                                    ➤ {{$plant->plantData->taxonomy_family}}
-                                                    ➤ {{$plant->plantData->taxonomy_genus}}
-                                                    ➤ {{$plant->plantData->plant_name}}</em></h6>
-                                        </div>
-                                        <br/>
-                                    @endif
-                                    <h5>scheduled watering {{$wordWatering}}
-                                        {{$nextWatering->diffForHumans()}} </h5>
-                                    <div>
-                                        <div class="progress">
-                                            <div
-                                                class="progress-bar <?php if($wateringPercentage == 100) echo " bg-danger" ?>"
-                                                role="progressbar" style="width: {{$wateringPercentage}}%"
-                                                aria-valuenow="{{$wateringPercentage}}" aria-valuemin="0"
-                                                aria-valuemax="100"></div>
-                                        </div>
-                                        <br/>
-                                        <h5>scheduled fertilizing {{$wordFertilizing}}
-                                            {{$nextFertilizing->diffForHumans()}} </h5>
-                                        <div class="progress">
-                                            <div
-                                                class="progress-bar <?php if($fertilizingPercentage == 100) echo " bg-danger" ?>"
-                                                role="progressbar" style="width: {{$fertilizingPercentage}}%"
-                                                aria-valuenow="{{$fertilizingPercentage}}"
-                                                aria-valuemin="75" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                    <br/>
-                                    <a class="btn " href="{{ route('displayEditPlant',['id' => $plant->id]) }}"
-                                       role="button">Edit</a>
-                                    <a class="btn " data-bs-toggle="modal" href="#modal" role="button">Delete</a>
-
-                                    <!-- First modal dialog -->
-                                    <div class="modal fade" id="modal" aria-hidden="true" aria-labelledby="..."
-                                         tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                            aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <p>Are you sure you want to delete {{$plant->name}}?</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Close
-                                                    </button>
-                                                    <a href="{{route('deletePlant',['id' => $plant->id])}}">
-                                                        <button type="button" class="btn btn-danger">Delete</button>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                        <h6 class="mt-3">Watering</h6>
+                        <div class="progress" role="progressbar" aria-label="Time until watering"
+                             aria-valuenow="{{ $wateringPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                            <div @class(['progress-bar', 'bg-danger' => $wateringPercentage === 100])
+                                 style="width: {{ $wateringPercentage }}%"></div>
+                        </div>
+                        <h6 class="mt-3">Fertilizing</h6>
+                        <div class="progress" role="progressbar" aria-label="Time until fertilizing"
+                             aria-valuenow="{{ $fertilizingPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                            <div @class(['progress-bar', 'bg-danger' => $fertilizingPercentage === 100])
+                                 style="width: {{ $fertilizingPercentage }}%"></div>
                         </div>
 
-
-                        <div class="card-footer text-muted">
-                            @if($plant->needs->need_watering)
-                                <button class="btn " id="watering" style="width:49%"> Watered</button>
-                                <div class="hidden" id="nextWatering">
-                                    <h6 title="Next watering should be at: {{$nextWatering->format('l, j-m-Y ')}}">
-                                        Doesn't need watering yet ℹ
-                                        ️</h6>
-                                </div>
-                            @else
-                                <h6 class="visible"
-                                    title="Next watering should be at: {{$nextFertilizing->format('l, j-m-Y ')}}">
-                                    Doesn't need watering yet ℹ️
-                                </h6>
-                            @endif
-                            @if($plant->needs->need_fertilizing)
-                                <button class="btn " id="fertilizing" style="width:49%"> Fertilized</button>
-                                <div class="hidden" id="nextFertilizing">
-                                    <h6 title="Next fertilizing should be at: {{$nextFertilizing}}">
-                                        Doesn't need fertilizing yet ℹ️</h6>
-                                </div>
-                            @else
-
-                                <h6 class="visible"
-                                    title="Next fertilizing should be at: {{$nextFertilizing}}">
-                                    Doesn't need fertilizing yet ℹ️</h6>
-                            @endif
+                        <div class="mt-3">
+                            <a class="btn" href="{{ route('displayEditPlant', $plant) }}">Edit</a>
+                            <button class="btn" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#delete-plant-modal">Delete</button>
                         </div>
+                    </div>
+
+                    <div class="card-footer text-muted">
+                        @include('plants.care-actions')
                     </div>
                 </div>
             </div>
-
         </div>
+    </div>
 
-    @endif
+    <div class="modal fade" id="delete-plant-modal" tabindex="-1" aria-labelledby="delete-plant-title"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="delete-plant-title">Delete {{ $plant->name }}?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ route('deletePlant', $plant) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

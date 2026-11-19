@@ -2,60 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Needs;
-use App\Models\History;
 use App\Models\Plant;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class NeedsController extends Controller
 {
-    public function test(){
-        return Needs::all();
-
-    } 
-
-    public function updateWatering($id)
+    public function updateWatering(Plant $plant): RedirectResponse
     {
-        
-            $plant = Plant::find($id);
-
-            $needs = Needs::where('plant_id', $id)->first();
-                $needs->update([
-                    'need_watering' => 0,
-                ]);
-
-            $history = History::where('plant_id', $id)->first();
-                $history->update([
-                    'watered_at' => Carbon::now(),
-                ]);
-
-                $plant->watered_at = $history->watered_at;
-                $plant->watering_frequency = $needs->watering_frequency;
-       
-        return Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->format('l, j-m-Y ');
-        print Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->format('l, j-m-Y ');
-        
+        return $this->recordCare($plant, 'need_watering', 'watered_at');
     }
 
-    public function updateFertilizing($id)
+    public function updateFertilizing(Plant $plant): RedirectResponse
     {
-        $plant = Plant::find($id);
-
-        $needs = Needs::where('plant_id', $id)->first();
-            $needs->update([
-                'need_fertilizing' => 0,
-            ]);
-
-        $history = History::where('plant_id', $id)->first();
-            $history->update([
-                'fertilized_at' => Carbon::now(),
-            ]);
-
-            $plant->fertilized_at = $history->fertilized_at;
-            $plant->fertilizing_frequency = $needs->fertilizing_frequency;
-   
-    return Plant::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency)->format('l, j-m-Y ');
-    
+        return $this->recordCare($plant, 'need_fertilizing', 'fertilized_at');
     }
-    
+
+    private function recordCare(Plant $plant, string $flag, string $timestamp): RedirectResponse
+    {
+        DB::transaction(function () use ($plant, $flag, $timestamp) {
+            $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
+            $needs = $lockedPlant->needs()->firstOrFail();
+            $history = $lockedPlant->history()->firstOrNew();
+
+            $needs->update([$flag => false]);
+            $history->fill([$timestamp => now()])->save();
+        }, 3);
+
+        return back();
+    }
 }
