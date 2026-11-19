@@ -14,7 +14,7 @@ class AuthenticationTest extends TestCase
 
     public function test_registration_rejects_password_over_the_bcrypt_byte_limit(): void
     {
-        $password = str_repeat('ą', 37);
+        $password = str_repeat("\u{00E9}", 37);
 
         $this->postJson(route('register'), [
             'email' => 'gardener@example.test',
