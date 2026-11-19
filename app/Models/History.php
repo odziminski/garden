@@ -10,7 +10,10 @@ class History extends Model
     use HasFactory;
 
     protected $table = "history";
-    protected $dates = ['watered_at', 'fertilized_at'];
+    protected $casts = [
+        'watered_at' => 'datetime',
+        'fertilized_at' => 'datetime',
+    ];
 
     public $primaryKey  = 'id';
     public $timestamps = false;

@@ -8,24 +8,18 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3",
-        "cloudinary-labs/cloudinary-laravel": "^1.0",
-        "fideloper/proxy": "^4.2",
-        "fruitcake/laravel-cors": "^2.0",
-        "guzzlehttp/guzzle": "^7.0.1",
-        "intervention/image": "^2.5",
+        "php": "^8.3",
+        "cloudinary/cloudinary_php": "^3.0",
+        "guzzlehttp/guzzle": "^7.15.2",
         "jenssegers/agent": "^2.6",
-        "laravel/framework": "^8.0",
-        "laravel/tinker": "^2.0",
-        "laravel/ui": "^3.4",
-        "mathiasgrimm/laravel-dot-env-gen": "dev-master"
+        "laravel/framework": "^13.40",
+        "laravel/tinker": "^3.0",
+        "laravel/ui": "^4.6.3"
     },
     "require-dev": {
-        "facade/ignition": "^2.3.6",
-        "fzaninotto/faker": "^1.9.1",
-        "mockery/mockery": "^1.3.1",
-        "nunomaduro/collision": "^5.0",
-        "phpunit/phpunit": "^9.3"
+        "fakerphp/faker": "^1.24",
+        "mockery/mockery": "^1.6",
+        "phpunit/phpunit": "^12.5"
     },
     "config": {
         "optimize-autoloader": true,
@@ -49,15 +43,11 @@
             "Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
-        ],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"

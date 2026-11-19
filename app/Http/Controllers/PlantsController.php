@@ -8,6 +8,7 @@ use App\Models\Needs;
 use App\Models\Plant;
 use App\Models\PlantData;
 use Carbon\Carbon;
+use Cloudinary\Cloudinary;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -92,11 +93,11 @@ class PlantsController extends Controller
     {
         $noImage = false;
         if ($request->webcamAvatar) {
-            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $uploadedFileUrl = $this->uploadAvatar(self::prepareWebcamAvatar($request->webcamAvatar));
             $plantIdData = self::identifyPlant($request->webcamAvatar, true);
         } else if ($request->hasFile('avatar')) {
             $plantIdData = self::identifyPlant($request->file('avatar'), false);
-            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $uploadedFileUrl = $this->uploadAvatar($request->file('avatar'));
         } else {
             if (!empty($uploadedFileUrl))
                 $uploadedFileUrl = $uploadedFileUrl['image_url'];
@@ -205,11 +206,11 @@ class PlantsController extends Controller
         $fertilizingFrequency = $request->input('fertilizing_frequency');
 
         if ($request->webcamAvatar) {
-            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $uploadedFileUrl = $this->uploadAvatar(self::prepareWebcamAvatar($request->webcamAvatar));
             $plantIdData = self::identifyPlant($request->webcamAvatar, true);
         } else if ($request->hasFile('avatar')) {
             $plantIdData = self::identifyPlant($request->file('avatar'), false);
-            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
+            $uploadedFileUrl = $this->uploadAvatar($request->file('avatar'));
         } else {
             $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
         }
@@ -276,6 +277,16 @@ class PlantsController extends Controller
             true
         );
         return $file;
+    }
+
+    private function uploadAvatar(UploadedFile $file): string
+    {
+        $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+
+        return $cloudinary->uploadApi()->upload($file->getPathname(), [
+            'folder' => 'user_uploads',
+            'resource_type' => 'image',
+        ])->offsetGet('secure_url');
     }
 
     public function identifyPlant($base64Image, $alreadyEncoded)
