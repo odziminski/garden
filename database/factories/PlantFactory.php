@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Plant;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use App\Models\User;
 
 class PlantFactory extends Factory
 {
@@ -24,7 +24,7 @@ class PlantFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'user_id' => 1,
+            'user_id' => User::factory(),
         ];
     }
 }

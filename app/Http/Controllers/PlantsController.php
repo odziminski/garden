@@ -3,323 +3,135 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePlantRequest;
-use App\Models\History;
-use App\Models\Needs;
 use App\Models\Plant;
-use App\Models\PlantData;
-use Carbon\Carbon;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\File\File;
-
+use App\Services\PlantPhoto;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class PlantsController extends Controller
 {
-    protected $dates = ['created_at'];
-
-
-    public function getRandomPlant()
+    public function getRandomPlant(Request $request): View
     {
-        $plant = Plant::where('user_id', auth()->id())
+        $plant = $request->user()?->plants()
+            ->with('history', 'needs', 'plantData')
             ->inRandomOrder()
-            ->get()
             ->first();
 
-        if ($plant) {
-            $plant->watered_at = Plant::getDateForHumans($plant->watered_at);
-            $plant->fertilized_at = Plant::getDateForHumans($plant->fertilized_at);
-
-            $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
-            $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
-
-            $wateringPercentage = $this->getPercentageOfCareDate($plant->history->watered_at->valueOf(), $nextWatering->valueOf());
-            $fertilizingPercentage = $this->getPercentageOfCareDate($plant->history->fertilized_at->valueOf(), $nextFertilizing->valueOf());
-
-            $wordWatering = $nextWatering->isPast() ? 'was' : 'in';
-            $wordFertilizing = $nextFertilizing->isPast() ? 'was' : 'in';
-
-            return view('welcome')->with([
-                'plant' => $plant,
-                'nextWatering' => $nextWatering,
-                'nextFertilizing' => $nextFertilizing,
-                'wateringPercentage' => $wateringPercentage,
-                'fertilizingPercentage' => $fertilizingPercentage,
-                'wordWatering' => $wordWatering,
-                'wordFertilizing' => $wordFertilizing,
-            ]);
-        } else {
-            return view('welcome');
-        }
+        return view('welcome', $plant ? $this->plantDetails($plant) : ['plant' => null]);
     }
 
-    public function displaySinglePlant($id)
+    public function displaySinglePlant(Plant $plant): View
     {
-        $plant = Plant::with('history', 'needs', 'plantData')
+        return view('plants', $this->plantDetails($plant->load('history', 'needs', 'plantData')));
+    }
+
+    public function displayPlants(Request $request): View
+    {
+        $plants = $request->user()->plants()
+            ->with('history', 'needs')
             ->get()
-            ->where('id', $id)
-            ->first();
-
-        if ($plant->user_id == auth()->id()) {
-            $nextWatering = Plant::getNextCareDate($plant->history->watered_at, $plant->needs->watering_frequency);
-//            $lateForWatering = Carbon::parse($nextWatering)
-//                ->diffInDays(Carbon::now(), false);
-
-            $nextFertilizing = Plant::getNextCareDate($plant->history->fertilized_at, $plant->needs->fertilizing_frequency);
-
-//            $lateForFertilizing = Carbon::parse($nextFertilizing)
-//                ->diffInDays(Carbon::now(), false);
-            $wateringPercentage = $this->getPercentageOfCareDate($plant->history->watered_at->valueOf(), $nextWatering->valueOf());
-            $fertilizingPercentage = $this->getPercentageOfCareDate($plant->history->fertilized_at->valueOf(), $nextFertilizing->valueOf());
-            $wordWatering = $nextWatering->isPast() ? 'was' : 'in';
-            $wordFertilizing = $nextFertilizing->isPast() ? 'was' : 'in';
-            return view('plants')->with([
-                'plant' => $plant,
-                'nextWatering' => $nextWatering,
-                'nextFertilizing' => $nextFertilizing,
-                'wateringPercentage' => $wateringPercentage,
-                'fertilizingPercentage' => $fertilizingPercentage,
-                'wordWatering' => $wordWatering,
-                'wordFertilizing' => $wordFertilizing,
-            ]);
-        } else {
-            return back();
-        }
-    }
-
-    public function store(StorePlantRequest $request, $auth = null)
-    {
-        $noImage = false;
-        if ($request->webcamAvatar) {
-            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
-            $plantIdData = self::identifyPlant($request->webcamAvatar, true);
-        } else if ($request->hasFile('avatar')) {
-            $plantIdData = self::identifyPlant($request->file('avatar'), false);
-            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
-        } else {
-            if (!empty($uploadedFileUrl))
-                $uploadedFileUrl = $uploadedFileUrl['image_url'];
-            else {
-                $uploadedFileUrl = asset("images/plant.png");
-                $noImage = true;
-            }
-        }
-
-        try {
-            $now = Carbon::now();
-            $plant = Plant::create([
-                'avatar' => $uploadedFileUrl,
-                'user_id' => $auth ? $auth : auth()->user()->id,
-                'name' => $request->input('name'),
-                'created_at' => $now,
-
-            ]);
-            History::create([
-                'plant_id' => $plant->id,
-                'watered_at' => $now,
-                'fertilized_at' => $now
-            ]);
-
-            Needs::create([
-                'plant_id' => $plant->id,
-                'watering_frequency' => $request->input('watering_frequency'),
-                'fertilizing_frequency' => $request->input('fertilizing_frequency')
-            ]);
-            if (!$noImage) {
-                PlantData::create([
-                    'plant_id' => $plant->id,
-                    'plant_name' => $plantIdData->plant_name,
-                    'common_name' => $plantIdData->common_name,
-                    'wikipedia_url' => $plantIdData->wikipedia_url,
-                    'wikipedia_description' => $plantIdData->wikipedia_description,
-                    'taxonomy_class' => $plantIdData->taxonomy_class,
-                    'taxonomy_family' => $plantIdData->taxonomy_family,
-                    'taxonomy_genus' => $plantIdData->taxonomy_genus,
-                    'taxonomy_kingdom' => $plantIdData->taxonomy_kingdom,
-                    'taxonomy_order' => $plantIdData->taxonomy_order,
-                    'taxonomy_phylum' => $plantIdData->taxonomy_phylum,
-                ]);
-            }
-        } catch (QueryException $e) {
-            $err = $e->getPrevious()->getMessage();
-            echo $err;
-        }
-        $plant ? $message = "Plant added successfully" : $message = "Error while adding new plant";
-
-        if ($plant) {
-            return redirect()->route('browse')->with('message', $message);
-        } else {
-            return redirect()->route('add-plant')->with('message', $message);
-        }
-    }
-
-    public function displayPlants()
-    {
-        $plants = Plant::with('history', 'needs', 'plantData')
-            ->get()
-            ->where('user_id', auth()->id())
             ->sortByDesc('history.watered_at');
-        $nextWatering = "";
-        $nextFertilizing = "";
-        foreach ($plants as $plant) {
-            if (isset($plant->history->watered_at)) {
-                $plant->watered_at = Plant::getDateForHumans($plant->history->watered_at);
-            }
-            if (isset($plant->history->fertilized_at)) {
-                $plant->fertilized_at = Plant::getDateForHumans($plant->history->fertilized_at);
-            }
-            if (isset($plant->needs->need_watering)) {
-                $plant->need_watering = $plant->needs->need_watering;
-                $nextWatering = Plant::getNextCareDate($plant->watered_at, $plant->watering_frequency)->diffForHumans();
 
-            }
-            if (isset($plant->needs->need_fertilizing)) {
-                $plant->need_fertilizing = $plant->needs->need_fertilizing;
-                $nextFertilizing = Plant::getNextCareDate($plant->fertilized_at, $plant->fertilizing_frequency)->diffForHumans();
+        return view('browse', ['plants' => $plants]);
+    }
 
+    public function displayEditPlant(Plant $plant): View
+    {
+        return view('edit-plant', ['plant' => $plant->load('needs')]);
+    }
+
+    public function store(StorePlantRequest $request, PlantPhoto $photos): RedirectResponse
+    {
+        $photo = $photos->fromRequest($request);
+
+        DB::transaction(function () use ($request, $photo) {
+            $now = now();
+            $plant = $request->user()->plants()->create([
+                'avatar' => $photo['url'] ?? asset('images/plant.png'),
+                'name' => $request->validated('name'),
+                'created_at' => $now,
+            ]);
+
+            $plant->history()->create(['watered_at' => $now, 'fertilized_at' => $now]);
+            $plant->needs()->create($request->safe()->only(['watering_frequency', 'fertilizing_frequency']));
+
+            if (!empty($photo['identification'])) {
+                $plant->plantData()->create($photo['identification']);
             }
-        }
-//        return view('browse')->with('plants', [$plants,$nextWatering,$nextFertilizing]);
-        return view('browse')->with([
-            'plants' => $plants,
+        }, 3);
+
+        return redirect()->route('browse')->with('message', 'Plant added successfully');
+    }
+
+    public function editPlant(StorePlantRequest $request, Plant $plant, PlantPhoto $photos): RedirectResponse
+    {
+        $photo = $photos->fromRequest($request);
+
+        DB::transaction(function () use ($request, $plant, $photo) {
+            $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
+            $lockedPlant->name = $request->validated('name');
+
+            if ($photo) {
+                $lockedPlant->avatar = $photo['url'];
+                if ($photo['identification']) {
+                    $lockedPlant->plantData()->updateOrCreate([], $photo['identification']);
+                } else {
+                    $lockedPlant->plantData()->delete();
+                }
+            }
+
+            $lockedPlant->save();
+            $needs = $lockedPlant->needs()->firstOrNew();
+            $needs->fill($request->safe()->only(['watering_frequency', 'fertilizing_frequency']));
+            $lockedPlant->setRelation('needs', $needs);
+            $now = now();
+            $nextWatering = $lockedPlant->nextWatering();
+            $nextFertilizing = $lockedPlant->nextFertilizing();
+            $needs->need_watering = $nextWatering !== null && $nextWatering->lte($now);
+            $needs->need_fertilizing = $nextFertilizing !== null && $nextFertilizing->lte($now);
+            $needs->save();
+        }, 3);
+
+        return redirect()->route('browse');
+    }
+
+    public function deletePlant(Plant $plant): RedirectResponse
+    {
+        DB::transaction(function () use ($plant) {
+            $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
+            $lockedPlant->plantData()->delete();
+            $lockedPlant->delete();
+        }, 3);
+
+        return redirect()->route('browse');
+    }
+
+    private function plantDetails(Plant $plant): array
+    {
+        $lastWatering = $plant->history?->watered_at;
+        $lastFertilizing = $plant->history?->fertilized_at;
+        $nextWatering = $plant->nextWatering();
+        $nextFertilizing = $plant->nextFertilizing();
+
+        return [
+            'plant' => $plant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
-        ]);
-    }
-
-
-    public function displayEditPlant($id)
-    {
-        $plant = Plant::with('history', 'needs')
-            ->get()
-            ->where('id', $id)
-            ->first();
-
-        return view('edit-plant')->with('plant', $plant);
-    }
-
-    public function editPlant($id, StorePlantRequest $request)
-    {
-        $wateringFrequency = $request->input('watering_frequency');
-        $fertilizingFrequency = $request->input('fertilizing_frequency');
-
-        if ($request->webcamAvatar) {
-            $uploadedFileUrl = (self::prepareWebcamAvatar($request->webcamAvatar)->storeOnCloudinary('user_uploads'))->getSecurePath();
-            $plantIdData = self::identifyPlant($request->webcamAvatar, true);
-        } else if ($request->hasFile('avatar')) {
-            $plantIdData = self::identifyPlant($request->file('avatar'), false);
-            $uploadedFileUrl = ($request->file('avatar')->storeOnCloudinary('user_uploads'))->getSecurePath();
-        } else {
-            $uploadedFileUrl = Plant::where('id', $id)->value('avatar');
-        }
-
-        try {
-            $plant = Plant::findOrFail($id);
-            $plant->update([
-                'avatar' => $uploadedFileUrl,
-                'name' => $request->input('name')
-            ]);
-
-            $needs = Needs::where('plant_id', $plant->id)->first();
-            $needs->update([
-                'watering_frequency' => $request->input('watering_frequency'),
-                'fertilizing_frequency' => $request->input('fertilizing_frequency')
-            ]);
-        } catch (\Exception $e) {
-            $err = $e->getPrevious()->getMessage();
-            echo $err;
-        }
-
-        return redirect()->route('browse');
-    }
-
-    public function deletePlant($id)
-    {
-        Plant::find($id)->delete();
-        Needs::where('plant_id', $id)->delete();
-        History::where('plant_id', $id)->delete();
-        PlantData::where('plant_id', $id)->delete();
-        return redirect()->route('browse');
-    }
-
-    public function getPercentageOfCareDate($from, $to): int
-    {
-        $now = Carbon::now()->valueOf();
-
-
-        $datediffA = round(($to - $from) / (60 * 60 * 24), 0);
-        $datediffB = round(($now - $from) / (60 * 60 * 24), 0);
-
-        $percentage = ($datediffB * 100) / $datediffA;
-
-        if ($percentage < 100) {
-            return (int)$percentage;
-        } else return 100;
-    }
-
-
-    public function prepareWebcamAvatar($webcamImage)
-    {
-        $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $webcamImage));
-
-        $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
-        file_put_contents($tmpFilePath, $fileData);
-
-        $tmpFile = new File($tmpFilePath);
-
-        $file = new UploadedFile(
-            $tmpFile->getPathname(),
-            $tmpFile->getFilename(),
-            $tmpFile->getMimeType(),
-            0,
-            true
-        );
-        return $file;
-    }
-
-    public function identifyPlant($base64Image, $alreadyEncoded)
-    {
-        if (!$alreadyEncoded) {
-            $base64Image = base64_encode(file_get_contents($base64Image));
-        }
-
-        $apiURL = 'https://api.plant.id/v2/identify';
-
-
-        $header = [
-            "Content-Type" => "application/json",
+            'wateringPercentage' => $this->getPercentageOfCareDate($lastWatering?->valueOf(), $nextWatering?->valueOf()),
+            'fertilizingPercentage' => $this->getPercentageOfCareDate($lastFertilizing?->valueOf(), $nextFertilizing?->valueOf()),
+            'wordWatering' => $nextWatering?->isPast() ? 'was' : 'in',
+            'wordFertilizing' => $nextFertilizing?->isPast() ? 'was' : 'in',
         ];
+    }
 
-        $params = [
-            "api_key" => env('PLANTID_API_KEY'),
-            "images" => [$base64Image],
-            "modifiers" => ["crops_simple", "similar_images"],
-            "plant_language" => "en",
-            "plant_details" => [
-                "common_names",
-                "url",
-                "name_authority",
-                "wiki_description",
-                "taxonomy",
-                "synonyms"
-            ]
-        ];
+    public function getPercentageOfCareDate(?float $from, ?float $to): int
+    {
+        if ($from === null || $to === null || $to <= $from) {
+            return 0;
+        }
 
-        $response = Http::withHeaders($header)->post($apiURL, $params);
-        $responseBody = json_decode($response->getBody());
-
-        return (object)([
-            'plant_name' => $responseBody->suggestions[0]->plant_name,
-            'common_name' => $responseBody->suggestions[0]->plant_details->common_names[0],
-            'taxonomy_class' => $responseBody->suggestions[0]->plant_details->taxonomy->class,
-            'taxonomy_family' => $responseBody->suggestions[0]->plant_details->taxonomy->family,
-            'taxonomy_genus' => $responseBody->suggestions[0]->plant_details->taxonomy->genus,
-            'taxonomy_kingdom' => $responseBody->suggestions[0]->plant_details->taxonomy->kingdom,
-            'taxonomy_order' => $responseBody->suggestions[0]->plant_details->taxonomy->order,
-            'taxonomy_phylum' => $responseBody->suggestions[0]->plant_details->taxonomy->phylum,
-            'wikipedia_url' => $responseBody->suggestions[0]->plant_details->url,
-            'wikipedia_description' => $responseBody->suggestions[0]->plant_details->wiki_description->value,
-        ]);
+        return (int) max(0, min(100, (now()->valueOf() - $from) * 100 / ($to - $from)));
     }
 }

@@ -1,32 +1,103 @@
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
+import 'bootstrap';
 
-require('./bootstrap');
+const randomNameButton = document.querySelector('[data-plant-name]');
+if (randomNameButton) {
+    const names = ['Basil', 'Clover', 'Fern', 'Ivy', 'Juniper', 'Maple', 'Moss', 'Olive', 'Poppy', 'Sage'];
+    const nameInput = document.querySelector('#plant-name');
 
-window.Vue = require('vue');
+    randomNameButton.addEventListener('click', () => {
+        const options = names.filter((name) => name !== nameInput.value);
+        nameInput.value = options[Math.floor(Math.random() * options.length)];
+    });
+}
 
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
+const photo = document.querySelector('[data-plant-photo]');
+if (photo && navigator.mediaDevices?.getUserMedia) {
+    const file = photo.querySelector('[name="avatar"]');
+    const webcam = photo.querySelector('[name="webcamAvatar"]');
+    const start = photo.querySelector('[data-camera-start]');
+    const video = photo.querySelector('[data-camera-video]');
+    const snapshot = photo.querySelector('[data-camera-snapshot]');
+    const close = photo.querySelector('[data-camera-close]');
+    const preview = photo.querySelector('[data-camera-preview]');
+    const remove = photo.querySelector('[data-camera-remove]');
+    const error = photo.querySelector('[data-camera-error]');
+    let pageActive = true;
 
-// const files = require.context('./', true, /\.vue$/i)
-// files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
+    const stop = () => {
+        video.srcObject?.getTracks().forEach((track) => track.stop());
+        video.srcObject = null;
+        video.hidden = true;
+        snapshot.hidden = true;
+        close.hidden = true;
+        start.hidden = false;
+    };
 
-Vue.component('example-component', require('./components/ExampleComponent.vue').default);
+    const clearPhoto = () => {
+        webcam.value = '';
+        preview.removeAttribute('src');
+        preview.hidden = true;
+        remove.hidden = true;
+    };
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
+    photo.querySelector('[data-camera-controls]').hidden = false;
+    video.hidden = true;
 
-const app = new Vue({
-    el: '#app',
-});
+    start.addEventListener('click', async () => {
+        error.textContent = '';
+        start.disabled = true;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' } },
+                audio: false
+            });
+
+            if (!pageActive) {
+                stream.getTracks().forEach((track) => track.stop());
+                return;
+            }
+
+            video.srcObject = stream;
+            video.hidden = false;
+            snapshot.hidden = false;
+            close.hidden = false;
+            start.hidden = true;
+        } catch {
+            error.textContent = 'Could not open the camera. You can choose an image file instead.';
+        } finally {
+            start.disabled = false;
+        }
+    });
+
+    snapshot.addEventListener('click', () => {
+        if (!video.videoWidth || !video.videoHeight) {
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, 1280 / Math.max(video.videoWidth, video.videoHeight));
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        file.value = '';
+        webcam.value = canvas.toDataURL('image/jpeg', 0.9);
+        preview.src = webcam.value;
+        preview.hidden = false;
+        remove.hidden = false;
+        stop();
+    });
+
+    file.addEventListener('change', () => {
+        clearPhoto();
+        stop();
+    });
+    clearPhoto();
+    close.addEventListener('click', stop);
+    remove.addEventListener('click', clearPhoto);
+    window.addEventListener('pageshow', () => { pageActive = true; });
+    window.addEventListener('pagehide', () => {
+        pageActive = false;
+        stop();
+    });
+}

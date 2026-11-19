@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
+use App\Rules\BcryptPassword;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 
 class ResetPasswordController extends Controller
@@ -20,6 +21,15 @@ class ResetPasswordController extends Controller
     */
 
     use ResetsPasswords;
+
+    protected function rules(): array
+    {
+        return [
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['bail', 'required', 'string', 'min:8', 'confirmed', new BcryptPassword()],
+        ];
+    }
 
     /**
      * Where to redirect users after resetting their password.

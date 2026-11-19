@@ -2,40 +2,25 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Support\Facades\Auth;
+use App\Rules\BcryptPassword;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProfileRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
-    {
-        return Auth::check();
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'email' => 'required|unique:users|min:3|max:254',
-            'password' => 'required|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/|confirmed|min:6',
-        ];
-    }
-
-
-    public function messages()
-    {
-        return [
-            'email.required' => 'Email is required!',
-            'password' => 'Password is required!',
+            'email' => ['required', 'string', 'email', 'max:254', Rule::unique('users')->ignore($this->user())],
+            'current_password' => ['required', 'string', 'current_password'],
+            'password' => [
+                'bail',
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+                new BcryptPassword(),
+            ],
         ];
     }
 }

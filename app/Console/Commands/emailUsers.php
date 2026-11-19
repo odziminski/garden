@@ -2,56 +2,31 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\takeCareOfPlant;
+use App\Mail\TakeCareOfPlant;
+use App\Models\Plant;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class emailUsers extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'email:care';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Email users which plants require a care.';
+    protected $description = 'Email owners about plants that need care.';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function handle(): int
     {
-        parent::__construct();
-    }
+        $plants = Plant::query()->with('owner')
+            ->whereHas('needs', function ($query) {
+                $query->where('need_watering', true)->orWhere('need_fertilizing', true);
+            })
+            ->lazyById();
 
-    /**
-     * Execute the console command.
-     *
-     * @return boolean
-     */
-    public function handle(): bool
-    {
-        $emails = DB::table('plants')
-            ->join('users', 'plants.user_id', '=', 'users.id')
-            ->join('needs', 'plants.id', '=', 'needs.plant_id')
-            ->select('users.email', 'plants.id', 'plants.name', 'plants.avatar')
-            ->where(function ($query) {
-                $query->where('needs.need_watering', 1)
-                    ->orWhere('needs.need_fertilizing', 1);
-            })->get();
-
-        foreach ($emails as $email) {
-            Mail::to($email)->send(new takeCareOfPlant($email));
+        foreach ($plants as $plant) {
+            if ($plant->owner) {
+                Mail::to($plant->owner)->send(new TakeCareOfPlant($plant));
+            }
         }
-        return true;
+
+        return self::SUCCESS;
     }
 }

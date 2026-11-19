@@ -2,48 +2,30 @@
 
 namespace App\Http\Requests;
 
+use App\Services\PlantPhoto;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-
 
 class StorePlantRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
-    {
-        return Auth::check();
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-
-
-
-    public function rules()
+    public function rules(): array
     {
         return [
-            'name' => 'required|min:3|max:64',
-             'watering_frequency' => 'required',
-            'fertilizing_frequency' => 'required'
+            'name' => ['required', 'string', 'min:3', 'max:64'],
+            'watering_frequency' => ['required', 'integer', 'min:1', 'max:3650'],
+            'fertilizing_frequency' => ['required', 'integer', 'min:1', 'max:3650'],
+            'avatar' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'webcamAvatar' => [
+                'bail',
+                'nullable',
+                'string',
+                'max:6990532',
+                function (string $attribute, string $value, Closure $fail): void {
+                    if (!PlantPhoto::isValidWebcamImage($value)) {
+                        $fail('The webcam photo must be a JPEG, PNG or WebP image of up to 5 MB.');
+                    }
+                },
+            ],
         ];
     }
-
-
-    public function messages()
-    {
-        return [
-            'name.required' => 'A name is required!',
-            'name.min' => 'Name must at least 3 characters long!',
-            'watering_frequency.required' => 'A watering frequency is required!',
-            'fertilizing_frequency.required' => 'A fertilizing frequency is required!',
-        ];
-    }
-
 }

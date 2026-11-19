@@ -1,63 +1,31 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NeedsController;
 use App\Http\Controllers\PlantsController;
-use App\Http\Controllers\PlantDataController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+Route::get('/', [PlantsController::class, 'getRandomPlant'])->name('welcome');
 
+Auth::routes();
 
-Route::get('/',[PlantsController::class, 'getRandomPlant'])->name('welcome');
+Route::middleware('auth')->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/browse', [PlantsController::class, 'displayPlants'])->name('browse');
+    Route::view('/add-plant', 'add-plant')->name('add-plant');
+    Route::post('/add-plant-query', [PlantsController::class, 'store'])->name('add-plant-query');
 
+    Route::get('/users', [UserController::class, 'displayUserData'])->name('users');
+    Route::put('/users/edit-profile', [UserController::class, 'editUserProfile'])->name('editUserProfile');
 
-Route::get('/login', function () {
-    return view('login');
+    Route::middleware('can:manage,plant')->group(function () {
+        Route::get('/plants/{plant}', [PlantsController::class, 'displaySinglePlant'])->name('plants');
+        Route::get('/edit-plant/{plant}', [PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
+        Route::patch('/edit-plant-query/{plant}', [PlantsController::class, 'editPlant'])->name('editPlant');
+        Route::delete('/delete-plant/{plant}', [PlantsController::class, 'deletePlant'])->name('deletePlant');
+        Route::post('/updateW/{plant}', [NeedsController::class, 'updateWatering'])->name('updateWatering');
+        Route::post('/updateF/{plant}', [NeedsController::class, 'updateFertilizing'])->name('updateFertilizing');
+    });
 });
-Route::get('/about', function () {
-    return view('about');
-})->name('about');
-
-Route::get('/browse',[PlantsController::class, 'displayPlants'])->name('browse');
-
-
-
-Route::get('/users',[UserController::class, 'displayUserData'])->name('users');
-
-Route::get('plants/{id}',[PlantsController::class, 'displaySinglePlant'])->name('plants');
-
-Route::get('/updateW/{id}',[App\Http\Controllers\NeedsController::class, 'updateWatering'])->name('updateWatering');
-Route::get('/updateF/{id}',[App\Http\Controllers\NeedsController::class, 'updateFertilizing'])->name('updateFertilizing');
-
-
-Route::get('/add-plant', function () {
-    return view('add-plant');
-})->name('add-plant');
-
-Route::post('/add-plant-query',[PlantsController::class, 'store'])->name('add-plant-query');
-
-
-Auth::routes();
-
-Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
-
-Route::put('/users/edit-profile',[UserController::class, 'editUserProfile'])->name('editUserProfile');
-
-Route::get('/delete-plant/{id}',[PlantsController::class, 'deletePlant'])->name('deletePlant');
-Route::get('/edit-plant/{id}',[PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
-Route::patch('/edit-plant-query/{id}',[PlantsController::class, 'editPlant'])->name('editPlant');
-
-Route::get('/test',[PlantDataController::class, 'test']);
-
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -27,13 +27,12 @@ class Plant extends Model
         'user_id',
         'created_at',
         'name',
-        'species',
     ];
 
 
-    public function users()
+    public function owner()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function needs()
@@ -51,13 +50,23 @@ class Plant extends Model
         return $this->hasOne(PlantData::class);
     }
 
-    public static function getDateForHumans($date): string
+    public function avatarUrl(): string
     {
-        return Carbon::parse($date)->diffForHumans();
+        return !$this->avatar || $this->avatar === 'plant.png' ? asset('images/plant.png') : $this->avatar;
     }
 
-    public static function getNextCareDate($date, $interval): Carbon
+    public function nextWatering(): ?Carbon
     {
-        return Carbon::parse($date)->addDays($interval);
+        return $this->nextCareDate($this->history?->watered_at, $this->needs?->watering_frequency);
+    }
+
+    public function nextFertilizing(): ?Carbon
+    {
+        return $this->nextCareDate($this->history?->fertilized_at, $this->needs?->fertilizing_frequency);
+    }
+
+    private function nextCareDate(?Carbon $previous, ?int $days): ?Carbon
+    {
+        return $previous && $days > 0 ? $previous->copy()->addDays($days) : null;
     }
 }

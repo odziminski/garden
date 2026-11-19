@@ -1,11 +1,13 @@
-@component('mail::message')
-# One of your plants require watering and/or fertilizing!
-<img src={{$email->avatar}} class="img-responsive" style="display:block;margin-left: auto;margin-right: auto;width:250px;height:auto;" alt="Plant image">
+<x-mail::message>
+# {{ $plant->name }} needs care
 
-@component('mail::button', ['url' => URL::to('plants/' . $email->id)])
-Visit it!
-@endcomponent
+Check your garden for watering and fertilizing reminders.
 
-Thank you for being so nice to your plants,<br>
-{{ config('app.name') }} 🌸
-@endcomponent
+<img src="{{ $plant->avatarUrl() }}" width="250" alt="Plant photo">
+
+<x-mail::button :url="route('plants', $plant)">
+View plant
+</x-mail::button>
+
+{{ config('app.name') }}
+</x-mail::message>

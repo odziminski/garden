@@ -9,15 +9,7 @@
             }
         }
     </style>
-    <body>
-    <?php
-    if (!Auth::check()) {
-        $plant->name = 'Sweet boo';
-        $plant->plantData->plant_name = 'monstera deliciosa';
-        $nextWatering = '3 days from now';
-        $nextFertilizing = '15 days from now';
-    }
-    ?>
+
 
     <div class="container-fluid text-center">
         <div class="row content">
@@ -30,6 +22,7 @@
                     </div>
                 </div>
 
+                @if ($plant)
                 <div class="card p-3 mb-2 mr-5">
                     <div class="d-flex justify-content-between">
                         <div class="d-flex flex-row align-items-center">
@@ -45,19 +38,14 @@
 
                         </h4>
 
-                        @auth
-                            <img src="{{str_ireplace( 'https://', 'http://', $plant->avatar )}}"
-                                 class="plant_image_card">
-                        @endauth @guest
-                            <img src="{{asset('images/plant.png')}}">
-                        @endguest
+                        <img src="{{ $plant->avatarUrl() }}" class="plant_image_card" alt="{{ $plant->name }}">
 
                         <div class="d-flex flex-row align-items-end">
                         </div>
                         is happy on average, but if you miss one day, it'll be sad <br/> <br/>
                         scheduled watering
                         {{$wordWatering}}
-                        {{$nextWatering->diffForHumans()}}
+                        {{ $nextWatering?->diffForHumans() ?? "—" }}
                         <div>
                             <div class="progress">
                                 <div class="progress-bar <?php if($wateringPercentage == 100) echo " bg-danger" ?>"
@@ -67,7 +55,7 @@
                             </div>
                             scheduled fertilizing
                             {{$wordFertilizing}}
-                            {{$nextFertilizing->diffForHumans()}}
+                            {{ $nextFertilizing?->diffForHumans() ?? "—" }}
                             <div class="progress">
                                 <div class="progress-bar <?php if($fertilizingPercentage == 100) echo " bg-danger" ?>"
                                      role="progressbar" style="width: {{$fertilizingPercentage}}%"
@@ -77,6 +65,9 @@
                         </div>
                     </div>
                 </div>
+                @elseif (auth()->check())
+                    <a class="btn" href="{{ route('add-plant') }}">Add your first plant</a>
+                @endif
             </div>
             <div class="col-6">
                 <svg width="560" height="500" viewBox="0 0 560 526" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1452,6 +1443,6 @@
         </div>
     </div>
 
-    </body>
+
 
 @endsection
