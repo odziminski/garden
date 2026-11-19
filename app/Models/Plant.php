@@ -30,9 +30,9 @@ class Plant extends Model
     ];
 
 
-    public function users()
+    public function owner()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function needs()
@@ -52,7 +52,7 @@ class Plant extends Model
 
     public function avatarUrl(): string
     {
-        return $this->avatar === 'plant.png' ? asset('images/plant.png') : $this->avatar;
+        return !$this->avatar || $this->avatar === 'plant.png' ? asset('images/plant.png') : $this->avatar;
     }
 
     public function nextWatering(): ?Carbon
@@ -68,15 +68,5 @@ class Plant extends Model
     private function nextCareDate(?Carbon $previous, ?int $days): ?Carbon
     {
         return $previous && $days > 0 ? $previous->copy()->addDays($days) : null;
-    }
-
-    public static function getDateForHumans($date): string
-    {
-        return Carbon::parse($date)->diffForHumans();
-    }
-
-    public static function getNextCareDate($date, $interval): Carbon
-    {
-        return Carbon::parse($date)->addDays($interval);
     }
 }

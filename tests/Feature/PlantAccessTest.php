@@ -62,7 +62,9 @@ class PlantAccessTest extends TestCase
         ])->assertRedirect(route('browse'));
 
         $plant = $owner->plants()->sole();
-        $plant->needs()->update(['need_watering' => true, 'need_fertilizing' => true]);
+        $plant->history()->update(['watered_at' => now()->subDays(8), 'fertilized_at' => now()->subDays(36)]);
+        $this->artisan('checkForWatering')->assertSuccessful();
+        $this->artisan('checkForFertilizing')->assertSuccessful();
         $this->get(route('welcome'))->assertOk()->assertSee('My fern')->assertSee('scheduled watering');
         $this->get(route('browse'))->assertOk()->assertSee('My fern');
         $this->get(route('plants', $plant))->assertOk();

@@ -83,10 +83,15 @@ class PlantsController extends Controller
             }
 
             $lockedPlant->save();
-            $lockedPlant->needs()->updateOrCreate([], $request->safe()->only([
-                'watering_frequency',
-                'fertilizing_frequency',
-            ]));
+            $needs = $lockedPlant->needs()->firstOrNew();
+            $needs->fill($request->safe()->only(['watering_frequency', 'fertilizing_frequency']));
+            $lockedPlant->setRelation('needs', $needs);
+            $now = now();
+            $nextWatering = $lockedPlant->nextWatering();
+            $nextFertilizing = $lockedPlant->nextFertilizing();
+            $needs->need_watering = $nextWatering !== null && $nextWatering->lte($now);
+            $needs->need_fertilizing = $nextFertilizing !== null && $nextFertilizing->lte($now);
+            $needs->save();
         }, 3);
 
         return redirect()->route('browse');
