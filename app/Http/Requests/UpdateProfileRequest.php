@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Closure;
+use App\Rules\BcryptPassword;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,11 +19,7 @@ class UpdateProfileRequest extends FormRequest
                 'string',
                 'min:8',
                 'confirmed',
-                function (string $attribute, string $value, Closure $fail): void {
-                    if (strlen($value) > 72) {
-                        $fail('The password must be at most 72 bytes.');
-                    }
-                },
+                new BcryptPassword(),
             ],
         ];
     }
