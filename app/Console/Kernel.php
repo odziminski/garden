@@ -24,10 +24,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('checkForWatering')
-            ->everyMinute()->withoutOverlapping(5);
-        $schedule->command('checkForFertilizing')
-            ->everyMinute()->withoutOverlapping(5);
         $schedule->command('email:care')
             ->everyMinute()->withoutOverlapping(5);
     }

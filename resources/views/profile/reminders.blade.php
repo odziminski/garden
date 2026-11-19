@@ -15,6 +15,7 @@
             </ul>
         @endif
 
+        @php($previousTime = old('reminder_time'))
         <form method="POST" action="{{ route('reminders.update') }}">
             @csrf
             @method('PUT')
@@ -27,7 +28,7 @@
 
             <label class="form-label" for="reminder-time">Reminder time</label>
             <input class="form-control mb-3" id="reminder-time" name="reminder_time" type="time"
-                   value="{{ old('reminder_time', $user->reminder_time) }}" required>
+                   value="{{ is_string($previousTime) ? $previousTime : $user->reminder_time }}" required>
 
             <label class="form-label" for="reminder-timezone">Time zone</label>
             <select class="form-select mb-3" id="reminder-timezone" name="reminder_timezone" required>

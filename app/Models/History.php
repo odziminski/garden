@@ -21,7 +21,9 @@ class History extends Model
     protected $fillable = [
         'plant_id',
         'watered_at',
-        'fertilized_at'
+        'watered_on',
+        'fertilized_at',
+        'fertilized_on',
     ];
 
     public function plant()

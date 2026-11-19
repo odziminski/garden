@@ -8,7 +8,10 @@
 
 <label class="form-label" for="plant-name">Plant name</label>
 <div class="input-group mb-3">
-    <input class="form-control" id="plant-name" name="name" value="{{ old('name', $plant?->name) }}"
+    @php
+        $enteredName = old('name', $plant?->name);
+    @endphp
+    <input class="form-control" id="plant-name" name="name" value="{{ is_string($enteredName) ? $enteredName : '' }}"
            minlength="3" maxlength="64" required>
     <button class="btn btn-outline-secondary" type="button" data-plant-name>Random name</button>
 </div>
@@ -28,10 +31,25 @@
     </div>
 </div>
 
-<label class="form-label" for="watering-frequency">Watering frequency (days)</label>
-<input class="form-control mb-3" id="watering-frequency" type="number" name="watering_frequency"
-       min="1" max="3650" value="{{ old('watering_frequency', $plant?->needs?->watering_frequency) }}" required>
+<fieldset class="mb-4">
+    <legend class="h5">Care schedule</legend>
+    <p class="text-muted">Summer runs April through September. Winter runs October through March. Leave a seasonal interval blank to use the default for that type of care.</p>
 
-<label class="form-label" for="fertilizing-frequency">Fertilizing frequency (days)</label>
-<input class="form-control mb-3" id="fertilizing-frequency" type="number" name="fertilizing_frequency"
-       min="1" max="3650" value="{{ old('fertilizing_frequency', $plant?->needs?->fertilizing_frequency) }}" required>
+    @foreach (\App\Enums\CareType::cases() as $careType)
+        <h3 class="h6 mt-3">{{ $careType->label() }}</h3>
+        <div class="row g-3 mb-3">
+            @foreach (['Default' => '', 'Summer' => 'summer_', 'Winter' => 'winter_'] as $label => $prefix)
+                @php
+                    $field = $prefix.$careType->frequencyColumn();
+                    $enteredInterval = old($field, $plant?->needs?->$field);
+                @endphp
+                <div class="col-sm-4">
+                    <label class="form-label" for="{{ $field }}">{{ $label }} (days)</label>
+                    <input class="form-control" id="{{ $field }}" type="number" name="{{ $field }}"
+                           min="1" max="3650" value="{{ is_scalar($enteredInterval) ? $enteredInterval : '' }}"
+                           @required($prefix === '')>
+                </div>
+            @endforeach
+        </div>
+    @endforeach
+</fieldset>

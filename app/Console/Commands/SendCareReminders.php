@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Mail\DailyCareDigest;
 use App\Models\User;
+use App\Services\PlantCareSchedule;
 use App\Services\ReminderTime;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,9 +17,10 @@ class SendCareReminders extends Command
 
     protected $description = 'Send one daily care email to each owner with plants that need care.';
 
-    public function handle(): int
+    public function handle(PlantCareSchedule $schedule): int
     {
         $instant = now();
+        $schedule->refreshDueFlags(asOf: $instant);
         $failed = false;
         $due = static function (Builder $needs): void {
             $needs->where(fn (Builder $flags) => $flags->where('need_watering', true)->orWhere('need_fertilizing', true));

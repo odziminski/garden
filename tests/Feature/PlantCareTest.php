@@ -60,6 +60,33 @@ class PlantCareTest extends TestCase
         $digest->assertDontSeeInHtml($upcoming->name);
     }
 
+    public function test_digest_recalculates_due_actions_before_sending(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-01 12:00:00', 'UTC'));
+        Mail::fake();
+
+        $owner = User::factory()->create(['reminder_timezone' => 'Europe/Warsaw']);
+        $noLongerDue = $this->createPlant($owner, 'Ivy', 3);
+        $noLongerDue->needs()->update([
+            'summer_watering_frequency' => 2,
+            'winter_watering_frequency' => 7,
+            'need_watering' => true,
+        ]);
+        $newlyDue = $this->createPlant($owner, 'Fern', 3);
+        $newlyDue->needs()->update([
+            'summer_watering_frequency' => 7,
+            'winter_watering_frequency' => 2,
+        ]);
+
+        $this->artisan('email:care')->assertSuccessful();
+
+        Mail::assertSentCount(1);
+        Mail::assertSent(DailyCareDigest::class, fn ($mail) => $mail->hasTo($owner->email)
+            && $mail->plants->modelKeys() === [$newlyDue->id]);
+        $this->assertDatabaseHas('needs', ['plant_id' => $noLongerDue->id, 'need_watering' => false]);
+        $this->assertDatabaseHas('needs', ['plant_id' => $newlyDue->id, 'need_watering' => true]);
+    }
+
     public function test_failed_delivery_releases_the_daily_claim_for_a_retry(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-20 12:00:00', 'UTC'));

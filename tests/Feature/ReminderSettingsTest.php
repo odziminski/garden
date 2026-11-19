@@ -39,6 +39,21 @@ class ReminderSettingsTest extends TestCase
         $this->get(route('users'))->assertOk()->assertSee('Daily care reminders')->assertSee('18:30');
     }
 
+    public function test_invalid_form_values_leave_the_settings_page_readable(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->from(route('users'))
+            ->followingRedirects()
+            ->put(route('reminders.update'), [
+                'reminders_enabled' => '1',
+                'reminder_timezone' => 'UTC',
+                'reminder_time' => ['12:00'],
+            ])
+            ->assertOk()
+            ->assertSee('Daily care reminders')
+            ->assertSee('does not match the format');
+    }
+
     public function test_reminder_preferences_validate_time_and_time_zone(): void
     {
         $this->actingAs(User::factory()->create())->putJson('/users/reminders', [

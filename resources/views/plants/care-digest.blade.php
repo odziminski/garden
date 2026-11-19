@@ -14,8 +14,8 @@
 </p>
 @endforeach
 
-<x-mail::button :url="route('browse')">
-Open your garden
+<x-mail::button :url="route('care.today')">
+Open Today
 </x-mail::button>
 
 {{ config('app.name') }}

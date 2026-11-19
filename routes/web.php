@@ -22,6 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/users/edit-profile', [UserController::class, 'editUserProfile'])->name('editUserProfile');
     Route::put('/users/reminders', [ReminderSettingsController::class, 'update'])->name('reminders.update');
 
+    require __DIR__.'/care.php';
+
     Route::middleware('can:manage,plant')->group(function () {
         Route::get('/plants/{plant}', [PlantsController::class, 'displaySinglePlant'])->name('plants');
         Route::get('/edit-plant/{plant}', [PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
@@ -29,5 +31,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete-plant/{plant}', [PlantsController::class, 'deletePlant'])->name('deletePlant');
         Route::post('/updateW/{plant}', [NeedsController::class, 'updateWatering'])->name('updateWatering');
         Route::post('/updateF/{plant}', [NeedsController::class, 'updateFertilizing'])->name('updateFertilizing');
+
+        require __DIR__.'/photo-journal.php';
     });
 });

@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\CareType;
+use App\Services\PlantCareSchedule;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
-use Carbon\Carbon;
 
 
 class Plant extends Model
@@ -16,6 +20,7 @@ class Plant extends Model
     public $primaryKey  = 'id';
     public $timestamps = false;
 
+    protected $casts = ['created_at' => 'datetime'];
 
       /**
      * The attributes that are mass assignable.
@@ -45,6 +50,11 @@ class Plant extends Model
         return $this->hasOne(History::class);
     }
 
+    public function careLogs(): HasMany
+    {
+        return $this->hasMany(CareLog::class);
+    }
+
     public function plantData()
     {
         return $this->hasOne(PlantData::class);
@@ -55,18 +65,18 @@ class Plant extends Model
         return !$this->avatar || $this->avatar === 'plant.png' ? asset('images/plant.png') : $this->avatar;
     }
 
-    public function nextWatering(): ?Carbon
+    public function nextWatering(?CarbonInterface $asOf = null): ?Carbon
     {
-        return $this->nextCareDate($this->history?->watered_at, $this->needs?->watering_frequency);
+        return PlantCareSchedule::nextDate($this, CareType::Watering, $asOf);
     }
 
-    public function nextFertilizing(): ?Carbon
+    public function nextFertilizing(?CarbonInterface $asOf = null): ?Carbon
     {
-        return $this->nextCareDate($this->history?->fertilized_at, $this->needs?->fertilizing_frequency);
+        return PlantCareSchedule::nextDate($this, CareType::Fertilizing, $asOf);
     }
 
-    private function nextCareDate(?Carbon $previous, ?int $days): ?Carbon
+    public function careTimezone(): string
     {
-        return $previous && $days > 0 ? $previous->copy()->addDays($days) : null;
+        return $this->owner?->reminder_timezone ?? 'UTC';
     }
 }
