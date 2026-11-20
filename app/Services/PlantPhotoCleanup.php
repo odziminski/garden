@@ -8,11 +8,12 @@ use Illuminate\Support\Str;
 
 class PlantPhotoCleanup
 {
-    public function reserveUpload(string $publicId): void
+    public function reserveUpload(string $publicId, string $provider = 'cloudinary'): void
     {
         // Give the request time to upload and commit before treating its asset as abandoned.
         DB::table('plant_photo_cleanup')->insert([
             'public_id' => $publicId,
+            'provider' => $provider,
             'delivery_type' => 'authenticated',
             'available_at' => now()->addHour(),
         ]);
@@ -29,10 +30,11 @@ class PlantPhotoCleanup
         }
     }
 
-    public function enqueue(string $publicId, ?string $legacyUrl = null): void
+    public function enqueue(string $publicId, ?string $legacyUrl = null, string $provider = 'cloudinary'): void
     {
         DB::table('plant_photo_cleanup')->insertOrIgnore([
             'public_id' => $publicId,
+            'provider' => $provider,
             'delivery_type' => $legacyUrl === null ? 'authenticated' : 'upload',
             'legacy_url' => $legacyUrl,
             'available_at' => now(),
@@ -58,7 +60,7 @@ class PlantPhotoCleanup
 
             try {
                 $cloud = $entry->legacy_url === null ? null : explode('/', $entry->legacy_url)[3];
-                $photos->delete($entry->public_id, $entry->delivery_type, $cloud);
+                $photos->delete($entry->public_id, $entry->delivery_type, $cloud, $entry->provider);
                 DB::table('plant_photo_cleanup')->where('id', $entry->id)->where('claim_token', $token)->delete();
             } catch (PlantPhotoStorageException) {
                 Log::warning('Plant photo cleanup will be retried.', ['cleanup_id' => $entry->id]);

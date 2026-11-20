@@ -10,6 +10,12 @@ class ReminderSettingsTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_today_links_directly_to_reminder_settings(): void
+    {
+        $this->actingAs(User::factory()->create())->get(route('care.today'))
+            ->assertOk()->assertSee(route('users').'#reminder-heading');
+    }
+
     public function test_only_signed_in_users_can_save_their_own_reminder_preferences(): void
     {
         $owner = User::factory()->create();

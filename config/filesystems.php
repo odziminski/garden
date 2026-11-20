@@ -14,6 +14,7 @@ return [
     */
 
     'default' => env('FILESYSTEM_DRIVER', 'local'),
+    'plant_photo_driver' => env('PLANT_PHOTO_DRIVER', 'cloudinary'),
 
     /*
     |--------------------------------------------------------------------------
@@ -46,6 +47,13 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+        ],
+
+        'plant-photos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/plant-photos'),
+            'visibility' => 'private',
+            'throw' => true,
         ],
 
         'public' => [

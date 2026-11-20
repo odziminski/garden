@@ -47,8 +47,15 @@
                                            href="{{ route('users') }}">Profile</a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item" href="{{ route('users') }}#reminder-heading">Reminders</a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item" @if (request()->routeIs('garden-sharing.*')) aria-current="page" @endif
                                            href="{{ route('garden-sharing.index') }}">Garden sharing</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" @if (request()->routeIs('handoff.*')) aria-current="page" @endif
+                                           href="{{ route('handoff.index') }}">Vacation handoff</a>
                                     </li>
                                     <li>
                                         <form method="POST" action="{{ route('logout') }}">

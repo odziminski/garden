@@ -15,6 +15,25 @@ class PlantObservationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_location_change_can_schedule_a_quick_follow_up_in_the_gardens_timezone(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-20 01:00:00', 'UTC'));
+        $owner = User::factory()->create(['reminder_timezone' => 'America/Los_Angeles']);
+        $plant = Plant::factory()->for($owner, 'owner')->create();
+
+        $this->actingAs($owner)->post(route('plants.observations.store', $plant), [
+            'category' => 'location_change',
+            'observed_on' => '2026-11-19',
+            'notes' => 'Moved the fern away from the radiator.',
+            'follow_up_in_days' => '7',
+        ])->assertSessionHasNoErrors();
+
+        $observation = $plant->observations()->sole();
+        $this->assertSame('Check the plant in its new location', $observation->followUpTask->name);
+        $this->assertSame('2026-11-26', $observation->followUpTask->due_on);
+        $this->get(route('plants', $plant))->assertSee('Change of location')->assertSee('Moved the fern away from the radiator.');
+    }
+
     public function test_member_records_an_observation_using_the_gardens_calendar_day(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-19 23:30:00', 'UTC'));

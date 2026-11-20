@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\CarePushDelivery;
+use App\Models\PlantHandoff;
 use App\Mail\DailyCareDigest;
 use App\Models\PlantTask;
 use App\Models\User;
@@ -36,10 +37,10 @@ class CareReminderOutbox
                     $query->orWhere('push_reminders_enabled', true);
                 }
             })
-            ->where(fn (Builder $users) => $users->whereHas('plants')->orWhereExists(
-                PlantTask::query()->active()->selectRaw('1')->whereColumn('assignee_id', 'users.id')
-                    ->where('due_on', '<=', $latestPossibleDate)->toBase()
-            ))
+            ->where(fn (Builder $users) => $users->whereHas('plants')
+                ->orWhereExists(PlantHandoff::query()->activeAt($instant)->whereColumn('plant_handoffs.member_id', 'users.id')->selectRaw('1')->toBase())
+                ->orWhereExists(PlantTask::query()->active()->selectRaw('1')->whereColumn('assignee_id', 'users.id')
+                    ->where('due_on', '<=', $latestPossibleDate)->toBase()))
             ->lazyById(100);
 
         foreach ($recipients as $recipient) {

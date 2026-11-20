@@ -13,6 +13,7 @@ class PlantPhotoEntry extends Model
         'taken_on',
         'public_id',
         'format',
+        'provider',
         'note',
     ];
 

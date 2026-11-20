@@ -54,13 +54,18 @@ class GardenSharing
 
     public function ensureCanAccept(GardenInvitation $invitation, User $member): void
     {
+        $this->ensureInvitedUser($member, $invitation->email, $invitation->owner_id);
+        abort_unless($invitation->isPending(), 410, 'This invitation has expired or is no longer available.');
+    }
+
+    public function ensureInvitedUser(User $member, string $email, int $ownerId): void
+    {
         abort_unless($member->hasVerifiedEmail(), 403, 'Verify your email address before accepting an invitation.');
         abort_unless(
-            $invitation->email === $member->email && $invitation->owner_id !== $member->id,
+            $email === $member->email && $ownerId !== $member->id,
             403,
             'This link can only be used by the account with the invited email address.'
         );
-        abort_unless($invitation->isPending(), 410, 'This invitation has expired or is no longer available.');
     }
 
     public function accept(GardenInvitation $invitation, User $member): void

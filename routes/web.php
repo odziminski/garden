@@ -23,9 +23,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/users/reminders', [ReminderSettingsController::class, 'update'])->name('reminders.update');
 
     require __DIR__.'/care.php';
+    require __DIR__.'/plant-checks.php';
     require __DIR__.'/plant-tasks.php';
     require __DIR__.'/plant-observations.php';
     require __DIR__.'/garden-sharing.php';
+    require __DIR__.'/handoff.php';
     require __DIR__.'/monthly-report.php';
     require __DIR__.'/account.php';
 

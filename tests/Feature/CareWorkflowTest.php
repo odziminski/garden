@@ -160,17 +160,17 @@ class CareWorkflowTest extends TestCase
         $this->assertDatabaseHas('care_logs', ['plant_id' => $today->id, 'type' => 'watering']);
     }
 
-    public function test_new_plants_can_use_a_watering_default_and_leave_fertilizing_disabled(): void
+    public function test_new_plants_can_leave_all_care_reminders_disabled(): void
     {
         $owner = User::factory()->create();
-        $this->actingAs($owner)->get(route('add-plant'))->assertOk()->assertSee('Seasonal options');
+        $this->actingAs($owner)->get(route('add-plant'))->assertOk()->assertDontSee('Seasonal options');
         $this->post(route('add-plant-query'), ['name' => 'Rain lily'])->assertRedirect(route('browse'));
         $plant = $owner->plants()->sole();
 
         $this->assertDatabaseHas('needs', [
-            'plant_id' => $plant->id, 'watering_frequency' => 7, 'fertilizing_frequency' => 0,
+            'plant_id' => $plant->id, 'watering_frequency' => 0, 'fertilizing_frequency' => 0,
         ]);
-        $this->assertNotNull($plant->nextWatering());
+        $this->assertNull($plant->nextWatering());
         $this->assertNull($plant->nextFertilizing());
     }
 

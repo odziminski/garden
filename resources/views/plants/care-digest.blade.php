@@ -1,17 +1,20 @@
 <x-mail::message>
-# Your plants need care
+# Plant checks and care tasks for today
 
 @foreach ($plants as $plant)
 <p>
     <strong>{{ $plant->name }}</strong>
-    @if ($plant->needs?->need_watering && $plant->needs?->need_fertilizing)
-        needs watering and fertilizing.
-    @elseif ($plant->needs?->need_watering)
-        needs watering.
-    @elseif ($plant->needs?->need_fertilizing)
-        needs fertilizing.
-    @endif
 </p>
+@if ($plant->soil_check_due || $plant->needs?->need_watering || $plant->needs?->need_fertilizing)
+<ul>
+@if ($plant->soil_check_due || $plant->needs?->need_watering)
+<li>Check soil and decide whether to water.</li>
+@endif
+@if ($plant->needs?->need_fertilizing)
+<li>Review whether it is time to feed.</li>
+@endif
+</ul>
+@endif
 @if ($plant->relationLoaded('careTasks') && $plant->careTasks->isNotEmpty())
 <ul>
 @foreach ($plant->careTasks as $task)

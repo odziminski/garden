@@ -18,10 +18,30 @@ test('the daily workflow works from login through undo and first-plant setup', a
 
     await page.goto('/add-plant');
     await page.getByLabel('Plant name').fill('Browser cactus');
-    await expect(page.getByLabel('Watering interval (days)')).toHaveValue('7');
-    await expect(page.getByLabel('Fertilizing interval (days)')).toHaveValue('');
+    await expect(page.getByText('Soil check reminder (optional)', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Add plant' }).click();
     await expect(page.getByRole('link', { name: 'Browser cactus', exact: true })).toBeVisible();
+});
+
+test('a room check can end with moist soil and leave watering history empty', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/add-plant');
+    await page.getByLabel('Plant name').fill('Browser mint');
+    await page.getByText('Location and care notes', { exact: true }).click();
+    await page.getByLabel('Room or location').fill('Browser kitchen');
+    await page.getByText('Soil check reminder (optional)', { exact: true }).click();
+    await page.getByLabel('Repeat every (days)').fill('5');
+    await page.getByRole('button', { name: 'Add plant' }).click();
+
+    await page.goto('/today');
+    await page.getByLabel('Room', { exact: true }).selectOption('Browser kitchen');
+    await page.getByRole('button', { name: 'Show plants' }).click();
+    await expect(page.getByRole('heading', { name: 'Browser kitchen' })).toBeVisible();
+    await page.getByRole('button', { name: 'Still moist: Browser mint' }).click();
+    await expect(page.getByText('Check recorded.', { exact: true })).toBeVisible();
+    await page.getByRole('link', { name: 'Browser mint', exact: true }).click();
+    await expect(page.getByText('No care recorded yet.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Still moist', { exact: true }).first()).toBeVisible();
 });
 
 test('the mobile Today page and install metadata load', async ({ page, request }) => {

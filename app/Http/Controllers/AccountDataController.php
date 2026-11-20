@@ -21,7 +21,7 @@ class AccountDataController extends Controller
     {
         $user = $request->user();
         $plants = $user->plants()
-            ->with(['needs', 'history', 'careLogs', 'careTasks.completions', 'observations', 'plantData'])
+            ->with(['needs', 'history', 'careLogs', 'careTasks.completions', 'observations', 'plantData', 'checkSchedule', 'plantChecks'])
             ->orderBy('id')->get()->map(function (Plant $plant): array {
                 return [
                     ...$plant->makeHidden(['avatar', 'cover_public_id'])->toArray(),

@@ -42,6 +42,7 @@
                     <label class="form-label" for="entry-note">Note (optional)</label>
                     <textarea class="form-control" id="entry-note" name="note" rows="3" maxlength="1000">{{ is_string($oldNote) ? $oldNote : '' }}</textarea>
                 </div>
+                @include('plants.feeding-fields', ['fieldPrefix' => 'edit-care', 'feedingEntry' => $entry])
             </div>
             <button class="btn btn-primary" type="submit">Save correction</button>
         </form>

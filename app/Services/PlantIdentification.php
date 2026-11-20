@@ -158,13 +158,17 @@ class PlantIdentification
 
     private function downloadImage(Plant $plant): ?string
     {
-        $url = $this->storage->downloadUrl($plant->cover_public_id, $plant->cover_format, now(), ttl: 60);
-        $response = Http::connectTimeout(5)->timeout(10)->withoutRedirecting()
-            ->withOptions(['stream' => true, 'read_timeout' => 5])->get($url);
-        $stream = $response->toPsrResponse()->getBody();
+        if ($plant->cover_provider === 'local') {
+            $stream = Utils::streamFor($this->storage->openLocal($plant->cover_public_id));
+        } else {
+            $url = $this->storage->downloadUrl($plant->cover_public_id, $plant->cover_format, now(), ttl: 60);
+            $response = Http::connectTimeout(5)->timeout(10)->withoutRedirecting()
+                ->withOptions(['stream' => true, 'read_timeout' => 5])->get($url);
+            $stream = $response->toPsrResponse()->getBody();
+        }
 
         try {
-            if (!$response->successful() || (int) $response->header('Content-Length') > self::MAX_IMAGE_BYTES) {
+            if (isset($response) && (!$response->successful() || (int) $response->header('Content-Length') > self::MAX_IMAGE_BYTES)) {
                 return null;
             }
 

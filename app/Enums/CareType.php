@@ -38,6 +38,14 @@ enum CareType: string
         return ucfirst($this->value);
     }
 
+    public function reminderLabel(): string
+    {
+        return match ($this) {
+            self::Watering => 'Watering check',
+            self::Fertilizing => 'Fertilizing review',
+        };
+    }
+
     public function snoozeColumn(): string
     {
         return $this->value.'_snoozed_until';

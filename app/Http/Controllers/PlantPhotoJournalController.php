@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 
 class PlantPhotoJournalController extends Controller
 {
@@ -26,14 +27,15 @@ class PlantPhotoJournalController extends Controller
 
         $publicId = 'plant_journal/'.Str::uuid();
         try {
-            $format = $photos->upload($request->file('photo'), $publicId);
+            $provider = $photos->writeProvider();
+            $format = $photos->upload($request->file('photo'), $publicId, provider: $provider);
         } catch (PlantPhotoStorageException $exception) {
             return $returnToJournal
                 ->withErrors(['photo' => $exception->getMessage()], 'photoJournal')
                 ->withInput($request->safe()->only(['taken_on', 'note']));
         }
 
-        DB::transaction(function () use ($request, $plant, $publicId, $format, $cleanup) {
+        DB::transaction(function () use ($request, $plant, $publicId, $format, $provider, $cleanup) {
             $lockedPlant = $request->user()->plants()->lockForUpdate()->findOrFail($plant->getKey());
 
             PlantPhotoEntry::query()->create([
@@ -42,6 +44,7 @@ class PlantPhotoJournalController extends Controller
                 'note' => $request->validated('note'),
                 'public_id' => $publicId,
                 'format' => $format,
+                'provider' => $provider,
             ]);
             $cleanup->keepUpload($publicId);
         }, 3);
@@ -49,17 +52,15 @@ class PlantPhotoJournalController extends Controller
         return $returnToJournal->with('photoJournalStatus', 'Photo added to the journal.');
     }
 
-    public function show(Plant $plant, string $entry, PlantJournalPhotos $photos): RedirectResponse
+    public function show(Plant $plant, string $entry, PlantJournalPhotos $photos): Response
     {
         $photo = PlantPhotoEntry::query()->forPlant($plant)->findOrFail($entry);
 
         try {
-            $url = $photos->downloadUrl($photo->public_id, $photo->format, now());
+            return $photos->serve($photo->public_id, $photo->format, $photo->provider);
         } catch (PlantPhotoStorageException $exception) {
             abort(503, $exception->getMessage());
         }
-
-        return redirect()->away($url, 302, ['Cache-Control' => 'private, no-store', 'Referrer-Policy' => 'no-referrer']);
     }
 
     public function destroy(Request $request, Plant $plant, string $entry, PlantPhotoCleanup $cleanup): RedirectResponse
@@ -69,7 +70,7 @@ class PlantPhotoJournalController extends Controller
         DB::transaction(function () use ($request, $plant, $entry, $cleanup) {
             $lockedPlant = $request->user()->plants()->lockForUpdate()->findOrFail($plant->getKey());
             $photo = PlantPhotoEntry::query()->forPlant($lockedPlant)->lockForUpdate()->findOrFail($entry);
-            $cleanup->enqueue($photo->public_id);
+            $cleanup->enqueue($photo->public_id, provider: $photo->provider);
             $photo->delete();
         }, 3);
 

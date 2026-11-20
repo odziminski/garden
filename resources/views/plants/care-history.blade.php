@@ -38,6 +38,7 @@
                 <label class="form-label" for="care-note">Note (optional)</label>
                 <textarea class="form-control" id="care-note" name="note" rows="2" maxlength="1000">{{ is_string($submittedCareNote) ? $submittedCareNote : '' }}</textarea>
             </div>
+            @include('plants.feeding-fields', ['fieldPrefix' => 'care', 'feedingEntry' => null])
         </div>
         <button class="btn btn-primary mt-3" type="submit">Log care</button>
     </form>
@@ -58,6 +59,9 @@
                     @if ($entry->note !== null)
                         <p class="text-break mb-0">{{ $entry->note }}</p>
                     @endif
+                    @if ($entry->fertilizer || $entry->dose)
+                        <p class="text-break mb-0">{{ implode(' · ', array_filter([$entry->fertilizer, $entry->dose])) }}</p>
+                    @endif
                     @if ($entry->is_legacy)
                         <small class="text-muted">Imported from previous care records</small>
                     @endif
@@ -67,7 +71,9 @@
                         @if ($entry->corrects_entry_id)
                             <p class="small text-muted mb-0">Corrected care entry</p>
                         @endif
-                        @if ($entry->canBeCorrectedBy(auth()->user(), $plant))
+                        @if ($entry->plantCheck && $entry->plantCheck->voided_at === null)
+                            <a class="small" href="#plant-checks">See linked soil check</a>
+                        @elseif ($entry->canBeCorrectedBy(auth()->user(), $plant))
                             <div class="d-flex flex-wrap gap-2 mt-1">
                                 <a class="btn btn-outline-secondary btn-sm" href="{{ route('care-logs.edit', [$plant, $entry]) }}">Correct entry</a>
                                 <form method="POST" action="{{ route('care-logs.undo', [$plant, $entry]) }}">

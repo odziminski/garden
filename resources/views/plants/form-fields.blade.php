@@ -12,9 +12,30 @@
         $enteredName = old('name', $plant?->name);
     @endphp
     <input class="form-control" id="plant-name" name="name" value="{{ is_string($enteredName) ? $enteredName : '' }}"
-           minlength="3" maxlength="64" required>
+           maxlength="64" required>
     <button class="btn btn-outline-secondary" type="button" data-plant-name>Random name</button>
 </div>
+
+<details class="mb-4" @if ($errors->hasAny(['room', 'species_name', 'care_instructions'])) open @endif>
+    <summary class="fw-semibold">Location and care notes</summary>
+    <div class="row g-3 mt-1">
+        <div class="col-sm-6">
+            <label class="form-label" for="plant-room">Room or location</label>
+            <input class="form-control" id="plant-room" name="room" maxlength="80"
+                   value="{{ is_string(old('room', $plant?->room)) ? old('room', $plant?->room) : '' }}">
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="plant-species">Species (optional)</label>
+            <input class="form-control" id="plant-species" name="species_name" maxlength="120"
+                   value="{{ is_string(old('species_name', $plant?->species_name)) ? old('species_name', $plant?->species_name) : '' }}">
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="plant-instructions">What to check</label>
+            <textarea class="form-control" id="plant-instructions" name="care_instructions" maxlength="600" rows="2"
+                      placeholder="For example: compare the weight of the pot">{{ is_string(old('care_instructions', $plant?->care_instructions)) ? old('care_instructions', $plant?->care_instructions) : '' }}</textarea>
+        </div>
+    </div>
+</details>
 
 <div class="mb-3" data-plant-photo>
     <label class="form-label" for="plant-avatar">Plant photo (optional)</label>
@@ -31,23 +52,25 @@
     </div>
 </div>
 
-<fieldset class="mb-4">
-    <legend class="h5">Care schedule</legend>
-    <div class="row g-3 mb-3">
+@if ($plant)
+<details class="mb-4" @if ($errors->hasAny(\App\Models\Needs::SCHEDULE_FIELDS)) open @endif>
+    <summary class="fw-semibold">Advanced reminders</summary>
+    <div class="row g-3 mb-3 mt-1">
         @foreach (\App\Enums\CareType::cases() as $careType)
+            @continue($careType === \App\Enums\CareType::Watering && $plant->checkSchedule?->enabled)
             @php
                 $field = $careType->frequencyColumn();
                 $watering = $careType === \App\Enums\CareType::Watering;
-                $default = $plant?->needs?->$field ?? ($watering ? \App\Models\Needs::DEFAULT_WATERING_DAYS : null);
+                $default = $plant->needs?->$field;
                 $enteredInterval = old($field, $default ?: null);
             @endphp
             <div class="col-sm-6">
-                <label class="form-label" for="{{ $field }}">{{ $careType->label() }} interval (days)</label>
+                <label class="form-label" for="{{ $field }}">{{ $watering ? 'Existing watering reminder' : 'Review feeding' }} interval (days)</label>
                 <input class="form-control" id="{{ $field }}" type="number" name="{{ $field }}"
                        min="1" max="3650" value="{{ is_scalar($enteredInterval) ? $enteredInterval : '' }}"
                        aria-describedby="{{ $field }}-help">
                 <p class="form-text mb-0" id="{{ $field }}-help">
-                    {{ $watering ? 'If unsure, start with 7 days and adjust based on the plant’s needs.' : 'Leave blank to turn off scheduled fertilizing.' }}
+                    Leave blank to turn off this reminder.
                 </p>
             </div>
         @endforeach
@@ -68,6 +91,7 @@
             <option value="south" @selected($hemisphere === 'south')>Southern</option>
         </select>
         @foreach (\App\Enums\CareType::cases() as $careType)
+            @continue($careType === \App\Enums\CareType::Watering && $plant->checkSchedule?->enabled)
             <h3 class="h6 mt-3">{{ $careType->label() }}</h3>
             <div class="row g-3 mb-3">
             @foreach (['Summer' => 'summer_', 'Winter' => 'winter_'] as $label => $prefix)
@@ -84,4 +108,22 @@
             </div>
         @endforeach
     </details>
-</fieldset>
+</details>
+@else
+<details class="mb-4" @if ($errors->hasAny(['first_check_on', 'check_interval_days']) || old('first_check_on') || old('check_interval_days')) open @endif>
+    <summary class="fw-semibold">Soil check reminder (optional)</summary>
+    <div class="row g-3 mt-1">
+        <div class="col-sm-6">
+            <label class="form-label" for="first-check-on">First soil check</label>
+            <input class="form-control" id="first-check-on" name="first_check_on" type="date"
+                   value="{{ is_string(old('first_check_on')) ? old('first_check_on') : '' }}">
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="check-interval-days">Repeat every (days)</label>
+            <input class="form-control" id="check-interval-days" name="check_interval_days" type="number"
+                   min="1" max="3650" value="{{ is_scalar(old('check_interval_days')) ? old('check_interval_days') : '' }}">
+        </div>
+    </div>
+    <p class="form-text mb-0">Enter a date for a one-time check, or an interval to check regularly. This reminds you to inspect the soil.</p>
+</details>
+@endif

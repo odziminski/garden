@@ -48,7 +48,8 @@ class PlantPhoto
 
         $publicId = 'plant_covers/'.Str::uuid();
         try {
-            $format = $this->storage->upload($webcam ?: $file, $publicId);
+            $provider = $this->storage->writeProvider();
+            $format = $this->storage->upload($webcam ?: $file, $publicId, provider: $provider);
         } catch (PlantPhotoStorageException $exception) {
             throw ValidationException::withMessages([$field => $exception->getMessage()]);
         }
@@ -56,15 +57,17 @@ class PlantPhoto
         return [
             'public_id' => $publicId,
             'format' => $format,
+            'provider' => $provider,
         ];
     }
 
-    public function attachCover(Plant $plant, string $publicId, string $format, bool $identify = true): void
+    public function attachCover(Plant $plant, string $publicId, string $format, bool $identify = true, string $provider = 'cloudinary'): void
     {
         $plant->forceFill([
             'avatar' => 'plant.png',
             'cover_public_id' => $publicId,
             'cover_format' => $format,
+            'cover_provider' => $provider,
         ])->save();
         $this->cleanup->keepUpload($publicId);
 
@@ -76,7 +79,7 @@ class PlantPhoto
     public function discardCover(Plant $plant): void
     {
         if ($plant->cover_public_id) {
-            $this->cleanup->enqueue($plant->cover_public_id);
+            $this->cleanup->enqueue($plant->cover_public_id, provider: $plant->cover_provider ?? 'cloudinary');
 
             return;
         }
@@ -90,8 +93,8 @@ class PlantPhoto
     public function discardPlantMedia(Plant $plant): void
     {
         $this->discardCover($plant);
-        foreach (PlantPhotoEntry::query()->forPlant($plant)->pluck('public_id') as $publicId) {
-            $this->cleanup->enqueue($publicId);
+        foreach (PlantPhotoEntry::query()->forPlant($plant)->get(['public_id', 'provider']) as $entry) {
+            $this->cleanup->enqueue($entry->public_id, provider: $entry->provider);
         }
     }
 

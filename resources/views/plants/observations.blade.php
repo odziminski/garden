@@ -88,16 +88,27 @@
                 </nav>
             @endif
             <div class="col-12">
-                <details @if ($observationInput('follow_up_name') || $observationInput('follow_up_due_on') || $observationErrors->has('follow_up_name') || $observationErrors->has('follow_up_due_on')) open @endif>
+                <details @if ($observationInput('follow_up_in_days') || $observationInput('follow_up_name') || $observationInput('follow_up_due_on') || $observationErrors->hasAny(['follow_up_in_days', 'follow_up_name', 'follow_up_due_on'])) open @endif>
                     <summary>Schedule a follow-up (optional)</summary>
                     <div class="row g-3 mt-1">
-                        <div class="col-sm-7">
+                        <div class="col-md-4">
+                            <label class="form-label" for="observation-follow-up-interval">Quick follow-up</label>
+                            <select class="form-select" id="observation-follow-up-interval" name="follow_up_in_days"
+                                    aria-describedby="observation-follow-up-help">
+                                <option value="">Choose a custom date or skip</option>
+                                @foreach ([3, 7, 14] as $days)
+                                    <option value="{{ $days }}" @selected($observationInput('follow_up_in_days') === (string) $days)>In {{ $days }} days</option>
+                                @endforeach
+                            </select>
+                            <p class="form-text mb-0" id="observation-follow-up-help">A quick follow-up suggests a task name.</p>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label" for="observation-follow-up-name">Task name</label>
                             <input class="form-control" id="observation-follow-up-name" name="follow_up_name" type="text"
                                    maxlength="120" value="{{ $observationInput('follow_up_name') }}">
                         </div>
-                        <div class="col-sm-5">
-                            <label class="form-label" for="observation-follow-up-date">Due date</label>
+                        <div class="col-md-4">
+                            <label class="form-label" for="observation-follow-up-date">Custom due date</label>
                             <input class="form-control" id="observation-follow-up-date" name="follow_up_due_on" type="date"
                                    min="{{ $today }}" max="9999-12-31" value="{{ $observationInput('follow_up_due_on') }}">
                         </div>

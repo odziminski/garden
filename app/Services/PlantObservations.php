@@ -21,13 +21,18 @@ class PlantObservations
     public function record(User $actor, Plant $plant, array $input): PlantObservation
     {
         return DB::transaction(function () use ($actor, $plant, $input) {
-            $plant = PlantCareAccess::lock($plant, $actor);
-            $ownerFields = ['photo_entry_id', 'follow_up_name', 'follow_up_due_on'];
+            $plant = PlantCareAccess::lock($plant, $actor, allowHandoff: false);
+            $ownerFields = ['photo_entry_id', 'follow_up_name', 'follow_up_due_on', 'follow_up_in_days'];
             foreach ($ownerFields as $field) {
                 abort_if(!$plant->isOwnedBy($actor) && isset($input[$field]) && $input[$field] !== '', 404);
             }
 
             $details = $this->validate($plant, $input);
+            if (isset($details['follow_up_in_days'])) {
+                $details['follow_up_name'] ??= PlantObservationCategory::from($details['category'])->followUpName();
+                $details['follow_up_due_on'] = now($plant->careTimezone())
+                    ->addDays((int) $details['follow_up_in_days'])->toDateString();
+            }
 
             if (isset($details['photo_entry_id'])) {
                 $photo = PlantPhotoEntry::query()->forPlant($plant)->lockForUpdate()->find($details['photo_entry_id']);
@@ -57,7 +62,7 @@ class PlantObservations
     public function update(User $actor, Plant $plant, string $entry, array $input): void
     {
         DB::transaction(function () use ($actor, $plant, $entry, $input) {
-            $plant = PlantCareAccess::lock($plant, $actor);
+            $plant = PlantCareAccess::lock($plant, $actor, allowHandoff: false);
             $observation = $plant->observations()->lockForUpdate()->findOrFail($entry);
             abort_unless($observation->canBeCorrectedBy($actor, $plant), 404);
             $fields = Arr::only($input, self::DETAILS);
@@ -82,10 +87,16 @@ class PlantObservations
             'substrate' => ['nullable', 'prohibited_unless:category,'.$repotting, 'string', 'max:500'],
             'photo_entry_id' => ['nullable', 'integer', 'min:1'],
             'follow_up_name' => ['nullable', 'required_with:follow_up_due_on', 'string', 'max:120'],
-            'follow_up_due_on' => ['bail', 'nullable', 'required_with:follow_up_name', 'date_format:Y-m-d', 'after_or_equal:'.$today, 'before_or_equal:9999-12-31'],
+            'follow_up_due_on' => [
+                'bail', 'nullable',
+                Rule::requiredIf(filled($input['follow_up_name'] ?? null) && blank($input['follow_up_in_days'] ?? null)),
+                'date_format:Y-m-d', 'after_or_equal:'.$today, 'before_or_equal:9999-12-31',
+            ],
+            'follow_up_in_days' => ['nullable', 'integer', Rule::in([3, 7, 14]), 'prohibits:follow_up_due_on'],
         ], [
             'container_size.prohibited_unless' => 'Container size can only be added to a repotting observation.',
             'substrate.prohibited_unless' => 'Substrate can only be added to a repotting observation.',
+            'follow_up_in_days.prohibits' => 'Choose a quick interval or a custom date.',
         ], [
             'observed_on' => 'observation date',
             'photo_entry_id' => 'journal photo',

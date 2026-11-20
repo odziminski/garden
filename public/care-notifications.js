@@ -1,6 +1,6 @@
 self.addEventListener('push', (event) => {
     event.waitUntil(self.registration.showNotification('Bloomify', {
-        body: 'Your plants have care tasks due. Open Today to review them.',
+        body: 'You have plant checks or care tasks to review. Open Today.',
         tag: 'bloomify-daily-care',
         icon: new URL('images/icon-192.png', self.registration.scope).href,
     }));
