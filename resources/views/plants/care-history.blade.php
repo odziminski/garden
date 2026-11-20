@@ -52,6 +52,9 @@
                         <strong>{{ $entry->type->label() }}</strong>
                         <time class="text-muted" datetime="{{ $entry->performed_on }}">{{ \Carbon\Carbon::parse($entry->performed_on)->format('M j, Y') }}</time>
                     </div>
+                    @if ($entry->performedBy)
+                        <p class="small text-muted text-break mb-0">Recorded by {{ $entry->performedBy->email }}</p>
+                    @endif
                     @if ($entry->note !== null)
                         <p class="text-break mb-0">{{ $entry->note }}</p>
                     @endif

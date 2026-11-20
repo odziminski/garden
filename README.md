@@ -27,6 +27,14 @@ Open [Bloomify](http://localhost:8000) and create an account. To try the app wit
 - Add dated photos and optional notes to a plant's photo journal. Journal photos require Cloudinary and are accessible through your account.
 - Under **Profile**, choose a time and time zone for your daily care email or turn reminders off.
 
+## Shared gardens
+
+Open **Account → Garden sharing** and enter the email the invitee uses to sign in. Copy the invitation link and send it privately. The link expires in seven days and can be accepted once by an account with the matching email. Invitees who need an account can register from the sign-in screen and then return to the invitation.
+
+Members see the owner's plants in **Your garden** and their due tasks in **Today**. They can complete care tasks and record dated entries. The log shows who recorded each new entry. Task dates follow the owner's time zone, and two people completing the same due task write one history entry.
+
+The owner manages plants, care schedules, private photo journals, and access. The owner can revoke a pending link or remove a member. Members can leave on their **Garden sharing** page. Removing access preserves the care history.
+
 ## Integrations and reminders
 
 - Set `CLOUDINARY_URL` to enable image uploads from files or a camera. Bloomify stores photos in Cloudinary. Browser camera access requires HTTPS or `localhost`. For uploads up to 5 MB, set PHP's `upload_max_filesize` to at least `5M` and `post_max_size` to at least `8M`.
@@ -44,6 +52,6 @@ The tests use a fresh in-memory SQLite database. The Cloudinary and Plant.id int
 
 ## Upgrading an existing installation
 
-Install PHP 8.3 or later and back up the database before deploying. Run `php artisan migrate` to apply the care history, seasonal schedules, photo journal, and reminder migrations. Keep the existing `APP_KEY` and set `APP_ENV=production`, `APP_DEBUG=false`, and `SESSION_SECURE_COOKIE=true`. Set `APP_URL` to the application's public HTTPS URL and point the web server's document root at `public/`.
+Install PHP 8.3 or later and back up the database before deploying. Run `php artisan migrate` to apply the care history, seasonal schedules, photo journal, reminder, and garden sharing migrations. Keep the existing `APP_KEY` and set `APP_ENV=production`, `APP_DEBUG=false`, and `SESSION_SECURE_COOKIE=true`. Set `APP_URL` to the application's public HTTPS URL and point the web server's document root at `public/`.
 
 Configure MySQL with `DB_URL`, `DATABASE_URL`, or `CLEARDB_DATABASE_URL`. You can also set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`.

@@ -29,6 +29,9 @@
                             <h2 class="h5 card-title">
                                 <a href="{{ route('plants', $plant) }}">{{ $plant->name }}</a>
                             </h2>
+                            @if (!$plant->isOwnedBy(auth()->user()) && $plant->owner)
+                                <p class="small text-muted text-break">Shared by {{ $plant->owner->email }}</p>
+                            @endif
                             @include('plants.care-actions')
                         </div>
                     </article>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\CareType;
 use App\Models\Plant;
+use App\Models\User;
 use App\Services\PlantCareSchedule;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -15,18 +16,14 @@ use Illuminate\View\View;
 
 class NeedsController extends Controller
 {
-    public function updateWatering(Plant $plant): RedirectResponse
+    public function updateWatering(Request $request, Plant $plant): RedirectResponse
     {
-        $this->recordCare($plant, CareType::Watering, now($plant->careTimezone()));
-
-        return back();
+        return $this->completeTask($request->user(), $plant, CareType::Watering);
     }
 
-    public function updateFertilizing(Plant $plant): RedirectResponse
+    public function updateFertilizing(Request $request, Plant $plant): RedirectResponse
     {
-        $this->recordCare($plant, CareType::Fertilizing, now($plant->careTimezone()));
-
-        return back();
+        return $this->completeTask($request->user(), $plant, CareType::Fertilizing);
     }
 
     public function storeCareLog(Request $request, Plant $plant): RedirectResponse
@@ -39,8 +36,14 @@ class NeedsController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $date = Carbon::parse($care['care_date'], $timezone);
-        $this->recordCare($plant, CareType::from($care['type']), $date, $care['note'] ?? null, $care['care_date']);
+        $this->recordCare(
+            $request->user(),
+            $plant,
+            CareType::from($care['type']),
+            Carbon::parse($care['care_date'], $timezone),
+            $care['note'] ?? null,
+            $care['care_date'],
+        );
 
         return redirect()->route('plants', $plant)->with('care_status', 'Care entry added.');
     }
@@ -48,12 +51,17 @@ class NeedsController extends Controller
     public function today(Request $request): View
     {
         $asOf = now($request->user()->reminder_timezone ?? 'UTC');
-        $plants = $request->user()->plants()->with('owner', 'history', 'needs')->orderBy('name')->get();
+        $plants = Plant::query()->visibleTo($request->user())->with('owner', 'history', 'needs')->orderBy('name')->get();
         $duePlants = $plants->map(function (Plant $plant) use ($asOf) {
-            $actions = collect(CareType::cases())->map(function (CareType $type) use ($plant, $asOf) {
-                $date = PlantCareSchedule::nextDate($plant, $type, $asOf);
+            $gardenTime = $asOf->copy()->setTimezone($plant->careTimezone());
+            $actions = collect(CareType::cases())->map(function (CareType $type) use ($plant, $gardenTime) {
+                $date = PlantCareSchedule::nextDate($plant, $type, $gardenTime);
 
-                return $date !== null && $date->lte($asOf) ? ['type' => $type, 'date' => $date] : null;
+                return $date !== null && $date->lte($gardenTime) ? [
+                    'type' => $type,
+                    'date' => $date,
+                    'dueToday' => $date->isSameDay($gardenTime),
+                ] : null;
             })->filter()->sortBy('date');
 
             return ['plant' => $plant, 'actions' => $actions];
@@ -63,18 +71,44 @@ class NeedsController extends Controller
         return view('today', ['duePlants' => $duePlants, 'today' => $asOf]);
     }
 
+    private function completeTask(User $actor, Plant $plant, CareType $type): RedirectResponse
+    {
+        $recorded = $this->recordCare($actor, $plant, $type, now($plant->careTimezone()), onlyIfDue: true);
+
+        return $recorded
+            ? back()
+            : back()->with('care_notice', 'This task has already been completed or is no longer due.');
+    }
+
     private function recordCare(
+        User $actor,
         Plant $plant,
         CareType $type,
         CarbonInterface $date,
         ?string $note = null,
         ?string $performedOn = null,
-    ): void {
+        bool $onlyIfDue = false,
+    ): bool {
         $performedOn ??= $date->toDateString();
         $performedAt = $date->copy()->utc();
 
-        DB::transaction(function () use ($plant, $type, $performedOn, $performedAt, $note) {
+        return DB::transaction(function () use ($actor, $plant, $type, $performedOn, $performedAt, $note, $onlyIfDue) {
             $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
+
+            if (!$lockedPlant->isOwnedBy($actor)) {
+                $membership = DB::table('garden_memberships')->where('owner_id', $lockedPlant->user_id)
+                    ->where('member_id', $actor->getKey())->lockForUpdate()->first(['member_id']);
+
+                abort_if($membership === null, 404);
+            }
+
+            if ($onlyIfDue) {
+                $due = PlantCareSchedule::nextDate($lockedPlant, $type, $performedAt);
+                if ($due === null || $due->gt($performedAt)) {
+                    return false;
+                }
+            }
+
             $history = $lockedPlant->history()->firstOrNew();
             $column = $type->lastCareColumn();
             $dateColumn = $type->lastCareDateColumn();
@@ -84,6 +118,7 @@ class NeedsController extends Controller
                 'performed_at' => $performedAt,
                 'performed_on' => $performedOn,
                 'note' => $note,
+                'performed_by_user_id' => $actor->getKey(),
             ]);
 
             $newerInstant = $history->$column === null || $performedAt->gt($history->$column);
@@ -99,6 +134,8 @@ class NeedsController extends Controller
 
             $lockedPlant->setRelation('history', $history);
             PlantCareSchedule::syncFlags($lockedPlant);
+
+            return true;
         }, 3);
     }
 }

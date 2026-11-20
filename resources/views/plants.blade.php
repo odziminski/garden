@@ -8,11 +8,15 @@
             <a class="d-inline-block mb-2" href="{{ route('browse') }}">Your garden</a>
             <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                 <h1 class="mb-0">{{ $plant->name }}</h1>
-                <div class="d-flex gap-2">
-                    <a class="btn btn-outline-secondary" href="{{ route('displayEditPlant', $plant) }}">Edit plant</a>
-                    <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal"
-                            data-bs-target="#delete-plant-modal">Delete</button>
-                </div>
+                @if ($canManage)
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-secondary" href="{{ route('displayEditPlant', $plant) }}">Edit plant</a>
+                        <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal"
+                                data-bs-target="#delete-plant-modal">Delete</button>
+                    </div>
+                @elseif ($plant->owner)
+                    <p class="text-muted text-break mb-0">Shared by {{ $plant->owner->email }}</p>
+                @endif
             </div>
         </header>
 
@@ -57,29 +61,33 @@
             <div class="col-lg-8">
                 <div class="d-grid gap-4">
                     @include('plants.care-history')
-                    @include('plants.photo-journal')
+                    @if ($canManage)
+                        @include('plants.photo-journal')
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="delete-plant-modal" tabindex="-1" aria-labelledby="delete-plant-title"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="delete-plant-title">Delete {{ $plant->name }}?</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="POST" action="{{ route('deletePlant', $plant) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
+    @if ($canManage)
+        <div class="modal fade" id="delete-plant-modal" tabindex="-1" aria-labelledby="delete-plant-title"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="delete-plant-title">Delete {{ $plant->name }}?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ route('deletePlant', $plant) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endif
 @endsection

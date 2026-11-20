@@ -26,19 +26,26 @@ class PlantsController extends Controller
         return view('welcome', $plant ? $this->plantDetails($plant) : ['plant' => null]);
     }
 
-    public function displaySinglePlant(Plant $plant): View
+    public function displaySinglePlant(Request $request, Plant $plant): View
     {
-        return view('plants', $this->plantDetails($plant->load('owner', 'history', 'needs', 'plantData')) + [
-            'careLogs' => $plant->careLogs()->latest('performed_on')->latest('performed_at')->latest('id')
+        $canManage = $request->user()->can('manage', $plant);
+        $details = $this->plantDetails($plant->load('owner', 'history', 'needs', 'plantData')) + [
+            'canManage' => $canManage,
+            'careLogs' => $plant->careLogs()->with('performedBy:id,email')->latest('performed_on')->latest('performed_at')->latest('id')
                 ->simplePaginate(15, ['*'], 'care_page')->withQueryString()->fragment('care-history'),
-            'photoJournalEntries' => PlantPhotoEntry::query()->forPlant($plant)->latest('taken_on')->latest('id')
-                ->simplePaginate(12, ['*'], 'journal_page')->withQueryString()->fragment('photo-journal'),
-        ]);
+        ];
+
+        if ($canManage) {
+            $details['photoJournalEntries'] = PlantPhotoEntry::query()->forPlant($plant)->latest('taken_on')->latest('id')
+                ->simplePaginate(12, ['*'], 'journal_page')->withQueryString()->fragment('photo-journal');
+        }
+
+        return view('plants', $details);
     }
 
     public function displayPlants(Request $request): View
     {
-        $plants = $request->user()->plants()
+        $plants = Plant::query()->visibleTo($request->user())
             ->with('owner', 'history', 'needs')
             ->get()
             ->sortByDesc('history.watered_at');

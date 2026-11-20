@@ -45,6 +45,10 @@
                                            href="{{ route('users') }}">Profile</a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item" @if (request()->routeIs('garden-sharing.*')) aria-current="page" @endif
+                                           href="{{ route('garden-sharing.index') }}">Garden sharing</a>
+                                    </li>
+                                    <li>
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf
                                             <button class="dropdown-item" type="submit">Log out</button>
@@ -74,6 +78,11 @@
     </header>
 
     <main class="bloom-main" id="main-content">
+        @if (session('care_notice'))
+            <div class="container">
+                <p class="alert alert-info" role="status">{{ session('care_notice') }}</p>
+            </div>
+        @endif
         @yield('content')
     </main>
 </body>
