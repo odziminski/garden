@@ -26,7 +26,12 @@ class SendCareReminders extends Command
             $needs->where(fn (Builder $flags) => $flags->where('need_watering', true)->orWhere('need_fertilizing', true));
         };
 
-        $recipients = User::query()->where('reminders_enabled', true)->whereHas('plants.needs', $due)->lazyById();
+        $dueTasks = static fn (string $day) => static fn ($tasks) => $tasks->active()->where('due_on', '<=', $day);
+        $latestPossibleDueDate = $instant->copy()->utc()->addDay()->toDateString();
+        $recipients = User::query()->where('reminders_enabled', true)
+            ->where(fn (Builder $users) => $users->whereHas('plants.needs', $due)
+                ->orWhereHas('plants.careTasks', $dueTasks($latestPossibleDueDate)))
+            ->lazyById();
 
         foreach ($recipients as $recipient) {
             $previousDate = $recipient->reminder_sent_on;
@@ -35,7 +40,11 @@ class SendCareReminders extends Command
                 continue;
             }
 
-            $plants = $recipient->plants()->whereHas('needs', $due)->with('needs')->orderBy('name')->orderBy('id')->get();
+            $tasksDueToday = $dueTasks($date);
+            $plants = $recipient->plants()
+                ->where(fn (Builder $plants) => $plants->whereHas('needs', $due)->orWhereHas('careTasks', $tasksDueToday))
+                ->with(['needs', 'careTasks' => $tasksDueToday])
+                ->orderBy('name')->orderBy('id')->get();
             if ($plants->isEmpty()) {
                 continue;
             }

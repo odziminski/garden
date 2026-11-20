@@ -35,6 +35,22 @@ class PlantsController extends Controller
                 ->simplePaginate(15, ['*'], 'care_page')->withQueryString()->fragment('care-history'),
         ];
 
+        $details['customTasks'] = $plant->careTasks()->active()->orderBy('due_on')->orderBy('id')->get();
+        $details['customTaskCompletions'] = $plant->taskCompletions()
+            ->select('plant_task_completions.*')
+            ->with('plantTask:id,name', 'completedBy:id,email')
+            ->latest('plant_task_completions.completed_at')->latest('plant_task_completions.id')
+            ->simplePaginate(10, ['*'], 'task_history_page')->withQueryString()->fragment('custom-tasks');
+
+        $observations = $plant->observations()->with('actor:id,email', 'followUpTask:id,name,due_on,archived_at,completed_at')
+            ->latest('observed_on')->latest('id');
+        if ($canManage) {
+            $details['observationPhotos'] = PlantPhotoEntry::query()->forPlant($plant)->latest('taken_on')->latest('id')
+                ->get(['id', 'taken_on', 'note']);
+        }
+        $details['observations'] = $observations->simplePaginate(15, ['*'], 'observation_page')
+            ->withQueryString()->fragment('observations');
+
         if ($canManage) {
             $details['photoJournalEntries'] = PlantPhotoEntry::query()->forPlant($plant)->latest('taken_on')->latest('id')
                 ->simplePaginate(12, ['*'], 'journal_page')->withQueryString()->fragment('photo-journal');

@@ -35,9 +35,15 @@ Members see the owner's plants in **Your garden** and their due tasks in **Today
 
 The owner manages plants, care schedules, private photo journals, and access. The owner can revoke a pending link or remove a member. Members can leave on their **Garden sharing** page. Removing access preserves the care history.
 
+## Custom care and observations
+
+Open a plant you own and use **Custom care tasks** to add a one-time task or repeat it every few days. The form suggests names for checks such as repotting and cleaning the leaves. Due tasks appear in **Today** and the owner's daily reminder. Every completion records who did the work. Repeating tasks calculate their next due date from the day you complete them. The owner can archive a task and keep its completion history.
+
+Use **Observations** on a plant page to record a pest check, leaf change, repotting, or other update. Repotting entries can record the container size and substrate. The owner can link a photo from the private journal or schedule a one-time follow-up task. Shared garden members can add observations and complete tasks. Private journal photos and task management stay with the owner.
+
 ## Monthly plant report
 
-Open **Monthly report** from **Your garden** or from a plant you own. Choose a plant and a month to see its care entries and journal photos in one timeline. The watering chart shows calendar days between recorded watering dates. Multiple entries on the same day count once for the chart, and the earliest interval may start before the selected month.
+Open **Monthly report** from **Your garden** or from a plant you own. Choose a plant and a month to see its care entries, completed custom tasks, observations, and journal photos in one timeline. The watering chart shows calendar days between recorded watering dates. Multiple entries on the same day count once for the chart, and the earliest interval may start before the selected month.
 
 The report is available for your own plants and includes private journal photos.
 
@@ -58,6 +64,6 @@ The tests use a fresh in-memory SQLite database. The Cloudinary and Plant.id int
 
 ## Upgrading an existing installation
 
-Install PHP 8.3 or later and back up the database before deploying. Run `php artisan migrate` to apply the care history, seasonal schedules, photo journal, reminder, and garden sharing migrations. Keep the existing `APP_KEY` and set `APP_ENV=production`, `APP_DEBUG=false`, and `SESSION_SECURE_COOKIE=true`. Set `APP_URL` to the application's public HTTPS URL and point the web server's document root at `public/`.
+Install PHP 8.3 or later and back up the database before deploying. Run `php artisan migrate` to apply the care history, seasonal schedules, photo journal, reminder, garden sharing, custom task, and observation migrations. Keep the existing `APP_KEY` and set `APP_ENV=production`, `APP_DEBUG=false`, and `SESSION_SECURE_COOKIE=true`. Set `APP_URL` to the application's public HTTPS URL and point the web server's document root at `public/`.
 
 Configure MySQL with `DB_URL`, `DATABASE_URL`, or `CLEARDB_DATABASE_URL`. You can also set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`.

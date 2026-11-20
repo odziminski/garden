@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Notifications\Notifiable;
 
 
@@ -73,6 +74,21 @@ class Plant extends Model
     public function careLogs(): HasMany
     {
         return $this->hasMany(CareLog::class);
+    }
+
+    public function careTasks(): HasMany
+    {
+        return $this->hasMany(PlantTask::class);
+    }
+
+    public function taskCompletions(): HasManyThrough
+    {
+        return $this->hasManyThrough(PlantTaskCompletion::class, PlantTask::class);
+    }
+
+    public function observations(): HasMany
+    {
+        return $this->hasMany(PlantObservation::class);
     }
 
     public function plantData()

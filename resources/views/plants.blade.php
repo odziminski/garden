@@ -61,6 +61,8 @@
 
             <div class="col-lg-8">
                 <div class="d-grid gap-4">
+                    @include('plants.custom-tasks')
+                    @include('plants.observations')
                     @include('plants.care-history')
                     @if ($canManage)
                         @include('plants.photo-journal')

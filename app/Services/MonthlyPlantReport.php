@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Enums\CareType;
 use App\Models\CareLog;
 use App\Models\Plant;
+use App\Models\PlantObservation;
 use App\Models\PlantPhotoEntry;
+use App\Models\PlantTaskCompletion;
 use Carbon\CarbonImmutable;
 
 class MonthlyPlantReport
@@ -26,6 +28,14 @@ class MonthlyPlantReport
             ->orderBy('taken_on')->orderBy('id')
             ->get(['id', 'taken_on', 'note']);
 
+        $completedTasks = $plant->taskCompletions()
+            ->whereBetween('completed_on', [$start, $end])
+            ->with('plantTask:id,name')
+            ->orderBy('completed_on')->orderBy('plant_task_completions.id')
+            ->get(['plant_task_completions.*']);
+        $observations = $plant->observations()->whereBetween('observed_on', [$start, $end])
+            ->orderBy('observed_on')->orderBy('id')->get(['id', 'observed_on', 'category', 'notes']);
+
         $timeline = $logs->toBase()->map(fn (CareLog $log) => [
             'date' => CarbonImmutable::parse($log->performed_on, 'UTC'),
             'label' => $log->type->actionLabel(),
@@ -37,6 +47,18 @@ class MonthlyPlantReport
             'label' => 'Photo',
             'note' => $photo->note,
             'photoId' => $photo->id,
+            'legacy' => false,
+        ]))->concat($completedTasks->toBase()->map(fn (PlantTaskCompletion $completion) => [
+            'date' => CarbonImmutable::parse($completion->completed_on, 'UTC'),
+            'label' => 'Completed: '.$completion->plantTask->name,
+            'note' => null,
+            'photoId' => null,
+            'legacy' => false,
+        ]))->concat($observations->toBase()->map(fn (PlantObservation $observation) => [
+            'date' => CarbonImmutable::parse($observation->observed_on, 'UTC'),
+            'label' => $observation->category->label(),
+            'note' => $observation->notes,
+            'photoId' => null,
             'legacy' => false,
         ]))->sortBy(fn (array $entry) => $entry['date']->toDateString());
 

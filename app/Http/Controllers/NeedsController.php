@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\CareType;
 use App\Models\Plant;
+use App\Models\PlantTask;
 use App\Models\User;
+use App\Services\PlantCareAccess;
 use App\Services\PlantCareSchedule;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +54,11 @@ class NeedsController extends Controller
     public function today(Request $request): View
     {
         $asOf = now($request->user()->reminder_timezone ?? 'UTC');
-        $plants = Plant::query()->visibleTo($request->user())->with('owner', 'history', 'needs')->orderBy('name')->get();
+        $latestPossibleDueDate = $asOf->copy()->utc()->addDay()->toDateString();
+        $plants = Plant::query()->visibleTo($request->user())->with([
+            'owner', 'history', 'needs',
+            'careTasks' => fn ($tasks) => $tasks->active()->where('due_on', '<=', $latestPossibleDueDate),
+        ])->orderBy('name')->get();
         $duePlants = $plants->map(function (Plant $plant) use ($asOf) {
             $gardenTime = $asOf->copy()->setTimezone($plant->careTimezone());
             $actions = collect(CareType::cases())->map(function (CareType $type) use ($plant, $gardenTime) {
@@ -64,9 +71,18 @@ class NeedsController extends Controller
                 ] : null;
             })->filter()->sortBy('date');
 
-            return ['plant' => $plant, 'actions' => $actions];
+            $today = $gardenTime->toDateString();
+            $customActions = $plant->careTasks
+                ->filter(fn (PlantTask $task) => $task->due_on <= $today)
+                ->map(fn (PlantTask $task) => [
+                    'task' => $task,
+                    'date' => CarbonImmutable::parse($task->due_on, 'UTC'),
+                    'dueToday' => $task->due_on === $today,
+                ]);
+
+            return ['plant' => $plant, 'actions' => $actions->concat($customActions)->sortBy(fn (array $action) => $action['date']->toDateString())];
         })->filter(fn (array $item) => $item['actions']->isNotEmpty())
-            ->sortBy(fn (array $item) => $item['actions']->first()['date']);
+            ->sortBy(fn (array $item) => $item['actions']->first()['date']->toDateString());
 
         return view('today', ['duePlants' => $duePlants, 'today' => $asOf]);
     }
@@ -93,14 +109,7 @@ class NeedsController extends Controller
         $performedAt = $date->copy()->utc();
 
         return DB::transaction(function () use ($actor, $plant, $type, $performedOn, $performedAt, $note, $onlyIfDue) {
-            $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
-
-            if (!$lockedPlant->isOwnedBy($actor)) {
-                $membership = DB::table('garden_memberships')->where('owner_id', $lockedPlant->user_id)
-                    ->where('member_id', $actor->getKey())->lockForUpdate()->first(['member_id']);
-
-                abort_if($membership === null, 404);
-            }
+            $lockedPlant = PlantCareAccess::lock($plant, $actor);
 
             if ($onlyIfDue) {
                 $due = PlantCareSchedule::nextDate($lockedPlant, $type, $performedAt);
