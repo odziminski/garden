@@ -5,7 +5,7 @@
         <section class="bloom-hero" aria-labelledby="welcome-heading">
             <div class="bloom-hero-copy">
                 <h1 id="welcome-heading">Good things<br> <em>grow with care.</em></h1>
-                <p>Keep track of watering, fertilizing, and the little changes that tell you how your plants are doing.</p>
+                <p>See which plants to check, record what you did, and share care when you travel.</p>
                 <div class="bloom-actions">
                     @auth
                         @if ($plant)
@@ -42,9 +42,9 @@
                 </div>
                 <div class="bloom-spotlight-care">
                     <div>
-                        <span class="text-body-secondary">Next scheduled watering</span>
-                        <strong>{{ $nextWatering?->diffForHumans() ?? 'No schedule' }}</strong>
-                        @if ($nextWatering)
+                        <span class="text-body-secondary">Next soil check</span>
+                        <strong>{{ $plant->checkSchedule?->next_check_on ?? $nextWatering?->diffForHumans() ?? 'No reminder' }}</strong>
+                        @if (!$plant->checkSchedule?->isScheduled() && $nextWatering)
                             <div class="progress mt-2" role="progressbar" aria-label="Watering interval elapsed"
                                  aria-valuenow="{{ $wateringPercentage }}" aria-valuemin="0" aria-valuemax="100">
                                 <div @class(['progress-bar', 'bg-danger' => $wateringPercentage === 100])
@@ -53,7 +53,7 @@
                         @endif
                     </div>
                     <div>
-                        <span class="text-body-secondary">Next scheduled fertilizing</span>
+                        <span class="text-body-secondary">Next feeding review</span>
                         <strong>{{ $nextFertilizing?->diffForHumans() ?? 'No schedule' }}</strong>
                         @if ($nextFertilizing)
                             <div class="progress mt-2" role="progressbar" aria-label="Fertilizing interval elapsed"
@@ -71,14 +71,14 @@
                     <span class="bloom-feature-icon" aria-hidden="true">◇</span>
                     <div>
                         <h2>Your plant collection</h2>
-                        <p>Give each plant a name, a photo, and its own care schedule.</p>
+                        <p>Keep plants organized by room and leave a note on what to check.</p>
                     </div>
                 </article>
                 <article>
                     <span class="bloom-feature-icon bloom-feature-icon--water" aria-hidden="true">◔</span>
                     <div>
-                        <h2>Care schedule</h2>
-                        <p>See which plants are due to be watered or fertilized.</p>
+                        <h2>Daily checks</h2>
+                        <p>Check the soil and record which plants you watered.</p>
                     </div>
                 </article>
                 <article>

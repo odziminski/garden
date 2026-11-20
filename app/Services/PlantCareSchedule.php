@@ -23,27 +23,59 @@ class PlantCareSchedule
     public static function nextDate(Plant $plant, CareType $type, ?CarbonInterface $asOf = null): ?Carbon
     {
         $timezone = $plant->careTimezone();
-        $localDate = Carbon::instance($asOf ?? now())->setTimezone($timezone);
-        $season = $localDate->month >= 4 && $localDate->month <= 9 ? 'summer' : 'winter';
         $frequency = $type->frequencyColumn();
-        $seasonalFrequency = $season.'_'.$frequency;
-        $days = (int) ($plant->needs?->$seasonalFrequency ?? $plant->needs?->$frequency);
-        if ($days <= 0) {
+        $needs = $plant->needs;
+        $regularDays = (int) $needs?->$frequency;
+        if ($regularDays <= 0) {
             return null;
         }
 
         $dateColumn = $type->lastCareDateColumn();
-        $anchor = $plant->history?->$dateColumn;
-        if ($anchor !== null) {
-            $dueDay = Carbon::parse($anchor, 'UTC')->addDays($days)->toDateString();
-
-            return Carbon::parse($dueDay, $timezone);
-        }
-
         $lastCareColumn = $type->lastCareColumn();
         $previous = $plant->history?->$lastCareColumn ?? $plant->created_at;
+        $anchorDay = $plant->history?->$dateColumn ?? $previous?->copy()->setTimezone($timezone)->toDateString();
+        if ($anchorDay === null) {
+            return null;
+        }
 
-        return $previous?->copy()->setTimezone($timezone)->startOfDay()->addDays($days);
+        $summerDays = (int) ($needs->{'summer_'.$frequency} ?? $regularDays);
+        $winterDays = (int) ($needs->{'winter_'.$frequency} ?? $regularDays);
+        $anchor = Carbon::parse($anchorDay, 'UTC');
+        $due = self::scheduledDay($anchor, $summerDays, $winterDays, $needs->seasonal_hemisphere === 'south');
+        $snoozeColumn = $type->snoozeColumn();
+
+        return Carbon::parse(max($due, $needs->$snoozeColumn ?? $due), $timezone);
+    }
+
+    private static function scheduledDay(Carbon $anchor, int $summerDays, int $winterDays, bool $southern): string
+    {
+        if ($summerDays === $winterDays) {
+            return $anchor->addDays($summerDays)->toDateString();
+        }
+
+        // Find the first date that satisfied the interval in effect at that time.
+        // Once an occurrence is due, a later change of season cannot defer it.
+        $period = $anchor->copy();
+        while (true) {
+            $isAprilThroughSeptember = $period->month >= 4 && $period->month <= 9;
+            $summer = $isAprilThroughSeptember !== $southern;
+            $boundary = $period->copy()->startOfYear();
+            if ($isAprilThroughSeptember) {
+                $boundary->month(10);
+            } else {
+                if ($period->month >= 10) {
+                    $boundary->addYear();
+                }
+                $boundary->month(4);
+            }
+
+            $due = $anchor->copy()->addDays($summer ? $summerDays : $winterDays)->max($period);
+            if ($due->lt($boundary)) {
+                return $due->toDateString();
+            }
+
+            $period = $boundary;
+        }
     }
 
     public function refreshDueFlags(?CareType $type = null, ?CarbonInterface $asOf = null): void

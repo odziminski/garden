@@ -52,6 +52,36 @@
         <p class="text-muted mb-0">No photos yet.</p>
     @endif
 
+    @if ($firstComparisonPhoto)
+        <div class="border rounded p-3 mb-4" id="photo-comparison">
+            <div class="d-flex align-items-baseline justify-content-between gap-2">
+                <h3 class="h5">Compare journal photos</h3>
+                <a href="{{ request()->fullUrlWithQuery(['compare_first' => null, 'compare_second' => null]) }}#photo-journal">Clear comparison</a>
+            </div>
+            @if ($comparisonPhotos->isEmpty())
+                <p role="status" class="mb-0">Selected {{ $firstComparisonPhoto->taken_on->format('M j, Y') }}. Choose another photo to compare.</p>
+            @else
+                <div class="row row-cols-1 row-cols-sm-2 g-3">
+                    @foreach ($comparisonPhotos as $photo)
+                        <figure class="col mb-0">
+                            <div class="ratio ratio-4x3">
+                                <img src="{{ route('plants.photo-journal.show', [$plant, $photo]) }}"
+                                     alt="{{ $plant->name }} on {{ $photo->taken_on->format('F j, Y') }}"
+                                     class="object-fit-contain" loading="lazy" referrerpolicy="no-referrer">
+                            </div>
+                            <figcaption class="mt-2">
+                                <time class="fw-semibold" datetime="{{ $photo->taken_on->toDateString() }}">{{ $photo->taken_on->format('M j, Y') }}</time>
+                                @if ($photo->note)
+                                    <span class="d-block text-break">{{ $photo->note }}</span>
+                                @endif
+                            </figcaption>
+                        </figure>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    @endif
+
     <div class="row row-cols-1 row-cols-sm-2 g-3">
         @foreach ($photoJournalEntries as $entry)
             <article class="col">
@@ -68,12 +98,23 @@
                         @if ($entry->note !== null)
                             <p class="text-break mb-0">{{ $entry->note }}</p>
                         @endif
-                        <form method="POST" action="{{ route('plants.photo-journal.destroy', [$plant, $entry]) }}" class="mt-2">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                    aria-label="Remove photo from {{ $entry->taken_on->format('F j, Y') }}">Remove</button>
-                        </form>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            @if (!$firstComparisonPhoto)
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   href="{{ request()->fullUrlWithQuery(['compare_first' => $entry->id, 'compare_second' => null]) }}#photo-comparison"
+                                   aria-label="Compare photo from {{ $entry->taken_on->format('F j, Y') }}">Compare</a>
+                            @elseif ($firstComparisonPhoto->id !== $entry->id)
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   href="{{ request()->fullUrlWithQuery(['compare_second' => $entry->id]) }}#photo-comparison"
+                                   aria-label="Compare with photo from {{ $entry->taken_on->format('F j, Y') }}">Compare with selected</a>
+                            @endif
+                            <form method="POST" action="{{ route('plants.photo-journal.destroy', [$plant, $entry]) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        aria-label="Remove photo from {{ $entry->taken_on->format('F j, Y') }}">Remove</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </article>

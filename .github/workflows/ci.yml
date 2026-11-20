@@ -1,0 +1,75 @@
+name: Verify Bloomify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, dom, fileinfo, mbstring
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --no-interaction --prefer-dist
+      - run: php vendor/bin/phpunit --do-not-cache-result
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: composer audit --locked --no-interaction
+      - run: npm audit
+
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: bloomify_ci
+          MYSQL_USER: bloomify
+          MYSQL_PASSWORD: ci-password
+          MYSQL_ROOT_PASSWORD: ci-root-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: bloomify_ci
+      DB_USERNAME: bloomify
+      DB_PASSWORD: ci-password
+      MAIL_MAILER: array
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, dom, fileinfo, mbstring
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: php artisan migrate --force
+      - run: php artisan schedule:list
+      - run: php artisan email:care --discover-only --scheduled
+      - run: php artisan email:care --pending-only --scheduled
+      - run: php artisan care:status
+      - name: Run the reminder suite against MySQL
+        run: |
+          sed -E '/<env name="DB_(CONNECTION|DATABASE)"/d' phpunit.xml > phpunit.mysql.xml
+          php vendor/bin/phpunit --configuration phpunit.mysql.xml --do-not-cache-result tests/Feature/PlantCareTest.php

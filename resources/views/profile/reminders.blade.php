@@ -1,7 +1,7 @@
 <section class="card bloom-panel" aria-labelledby="reminder-heading">
     <div class="card-body">
         <h2 class="h4" id="reminder-heading">Daily care reminders</h2>
-        <p>Choose when to receive one email with all plants that need care.</p>
+        <p>Choose the time and time zone for daily email and browser reminders.</p>
 
         @if (session('reminder_message'))
             <p class="alert alert-success" role="status">{{ session('reminder_message') }}</p>

@@ -78,7 +78,7 @@ class CareWorkflowTest extends TestCase
         ])->assertRedirect(route('users'));
 
         $this->get($detail)->assertOk()->assertSee('Jul 10, 2026')->assertDontSee('Jul 9, 2026');
-        $this->get(route('care.today'))->assertOk()->assertDontSee($plant->name);
+        $this->get(route('care.today'))->assertOk()->assertSee('You’re all caught up')->assertSee('Jul 13, 2026');
         $this->assertSame('2026-07-13', $plant->fresh()->nextWatering()->toDateString());
         $this->assertDatabaseHas('history', ['plant_id' => $plant->id, 'watered_at' => '2026-07-09 22:00:00']);
     }
@@ -160,6 +160,20 @@ class CareWorkflowTest extends TestCase
         $this->assertDatabaseHas('care_logs', ['plant_id' => $today->id, 'type' => 'watering']);
     }
 
+    public function test_new_plants_can_leave_all_care_reminders_disabled(): void
+    {
+        $owner = User::factory()->create();
+        $this->actingAs($owner)->get(route('add-plant'))->assertOk()->assertDontSee('Seasonal options');
+        $this->post(route('add-plant-query'), ['name' => 'Rain lily'])->assertRedirect(route('browse'));
+        $plant = $owner->plants()->sole();
+
+        $this->assertDatabaseHas('needs', [
+            'plant_id' => $plant->id, 'watering_frequency' => 0, 'fertilizing_frequency' => 0,
+        ]);
+        $this->assertNull($plant->nextWatering());
+        $this->assertNull($plant->nextFertilizing());
+    }
+
     public function test_seasonal_intervals_save_validate_and_refresh_existing_flags(): void
     {
         $this->travelTo(now()->setDate(2026, 7, 10)->setTime(12, 0));
@@ -225,7 +239,7 @@ class CareWorkflowTest extends TestCase
             ->assertSee('Imported from previous care records');
     }
 
-    public function test_refresh_clears_due_flags_when_a_longer_seasonal_interval_takes_effect(): void
+    public function test_refresh_keeps_due_flags_when_a_longer_seasonal_interval_takes_effect(): void
     {
         $owner = User::factory()->create(['reminder_timezone' => 'Europe/Warsaw']);
         $plant = $this->createPlant($owner, 'Seasonal fern', '2026-09-28 08:00:00');
@@ -244,10 +258,10 @@ class CareWorkflowTest extends TestCase
 
         app(\App\Services\PlantCareSchedule::class)->refreshDueFlags(asOf: now()->setTime(22, 0));
         $this->assertDatabaseHas('needs', [
-            'plant_id' => $plant->id, 'need_watering' => false, 'need_fertilizing' => false,
+            'plant_id' => $plant->id, 'need_watering' => true, 'need_fertilizing' => true,
         ]);
         $this->travelTo(now()->setTime(22, 0));
-        $this->actingAs($owner)->get(route('care.today'))->assertOk()->assertDontSee($plant->name);
+        $this->actingAs($owner)->get(route('care.today'))->assertOk()->assertSee($plant->name);
     }
 
     private function createPlant(User $owner, string $name, string $lastCare): Plant

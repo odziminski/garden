@@ -21,4 +21,11 @@ class PlantPolicy
             ? Response::allow()
             : Response::denyAsNotFound();
     }
+
+    public function observe(User $user, Plant $plant): Response
+    {
+        return $plant->isOwnedBy($user) || Plant::query()->permanentlyVisibleTo($user)->whereKey($plant->getKey())->exists()
+            ? Response::allow()
+            : Response::denyAsNotFound();
+    }
 }

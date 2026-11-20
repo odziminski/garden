@@ -2,17 +2,71 @@
 
 namespace Tests\Feature;
 
+use App\Mail\GardenInviteMail;
 use App\Models\GardenInvitation;
 use App\Models\User;
 use App\Services\GardenSharing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class GardenSharingTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_an_invitation_is_emailed_when_a_mail_transport_is_configured(): void
+    {
+        config(['mail.default' => 'smtp']);
+        Mail::fake();
+        $owner = User::factory()->create();
+        $email = 'guest@example.test';
+        $url = $this->invite($owner, $email);
+
+        Mail::assertSent(GardenInviteMail::class, fn (GardenInviteMail $mail) => $mail->hasTo($email)
+            && $mail->inviteUrl === $url);
+    }
+
+    public function test_unverified_email_cannot_accept_an_invitation(): void
+    {
+        $owner = User::factory()->create();
+        $recipient = User::factory()->create(['email_verified_at' => null]);
+        $url = $this->invite($owner, $recipient->email);
+
+        $this->actingAs($recipient)->get($url)->assertRedirect(route('verification.notice'));
+        $this->post($url)->assertRedirect(route('verification.notice'));
+        $this->assertDatabaseCount('garden_memberships', 0);
+    }
+
+    public function test_invitation_can_limit_access_to_one_owned_plant(): void
+    {
+        $owner = User::factory()->create();
+        $guest = User::factory()->create();
+        $fern = $owner->plants()->create(['name' => 'Shared fern']);
+        $cactus = $owner->plants()->create(['name' => 'Private cactus']);
+        $foreignPlant = $guest->plants()->create(['name' => 'Guest violet']);
+
+        $this->actingAs($owner)->postJson(route('garden-sharing.invitations.store'), [
+            'email' => $guest->email, 'plant_id' => $foreignPlant->id,
+        ])->assertUnprocessable()->assertJsonValidationErrors('plant_id');
+
+        $invitation = $this->post(route('garden-sharing.invitations.store'), [
+            'email' => $guest->email, 'plant_id' => $fern->id,
+        ])->assertCreated();
+        $url = $invitation->viewData('inviteUrl');
+        $this->actingAs($guest)->get($url)->assertOk()->assertSee('Shared fern');
+        $this->post($url)->assertRedirect(route('browse'));
+        $this->get(route('plants', $fern))->assertOk();
+        $this->get(route('plants', $cactus))->assertNotFound();
+        $this->post(route('care-logs.store', $cactus), [
+            'type' => 'watering', 'care_date' => today()->toDateString(),
+        ])->assertNotFound();
+        $this->get(route('browse'))->assertSee('Shared fern')->assertDontSee('Private cactus');
+
+        $this->actingAs($owner)->delete(route('deletePlant', $fern))->assertRedirect();
+        $this->assertDatabaseCount('garden_memberships', 0);
+    }
 
     public function test_invitation_is_bound_to_the_recipient_and_consumed_on_acceptance(): void
     {

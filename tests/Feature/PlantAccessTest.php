@@ -37,7 +37,7 @@ class PlantAccessTest extends TestCase
         $owner = User::factory()->create();
         $this->actingAs($owner)->postJson(route('add-plant-query'), [
             'name' => 'My fern',
-            'watering_frequency' => 0,
+            'watering_frequency' => -1,
             'fertilizing_frequency' => 'tomorrow',
             'webcamAvatar' => 'data:image/png;base64,dGV4dA==',
         ])->assertUnprocessable()->assertJsonValidationErrors([
@@ -65,7 +65,7 @@ class PlantAccessTest extends TestCase
         $plant->history()->update(['watered_at' => now()->subDays(8), 'fertilized_at' => now()->subDays(36)]);
         $this->artisan('checkForWatering')->assertSuccessful();
         $this->artisan('checkForFertilizing')->assertSuccessful();
-        $this->get(route('welcome'))->assertOk()->assertSee('My fern')->assertSee('scheduled watering');
+        $this->get(route('welcome'))->assertOk()->assertSee('My fern')->assertSee('Next soil check');
         $this->get(route('browse'))->assertOk()->assertSee('My fern');
         $this->get(route('plants', $plant))->assertOk();
         $this->get(route('displayEditPlant', $plant))->assertOk();

@@ -9,7 +9,7 @@
         @if ($dueDate)
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>
-                    <strong>{{ $careType->label() }}</strong>
+                    <strong>{{ $careType->reminderLabel() }}</strong>
                     @if ($dueDate->lte($caretakingTime))
                         <span class="badge rounded-pill text-bg-warning">
                             {{ $dueDate->isSameDay($caretakingTime) ? 'Due today' : 'Overdue' }}

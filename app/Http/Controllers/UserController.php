@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -44,6 +45,16 @@ class UserController extends Controller
         });
 
         $request->session()->regenerate();
+
+        if ($emailChanged) {
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (Throwable $exception) {
+                report($exception);
+
+                return redirect()->route('users')->with('message', 'Profile updated. Use the verification page to resend the email.');
+            }
+        }
 
         return redirect()->route('users')->with('message', 'Profile updated.');
     }

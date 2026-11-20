@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class SeasonalCareScheduleTest extends TestCase
 {
-    public function test_schedule_uses_the_active_season_in_the_owners_time_zone(): void
+    public function test_a_due_task_does_not_disappear_in_a_longer_season(): void
     {
         $plant = $this->plant('Europe/Warsaw');
 
@@ -19,9 +19,20 @@ class SeasonalCareScheduleTest extends TestCase
         $startOfOctober = Carbon::parse('2026-09-30 22:00:00 UTC');
 
         $this->assertSame('2026-09-28', $plant->nextWatering($beforeOctober)->toDateString());
-        $this->assertSame('2026-10-03', $plant->nextWatering($startOfOctober)->toDateString());
-        $this->assertSame('2026-10-06', $plant->nextFertilizing($beforeOctober)->toDateString());
+        $this->assertSame('2026-09-28', $plant->nextWatering($startOfOctober)->toDateString());
+        $this->assertSame('2026-10-16', $plant->nextFertilizing($beforeOctober)->toDateString());
         $this->assertSame('2026-10-16', $plant->nextFertilizing($startOfOctober)->toDateString());
+    }
+
+    public function test_southern_season_can_make_an_upcoming_task_due_on_the_boundary(): void
+    {
+        $plant = $this->plant('Australia/Sydney');
+        $plant->needs->seasonal_hemisphere = 'south';
+
+        $this->assertSame('2026-10-01', $plant->nextWatering()->toDateString());
+
+        $plant->needs->fertilizing_frequency = 0;
+        $this->assertNull($plant->nextFertilizing());
     }
 
     public function test_default_interval_handles_local_calendar_days_through_daylight_saving(): void

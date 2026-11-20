@@ -25,8 +25,31 @@
             <aside class="col-lg-4">
                 <div class="card bloom-plant-card mb-4">
                     <img src="{{ $plant->avatarUrl() }}" class="card-img-top" alt="{{ $plant->name }}">
+                    @if ($plant->species_name || $plant->room || $plant->care_instructions)
+                        <div class="card-body">
+                            @if ($plant->species_name)
+                                <p class="fw-semibold mb-1">{{ $plant->species_name }}</p>
+                            @endif
+                            @if ($plant->room)
+                                <p class="text-muted mb-1">{{ $plant->room }}</p>
+                            @endif
+                            @if ($plant->care_instructions)
+                                <p class="mb-0 text-break">{{ $plant->care_instructions }}</p>
+                            @endif
+                        </div>
+                    @endif
+                    @if ($identificationStatus === 'pending')
+                        <p class="card-body mb-0 text-muted">Plant identification is pending.</p>
+                    @elseif ($identificationStatus === 'unavailable')
+                        <p class="card-body mb-0 text-muted">Plant identification is unavailable.</p>
+                    @elseif ($identificationStatus === 'no_match')
+                        <p class="card-body mb-0 text-muted">No plant match was found for this cover photo.</p>
+                    @endif
                     @if ($plant->plantData)
                         <div class="card-body">
+                            @if (in_array($identificationStatus, ['pending', 'unavailable', 'no_match'], true))
+                                <p class="small text-muted mb-1">Previous identification</p>
+                            @endif
                             <h2 class="h5">
                                 {{ $plant->plantData->plant_name }}
                                 @if ($plant->plantData->common_name)
@@ -61,6 +84,11 @@
 
             <div class="col-lg-8">
                 <div class="d-grid gap-4">
+                    @include('plants.check-history')
+                    @include('plants.custom-tasks')
+                    @if ($canObserve)
+                        @include('plants.observations')
+                    @endif
                     @include('plants.care-history')
                     @if ($canManage)
                         @include('plants.photo-journal')

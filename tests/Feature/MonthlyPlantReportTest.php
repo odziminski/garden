@@ -15,6 +15,23 @@ class MonthlyPlantReportTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_timeline_is_paginated_and_voided_care_does_not_appear(): void
+    {
+        $owner = User::factory()->create();
+        $plant = $owner->plants()->create(['name' => 'My fern']);
+        foreach (range(1, 26) as $day) {
+            $this->photo($plant, sprintf('2024-03-%02d', $day), "Journal entry {$day}.");
+        }
+        $this->care($plant, CareType::Watering, '2024-03-02', 'Incorrect watering');
+        $plant->careLogs()->update(['voided_at' => now()]);
+
+        $url = route('monthly-report.index', ['plant' => $plant->id, 'month' => '2024-03']);
+        $this->actingAs($owner)->get($url)->assertOk()->assertSee('Journal entry 25.')
+            ->assertDontSee('Journal entry 26.')->assertDontSee('Incorrect watering');
+        $this->get($url.'&timeline_page=2')->assertOk()->assertSee('Journal entry 26.')
+            ->assertDontSee('Journal entry 25.')->assertSee('No watering dates in this month.');
+    }
+
     public function test_guests_are_redirected_to_login(): void
     {
         $this->get('/monthly-report')->assertRedirect(route('login'));
