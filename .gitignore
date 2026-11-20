@@ -13,3 +13,5 @@ npm-debug.log
 yarn-error.log
 /.phpunit.cache
 /database/*.sqlite
+/playwright-report
+/test-results

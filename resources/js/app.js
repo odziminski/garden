@@ -1,4 +1,21 @@
 import 'bootstrap';
+import './browser-push.js';
+
+const copyInvite = document.querySelector('[data-copy-invitation]');
+if (copyInvite && navigator.clipboard?.writeText) {
+    copyInvite.hidden = false;
+    copyInvite.addEventListener('click', async () => {
+        const field = document.querySelector('#invite-link');
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(field.value);
+            status.textContent = 'Invitation link copied.';
+        } catch {
+            field.select();
+            status.textContent = 'Use your browser’s copy command.';
+        }
+    });
+}
 
 const randomNameButton = document.querySelector('[data-plant-name]');
 if (randomNameButton) {

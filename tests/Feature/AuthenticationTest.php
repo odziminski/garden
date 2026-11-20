@@ -14,6 +14,17 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_login_opens_today_unless_a_protected_page_was_requested(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('a regular password')]);
+        $credentials = ['email' => $user->email, 'password' => 'a regular password'];
+
+        $this->post(route('login'), $credentials)->assertRedirect(route('care.today'));
+        $this->post(route('logout'));
+        $this->get(route('browse'))->assertRedirect(route('login'));
+        $this->post(route('login'), $credentials)->assertRedirect(route('browse'));
+    }
+
     public function test_public_authentication_screens_have_a_main_landmark_and_labelled_fields(): void
     {
         $screens = [

@@ -3,15 +3,20 @@
 namespace App\Services;
 
 use App\Http\Requests\StorePlantRequest;
-use Cloudinary\Api\Exception\ApiError;
-use Cloudinary\Cloudinary;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
+use App\Models\Plant;
+use App\Models\PlantPhotoEntry;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PlantPhoto
 {
+    public function __construct(
+        private readonly PlantJournalPhotos $storage,
+        private readonly PlantPhotoCleanup $cleanup,
+        private readonly PlantIdentification $identification,
+    ) {
+    }
+
     public static function isValidWebcamImage(string $value): bool
     {
         if (!preg_match('#\Adata:(image/(?:jpeg|png|webp));base64,#', $value, $header)) {
@@ -37,69 +42,65 @@ class PlantPhoto
         }
 
         $field = $webcam ? 'webcamAvatar' : 'avatar';
-        $cloudUrl = config('cloudinary.cloud_url');
-        if (!$cloudUrl) {
-            throw ValidationException::withMessages([$field => 'Photo uploads are currently unavailable.']);
+        if (!$request->user()->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([$field => 'Verify your email before uploading plant photos.']);
         }
 
+        $publicId = 'plant_covers/'.Str::uuid();
         try {
-            $cloudinary = new Cloudinary($cloudUrl);
-            $image = $cloudinary->uploadApi()->upload($webcam ?: $file->getPathname(), [
-                'folder' => 'user_uploads',
-                'resource_type' => 'image',
-                'timeout' => 20,
-            ]);
-        } catch (ApiError $exception) {
-            report($exception);
-            throw ValidationException::withMessages([$field => 'The photo could not be uploaded. Please try again.']);
+            $format = $this->storage->upload($webcam ?: $file, $publicId);
+        } catch (PlantPhotoStorageException $exception) {
+            throw ValidationException::withMessages([$field => $exception->getMessage()]);
         }
 
         return [
-            'url' => $image['secure_url'],
-            'identification' => $this->identify($webcam ?: base64_encode($file->getContent())),
+            'public_id' => $publicId,
+            'format' => $format,
         ];
     }
 
-    private function identify(string $image): array
+    public function attachCover(Plant $plant, string $publicId, string $format, bool $identify = true): void
     {
-        $key = config('services.plant_id.key');
-        if (!$key) {
-            return [];
+        $plant->forceFill([
+            'avatar' => 'plant.png',
+            'cover_public_id' => $publicId,
+            'cover_format' => $format,
+        ])->save();
+        $this->cleanup->keepUpload($publicId);
+
+        if ($identify) {
+            $this->identification->schedule($plant);
+        }
+    }
+
+    public function discardCover(Plant $plant): void
+    {
+        if ($plant->cover_public_id) {
+            $this->cleanup->enqueue($plant->cover_public_id);
+
+            return;
         }
 
-        try {
-            $response = Http::timeout(10)->withoutRedirecting()->post('https://api.plant.id/v2/identify', [
-                'api_key' => $key,
-                'images' => [$image],
-                'plant_language' => 'en',
-                'plant_details' => ['common_names', 'url', 'wiki_description', 'taxonomy'],
-            ]);
-        } catch (ConnectionException) {
-            return [];
+        $legacy = $this->legacyCover($plant->avatar);
+        if ($legacy !== null) {
+            $this->cleanup->enqueue($legacy['public_id'], $plant->avatar);
+        }
+    }
+
+    public function discardPlantMedia(Plant $plant): void
+    {
+        $this->discardCover($plant);
+        foreach (PlantPhotoEntry::query()->forPlant($plant)->pluck('public_id') as $publicId) {
+            $this->cleanup->enqueue($publicId);
+        }
+    }
+
+    public function legacyCover(?string $url): ?array
+    {
+        if ($url === null || !preg_match('~\Ahttps://res\.cloudinary\.com/([A-Za-z0-9_-]+)/image/upload/(?:v[0-9]+/)?(user_uploads/[A-Za-z0-9_-]+)\.(?:jpe?g|png|webp)\z~', $url, $matches)) {
+            return null;
         }
 
-        $suggestion = $response->successful() ? $response->json('suggestions.0') : null;
-        if (!is_array($suggestion) || empty($suggestion['plant_name'])) {
-            return [];
-        }
-
-        $fields = [
-            'plant_name' => 'plant_name',
-            'common_name' => 'plant_details.common_names.0',
-            'wikipedia_url' => 'plant_details.url',
-            'wikipedia_description' => 'plant_details.wiki_description.value',
-            'taxonomy_class' => 'plant_details.taxonomy.class',
-            'taxonomy_family' => 'plant_details.taxonomy.family',
-            'taxonomy_genus' => 'plant_details.taxonomy.genus',
-            'taxonomy_kingdom' => 'plant_details.taxonomy.kingdom',
-            'taxonomy_order' => 'plant_details.taxonomy.order',
-            'taxonomy_phylum' => 'plant_details.taxonomy.phylum',
-        ];
-
-        return array_map(function (string $path) use ($suggestion): string {
-            $value = data_get($suggestion, $path);
-
-            return is_string($value) ? Str::substr($value, 0, 255) : '';
-        }, $fields);
+        return ['cloud' => $matches[1], 'public_id' => $matches[2]];
     }
 }

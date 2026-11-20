@@ -51,7 +51,9 @@ class Plant extends Model
                 ->orWhereExists(function ($memberships) use ($viewer) {
                     $memberships->selectRaw('1')->from('garden_memberships')
                         ->whereColumn('garden_memberships.owner_id', 'plants.user_id')
-                        ->where('garden_memberships.member_id', $viewer->getKey());
+                        ->where('garden_memberships.member_id', $viewer->getKey())
+                        ->where(fn ($scope) => $scope->whereNull('garden_memberships.plant_id')
+                            ->orWhereColumn('garden_memberships.plant_id', 'plants.id'));
                 });
         });
     }
@@ -98,7 +100,9 @@ class Plant extends Model
 
     public function avatarUrl(): string
     {
-        return !$this->avatar || $this->avatar === 'plant.png' ? asset('images/plant.png') : $this->avatar;
+        return $this->cover_public_id && $this->cover_format
+            ? route('plants.cover', $this, false)
+            : asset('images/plant.png');
     }
 
     public function nextWatering(?CarbonInterface $asOf = null): ?Carbon

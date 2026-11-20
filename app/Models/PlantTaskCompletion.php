@@ -15,6 +15,8 @@ class PlantTaskCompletion extends Model
         'completed_on',
         'completed_at',
         'completed_by_user_id',
+        'resulting_due_on',
+        'previous_snoozed_until',
     ];
 
     protected $casts = ['completed_at' => 'datetime'];

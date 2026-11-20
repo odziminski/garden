@@ -20,7 +20,8 @@
         </ul>
     @endif
 
-    <form class="row g-3 mb-4" method="POST" action="{{ route('plants.observations.store', $plant) }}">
+    <form class="row g-3 mb-4" method="POST"
+          action="{{ route('plants.observations.store', [$plant, 'photo_choice_page' => $canManage && !$observationPhotos->onFirstPage() ? $observationPhotos->currentPage() : null]) }}">
         @csrf
         <div class="col-sm-6">
             <label class="form-label" for="observation-category">Category</label>
@@ -73,6 +74,18 @@
                         @endforeach
                     </select>
                 </div>
+            @endif
+            @if ($observationPhotos->hasPages())
+                <nav class="d-flex flex-wrap gap-2" aria-label="Journal photo choices">
+                    @if ($observationPhotos->isEmpty())
+                        <a href="{{ $observationPhotos->url(1) }}">Newest photo choices</a>
+                    @elseif ($observationPhotos->previousPageUrl())
+                        <a href="{{ $observationPhotos->previousPageUrl() }}">Newer photo choices</a>
+                    @endif
+                    @if ($observationPhotos->nextPageUrl())
+                        <a href="{{ $observationPhotos->nextPageUrl() }}">Older photo choices</a>
+                    @endif
+                </nav>
             @endif
             <div class="col-12">
                 <details @if ($observationInput('follow_up_name') || $observationInput('follow_up_due_on') || $observationErrors->has('follow_up_name') || $observationErrors->has('follow_up_due_on')) open @endif>
@@ -136,11 +149,14 @@
                             <strong>Follow-up:</strong>
                             @if ($followUp->isActive())
                                 <a href="#custom-task-{{ $followUp->id }}">{{ $followUp->name }}</a>
-                                · Due <time datetime="{{ $followUp->due_on }}">{{ \Carbon\CarbonImmutable::parse($followUp->due_on, 'UTC')->format('M j, Y') }}</time>
+                                · Due <time datetime="{{ $followUp->effectiveDueOn() }}">{{ \Carbon\CarbonImmutable::parse($followUp->effectiveDueOn(), 'UTC')->format('M j, Y') }}</time>
                             @else
                                 {{ $followUp->name }} · {{ $followUp->archived_at ? 'Archived' : 'Completed' }}
                             @endif
                         </p>
+                    @endif
+                    @if ($entry->canBeCorrectedBy(auth()->user(), $plant))
+                        <a class="btn btn-outline-secondary btn-sm mt-2" href="{{ route('plants.observations.edit', [$plant, $entry]) }}">Correct observation</a>
                     @endif
                 </li>
             @endforeach

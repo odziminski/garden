@@ -29,9 +29,19 @@ class PlantTask extends Model
         return $this->archived_at === null && $this->completed_at === null;
     }
 
+    public function effectiveDueOn(): string
+    {
+        return max($this->due_on, $this->snoozed_until);
+    }
+
     public function plant(): BelongsTo
     {
         return $this->belongsTo(Plant::class);
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
     }
 
     public function completions(): HasMany

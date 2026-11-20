@@ -24,6 +24,11 @@ class PlantObservation extends Model
         'category' => PlantObservationCategory::class,
     ];
 
+    public function canBeCorrectedBy(User $user, Plant $plant): bool
+    {
+        return $plant->isOwnedBy($user) || (int) $this->actor_id === (int) $user->getKey();
+    }
+
     public function plant(): BelongsTo
     {
         return $this->belongsTo(Plant::class);

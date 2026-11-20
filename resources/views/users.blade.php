@@ -6,6 +6,9 @@
             <div class="card-body">
                 <h1 class="h4">Your profile</h1>
                 <p>Joined {{ $user->created_at?->toFormattedDateString() }}</p>
+                @unless ($user->hasVerifiedEmail())
+                    <p><a href="{{ route('verification.notice') }}">Verify your email address</a> to receive reminders and share gardens.</p>
+                @endunless
 
                 @if (session('message'))
                     <div class="alert alert-success" role="status">{{ session('message') }}</div>
@@ -45,5 +48,24 @@
         </div>
 
         @include('profile.reminders')
+        @include('profile.push')
+        <section class="card bloom-panel">
+            <div class="card-body">
+                <h2 class="h4">Your data</h2>
+                <p>Download your plant and care records as JSON. Photo links require an active account.</p>
+                <a class="btn btn-outline-secondary mb-3" href="{{ route('account.export') }}">Download data</a>
+                <details>
+                    <summary class="text-danger">Delete account</summary>
+                    <p class="mt-3">Permanently delete your account, owned gardens, care history, and uploaded photos.</p>
+                    <form method="POST" action="{{ route('account.destroy') }}">
+                        @csrf
+                        @method('DELETE')
+                        <label for="delete-password" class="form-label">Current password</label>
+                        <input id="delete-password" name="current_password" type="password" autocomplete="current-password" class="form-control mb-3" required>
+                        <button type="submit" class="btn btn-outline-danger">Permanently delete account</button>
+                    </form>
+                </details>
+            </div>
+        </section>
     </div>
 @endsection

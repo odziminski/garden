@@ -114,6 +114,16 @@
                                 @endforeach
                             </ol>
                         @endif
+                        @if ($report['timeline']->hasPages())
+                            <nav class="d-flex gap-2 mt-3" aria-label="Timeline pages">
+                                @if ($report['timeline']->previousPageUrl())
+                                    <a class="btn btn-outline-secondary btn-sm" href="{{ $report['timeline']->previousPageUrl() }}">Earlier entries</a>
+                                @endif
+                                @if ($report['timeline']->nextPageUrl())
+                                    <a class="btn btn-outline-secondary btn-sm" href="{{ $report['timeline']->nextPageUrl() }}">Later entries</a>
+                                @endif
+                            </nav>
+                        @endif
                     </section>
                 </div>
             </div>

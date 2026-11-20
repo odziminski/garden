@@ -18,8 +18,13 @@
 
         @if ($plants->isEmpty())
             <div class="bloom-panel bloom-empty">
-                <h2 class="h4">Your garden is empty</h2>
-                <a class="btn btn-primary" href="{{ route('add-plant') }}">Add your first plant</a>
+                @if ($plants->onFirstPage())
+                    <h2 class="h4">Your garden is empty</h2>
+                    <a class="btn btn-primary" href="{{ route('add-plant') }}">Add your first plant</a>
+                @else
+                    <h2 class="h4">No plants on this page</h2>
+                    <a class="btn btn-outline-secondary" href="{{ $plants->url(1) }}">Back to first page</a>
+                @endif
             </div>
         @else
             <div class="bloom-card-grid">
@@ -40,6 +45,16 @@
                     </article>
                 @endforeach
             </div>
+        @endif
+        @if ($plants->isNotEmpty() && $plants->hasPages())
+            <nav class="d-flex gap-2 mt-4" aria-label="Garden pages">
+                @if ($plants->previousPageUrl())
+                    <a class="btn btn-outline-secondary" href="{{ $plants->previousPageUrl() }}">Previous plants</a>
+                @endif
+                @if ($plants->nextPageUrl())
+                    <a class="btn btn-outline-secondary" href="{{ $plants->nextPageUrl() }}">More plants</a>
+                @endif
+            </nav>
         @endif
     </div>
 @endsection

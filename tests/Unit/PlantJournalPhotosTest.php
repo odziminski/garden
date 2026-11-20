@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Services\PlantJournalPhotos;
+use App\Services\PlantPhotoCleanup;
 use App\Services\PlantPhotoStorageException;
 use DateTimeImmutable;
 use Illuminate\Config\Repository;
@@ -14,7 +15,7 @@ class PlantJournalPhotosTest extends TestCase
     {
         $photos = new PlantJournalPhotos(new Repository([
             'cloudinary' => ['cloud_url' => 'cloudinary://test-key:test-secret@demo'],
-        ]));
+        ]), new PlantPhotoCleanup());
 
         $url = $photos->downloadUrl('plant_journal/example', 'webp', new DateTimeImmutable('2026-11-20T00:01:00Z'));
 
@@ -30,7 +31,7 @@ class PlantJournalPhotosTest extends TestCase
 
     public function test_missing_configuration_cannot_generate_a_download_url(): void
     {
-        $photos = new PlantJournalPhotos(new Repository());
+        $photos = new PlantJournalPhotos(new Repository(), new PlantPhotoCleanup());
 
         $this->expectException(PlantPhotoStorageException::class);
         $photos->downloadUrl('plant_journal/example', 'webp', new DateTimeImmutable('2026-11-20T00:01:00Z'));

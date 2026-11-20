@@ -3,12 +3,14 @@
   "scripts": {
     "build": "npm run build:js && npm run build:css",
     "build:js": "esbuild resources/js/app.js --bundle --minify --outfile=public/js/app.js",
-    "build:css": "sass --quiet --load-path=node_modules --style=compressed --no-source-map resources/sass/app.scss public/css/app.css"
+    "build:css": "sass --quiet --load-path=node_modules --style=compressed --no-source-map resources/sass/app.scss public/css/app.css",
+    "test:browser": "node scripts/browser-test.mjs"
   },
   "dependencies": {
     "bootstrap": "^5.3.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "esbuild": "^0.28.0",
     "sass": "^1.98.0"
   }

@@ -6,7 +6,7 @@
     <div class="container d-grid gap-4 py-4" style="max-width: 48rem;">
         <div>
             <h1>Garden sharing</h1>
-            <p class="mb-0">Invite someone to view all your plants and log care. Only you can manage your plants, care schedules, and photo journals.</p>
+            <p class="mb-0">Invite someone to see one plant or your entire garden and log care. Only you can manage plants, schedules, and photo journals.</p>
         </div>
 
         @if (session('sharing_status'))
@@ -16,7 +16,7 @@
         <section class="card bloom-panel">
             <div class="card-body">
                 <h2 class="h4">Invite someone</h2>
-                <p id="invite-help">Enter the exact email address shown on their Bloomify profile. You’ll get a link to share with them.</p>
+                <p id="invite-help">Enter the email address they use on Bloomify. You can also copy the invitation link after creating it.</p>
                 <form method="POST" action="{{ route('garden-sharing.invitations.store') }}">
                     @csrf
                     <label class="form-label" for="invite-email">Email address</label>
@@ -27,7 +27,19 @@
                     @error('email')
                         <div class="invalid-feedback" id="invite-email-error" role="alert">{{ $message }}</div>
                     @enderror
-                    <button class="btn btn-primary mt-3" type="submit">Create invitation link</button>
+                    @if ($ownedPlants->isNotEmpty())
+                        <label class="form-label mt-3" for="invite-plant">Share</label>
+                        <select class="form-select" id="invite-plant" name="plant_id">
+                            <option value="">Entire garden</option>
+                            @foreach ($ownedPlants as $plant)
+                                <option value="{{ $plant->id }}" @selected((string) old('plant_id') === (string) $plant->id)>{{ $plant->name }} only</option>
+                            @endforeach
+                        </select>
+                        @error('plant_id')
+                            <p class="text-danger small mb-0">{{ $message }}</p>
+                        @enderror
+                    @endif
+                    <button class="btn btn-primary mt-3" type="submit">Create invitation</button>
                 </form>
             </div>
         </section>
@@ -43,7 +55,7 @@
                             <li class="list-group-item d-flex flex-wrap gap-2 justify-content-between align-items-center px-0">
                                 <div class="text-break">
                                     {{ $invitation->email }}
-                                    <small class="d-block text-body-secondary">Expires {{ $invitation->expires_at->toFormattedDateString() }}</small>
+                                    <small class="d-block text-body-secondary">{{ $invitation->plant?->name ?? 'Entire garden' }} · Expires {{ $invitation->expires_at->toFormattedDateString() }}</small>
                                 </div>
                                 <form method="POST" action="{{ route('garden-sharing.invitations.destroy', $invitation) }}">
                                     @csrf
@@ -67,7 +79,7 @@
                     <ul class="list-group list-group-flush">
                         @foreach ($members as $membership)
                             <li class="list-group-item d-flex flex-wrap gap-2 justify-content-between align-items-center px-0">
-                                <span class="text-break">{{ $membership->member->email }}</span>
+                                <span class="text-break">{{ $membership->member->email }}<small class="d-block text-body-secondary">{{ $membership->plant?->name ?? 'Entire garden' }}</small></span>
                                 <form method="POST" action="{{ route('garden-sharing.memberships.destroy', $membership) }}">
                                     @csrf
                                     @method('DELETE')
@@ -91,7 +103,7 @@
                     <ul class="list-group list-group-flush">
                         @foreach ($sharedGardens as $membership)
                             <li class="list-group-item d-flex flex-wrap gap-2 justify-content-between align-items-center px-0">
-                                <span class="text-break">{{ $membership->owner->email }}</span>
+                                <span class="text-break">{{ $membership->owner->email }}<small class="d-block text-body-secondary">{{ $membership->plant?->name ?? 'Entire garden' }}</small></span>
                                 <form method="POST" action="{{ route('garden-sharing.memberships.destroy', $membership) }}">
                                     @csrf
                                     @method('DELETE')

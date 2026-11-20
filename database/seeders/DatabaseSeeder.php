@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
                 ['email' => 'demo@example.test'],
                 ['password' => Hash::make('bloomify-demo')]
             );
+            if (! $user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
+            }
 
             $plant = $user->plants()->firstOrCreate(
                 ['name' => 'Demo fern'],

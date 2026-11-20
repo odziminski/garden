@@ -24,8 +24,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('email:care')
-            ->everyMinute()->withoutOverlapping(5);
+        $schedule->command('email:care --discover-only --scheduled')
+            ->everyFiveMinutes()->withoutOverlapping(10)->runInBackground();
+
+        $schedule->command('email:care --pending-only --scheduled')
+            ->everyMinute()->withoutOverlapping(5)->runInBackground();
+
+        $schedule->command('photos:cleanup')
+            ->everyMinute()->withoutOverlapping(5)->runInBackground();
+
+        $schedule->command('photos:identify')
+            ->everyMinute()->withoutOverlapping(5)->runInBackground();
     }
 
     /**

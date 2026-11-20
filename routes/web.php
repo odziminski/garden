@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PlantsController::class, 'getRandomPlant'])->name('welcome');
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/browse', [PlantsController::class, 'displayPlants'])->name('browse');
     Route::view('/add-plant', 'add-plant')->name('add-plant');
-    Route::post('/add-plant-query', [PlantsController::class, 'store'])->name('add-plant-query');
+    Route::post('/add-plant-query', [PlantsController::class, 'store'])->middleware('throttle:plant-uploads')->name('add-plant-query');
 
     Route::get('/users', [UserController::class, 'displayUserData'])->name('users');
     Route::put('/users/edit-profile', [UserController::class, 'editUserProfile'])->name('editUserProfile');
@@ -27,16 +27,18 @@ Route::middleware('auth')->group(function () {
     require __DIR__.'/plant-observations.php';
     require __DIR__.'/garden-sharing.php';
     require __DIR__.'/monthly-report.php';
+    require __DIR__.'/account.php';
 
     Route::middleware('can:view,plant')->group(function () {
         Route::get('/plants/{plant}', [PlantsController::class, 'displaySinglePlant'])->name('plants');
+        Route::get('/plants/{plant}/cover', [PlantsController::class, 'showCover'])->name('plants.cover');
         Route::post('/updateW/{plant}', [NeedsController::class, 'updateWatering'])->name('updateWatering');
         Route::post('/updateF/{plant}', [NeedsController::class, 'updateFertilizing'])->name('updateFertilizing');
     });
 
     Route::middleware('can:manage,plant')->group(function () {
         Route::get('/edit-plant/{plant}', [PlantsController::class, 'displayEditPlant'])->name('displayEditPlant');
-        Route::patch('/edit-plant-query/{plant}', [PlantsController::class, 'editPlant'])->name('editPlant');
+        Route::patch('/edit-plant-query/{plant}', [PlantsController::class, 'editPlant'])->middleware('throttle:plant-uploads')->name('editPlant');
         Route::delete('/delete-plant/{plant}', [PlantsController::class, 'deletePlant'])->name('deletePlant');
 
         require __DIR__.'/photo-journal.php';

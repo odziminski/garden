@@ -25,8 +25,18 @@
             <aside class="col-lg-4">
                 <div class="card bloom-plant-card mb-4">
                     <img src="{{ $plant->avatarUrl() }}" class="card-img-top" alt="{{ $plant->name }}">
+                    @if ($identificationStatus === 'pending')
+                        <p class="card-body mb-0 text-muted">Plant identification is pending.</p>
+                    @elseif ($identificationStatus === 'unavailable')
+                        <p class="card-body mb-0 text-muted">Plant identification is unavailable.</p>
+                    @elseif ($identificationStatus === 'no_match')
+                        <p class="card-body mb-0 text-muted">No plant match was found for this cover photo.</p>
+                    @endif
                     @if ($plant->plantData)
                         <div class="card-body">
+                            @if (in_array($identificationStatus, ['pending', 'unavailable', 'no_match'], true))
+                                <p class="small text-muted mb-1">Previous identification</p>
+                            @endif
                             <h2 class="h5">
                                 {{ $plant->plantData->plant_name }}
                                 @if ($plant->plantData->common_name)

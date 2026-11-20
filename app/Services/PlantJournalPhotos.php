@@ -2,34 +2,33 @@
 
 namespace App\Services;
 
-use App\Models\Plant;
-use App\Models\PlantPhotoEntry;
 use Cloudinary\Api\Exception\ApiError;
 use Cloudinary\Api\Upload\UploadApi;
 use Cloudinary\Cloudinary;
 use DateTimeInterface;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Throwable;
 
 class PlantJournalPhotos
 {
     private const DELIVERY_TYPE = 'authenticated';
 
-    public function __construct(private readonly Repository $config)
-    {
+    public function __construct(
+        private readonly Repository $config,
+        private readonly PlantPhotoCleanup $cleanup,
+    ) {
     }
 
-    public function upload(UploadedFile $photo, string $publicId): string
+    public function upload(UploadedFile|string $photo, string $publicId, ?string $expectedCloud = null): string
     {
-        $api = $this->uploadApi();
+        $api = $this->uploadApi($expectedCloud);
+        $this->cleanup->reserveUpload($publicId);
 
         try {
-            $response = $api->upload($photo->getPathname(), [
+            $response = $api->upload($photo instanceof UploadedFile ? $photo->getPathname() : $photo, [
                 'resource_type' => 'image',
                 'type' => self::DELIVERY_TYPE,
                 'public_id' => $publicId,
@@ -41,30 +40,27 @@ class PlantJournalPhotos
                 return $format;
             }
         } catch (ApiError|ClientExceptionInterface $exception) {
-            Log::warning('Journal photo upload failed.', ['public_id' => $publicId, 'error_type' => $exception::class]);
+            Log::warning('Plant photo upload failed.', ['public_id' => $publicId, 'error_type' => $exception::class]);
         }
-
-        // A request can fail after Cloudinary has already stored the image.
-        $this->discard($publicId);
 
         throw new PlantPhotoStorageException('The photo could not be uploaded. Please try again.');
     }
 
-    public function downloadUrl(string $publicId, string $format, DateTimeInterface $issuedAt): string
+    public function downloadUrl(string $publicId, string $format, DateTimeInterface $issuedAt, int $ttl = 300): string
     {
         return $this->uploadApi()->privateDownloadUrl($publicId, $format, [
             'type' => self::DELIVERY_TYPE,
             'resource_type' => 'image',
             'attachment' => false,
-            'expires_at' => $issuedAt->getTimestamp() + 300,
+            'expires_at' => $issuedAt->getTimestamp() + $ttl,
         ]);
     }
 
-    public function delete(string $publicId): void
+    public function delete(string $publicId, string $deliveryType = self::DELIVERY_TYPE, ?string $expectedCloud = null): void
     {
         try {
-            $response = $this->uploadApi()->destroy($publicId, [
-                'type' => self::DELIVERY_TYPE,
+            $response = $this->uploadApi($expectedCloud)->destroy($publicId, [
+                'type' => $deliveryType,
                 'resource_type' => 'image',
                 'invalidate' => true,
             ]);
@@ -73,35 +69,13 @@ class PlantJournalPhotos
                 return;
             }
         } catch (ApiError|ClientExceptionInterface $exception) {
-            Log::warning('Journal photo deletion failed.', ['public_id' => $publicId, 'error_type' => $exception::class]);
+            Log::warning('Plant photo deletion failed.', ['public_id' => $publicId, 'error_type' => $exception::class]);
         }
 
         throw new PlantPhotoStorageException('The photo could not be removed. Please try again.');
     }
 
-    public function discard(string $publicId): void
-    {
-        try {
-            $this->delete($publicId);
-        } catch (Throwable $exception) {
-            Log::warning('Could not clean up a journal photo.', ['public_id' => $publicId, 'error_type' => $exception::class]);
-        }
-    }
-
-    public function discardAfterCommit(Plant $plant): void
-    {
-        $publicIds = PlantPhotoEntry::query()->forPlant($plant)->pluck('public_id');
-
-        if ($publicIds->isNotEmpty()) {
-            DB::afterCommit(function () use ($publicIds) {
-                foreach ($publicIds as $publicId) {
-                    $this->discard($publicId);
-                }
-            });
-        }
-    }
-
-    private function uploadApi(): UploadApi
+    private function uploadApi(?string $expectedCloud = null): UploadApi
     {
         $url = $this->config->get('cloudinary.cloud_url');
 
@@ -109,16 +83,19 @@ class PlantJournalPhotos
             try {
                 $cloudinary = new Cloudinary($url);
                 $cloudinary->configuration->cloud->assertNotEmpty(['cloudName', 'apiKey', 'apiSecret']);
+                if ($expectedCloud !== null && $expectedCloud !== $cloudinary->configuration->cloud->cloudName) {
+                    throw new PlantPhotoStorageException('Cloudinary configuration does not match the original photo.');
+                }
                 $cloudinary->configuration->api->connectionTimeout = 5;
                 $cloudinary->configuration->api->timeout = 20;
                 $cloudinary->configuration->api->uploadTimeout = 20;
 
                 return $cloudinary->uploadApi();
             } catch (InvalidArgumentException) {
-                Log::warning('Journal photo storage is configured incorrectly.');
+                Log::warning('Plant photo storage is configured incorrectly.');
             }
         }
 
-        throw new PlantPhotoStorageException('Journal photos are currently unavailable.');
+        throw new PlantPhotoStorageException('Photo storage is currently unavailable.');
     }
 }

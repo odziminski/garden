@@ -15,6 +15,7 @@
     @if (session('custom_task_notice'))
         <p class="alert alert-info" role="status">{{ session('custom_task_notice') }}</p>
     @endif
+    @include('plants.custom-task-undo')
 
     @error('scheduled_for')
         <p class="alert alert-danger" role="alert">{{ $message }}</p>
@@ -70,15 +71,18 @@
                     <div>
                         <strong class="text-break">{{ $task->name }}</strong>
                         <p class="small text-muted mb-0">
-                            {{ $task->due_on < $gardenToday ? 'Overdue since' : 'Due' }}
-                            <time datetime="{{ $task->due_on }}">{{ \Carbon\CarbonImmutable::parse($task->due_on)->format('M j, Y') }}</time>
+                            {{ $task->effectiveDueOn() < $gardenToday ? 'Overdue since' : 'Due' }}
+                            <time datetime="{{ $task->effectiveDueOn() }}">{{ \Carbon\CarbonImmutable::parse($task->effectiveDueOn())->format('M j, Y') }}</time>
                             @if ($task->repeat_days !== null)
                                 &middot; Every {{ $task->repeat_days }} {{ Str::plural('day', $task->repeat_days) }}
                             @endif
                         </p>
+                        @if ($task->assignee_id && !$canManage)
+                            <p class="small text-muted mb-0">{{ (int) $task->assignee_id === (int) auth()->id() ? 'Assigned to you' : 'Assigned' }}</p>
+                        @endif
                     </div>
                     <div class="d-flex flex-wrap gap-2">
-                        @if ($task->due_on <= $gardenToday)
+                        @if ($task->effectiveDueOn() <= $gardenToday)
                             <form method="POST" action="{{ route('plant-tasks.complete', [$plant, $task]) }}">
                                 @csrf
                                 <input type="hidden" name="scheduled_for" value="{{ $task->due_on }}">
@@ -86,6 +90,8 @@
                             </form>
                         @endif
                         @if ($canManage)
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ route('plant-tasks.edit', [$plant, $task]) }}">Edit task</a>
+                            @include('plants.task-assignment')
                             <form method="POST" action="{{ route('plant-tasks.archive', [$plant, $task]) }}">
                                 @csrf
                                 @method('DELETE')

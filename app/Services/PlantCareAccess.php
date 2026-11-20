@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GardenMembership;
 use App\Models\Plant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +22,7 @@ final class PlantCareAccess
         $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->getKey());
 
         if (!$lockedPlant->isOwnedBy($actor)) {
-            $membership = DB::table('garden_memberships')
-                ->where('owner_id', $lockedPlant->user_id)
+            $membership = GardenMembership::query()->forPlant($lockedPlant)
                 ->where('member_id', $actor->getKey())
                 ->lockForUpdate()
                 ->first(['member_id']);

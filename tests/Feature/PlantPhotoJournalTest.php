@@ -220,7 +220,7 @@ class PlantPhotoJournalTest extends TestCase
         $this->assertDatabaseCount('plant_photo_entries', 0);
     }
 
-    public function test_a_database_failure_after_upload_removes_the_remote_photo(): void
+    public function test_a_database_failure_after_upload_leaves_the_remote_photo_for_cleanup(): void
     {
         $plant = Plant::factory()->create();
         $this->fakeSuccessfulUpload();
@@ -233,6 +233,10 @@ class PlantPhotoJournalTest extends TestCase
         ])->assertServerError();
 
         $this->assertDatabaseCount('plant_photo_entries', 0);
+        $this->assertDatabaseCount('plant_photo_cleanup', 1);
+        $this->travel(61)->minutes();
+        $this->artisan('photos:cleanup')->assertSuccessful();
+        $this->assertDatabaseCount('plant_photo_cleanup', 0);
         $this->assertCount(2, $this->requests);
         $this->assertStringEndsWith('/destroy', $this->requests[1]['request']->getUri()->getPath());
         $this->assertSame(
@@ -251,20 +255,42 @@ class PlantPhotoJournalTest extends TestCase
             ->assertRedirect(route('plants', $plant).'#photo-journal');
 
         $this->assertDatabaseMissing('plant_photo_entries', ['id' => $entry->id]);
+        $this->artisan('photos:cleanup')->assertSuccessful();
         $this->assertSame($entry->public_id, $this->encodedField($this->requests[0]['request'], 'public_id'));
         $this->assertSame('authenticated', $this->encodedField($this->requests[0]['request'], 'type'));
     }
 
-    public function test_failed_remote_deletion_keeps_the_entry_for_retry(): void
+    public function test_failed_remote_deletion_retries_without_restoring_the_journal_entry(): void
     {
         $plant = Plant::factory()->create();
         $entry = $this->createEntry($plant);
-        $this->cloudinary->append($this->cloudinaryResponse(['error' => ['message' => 'Delete unavailable']], 503));
+        $this->cloudinary->append(
+            $this->cloudinaryResponse(['error' => ['message' => 'Delete unavailable']], 503),
+            $this->cloudinaryResponse(['result' => 'ok']),
+        );
 
         $this->actingAs($plant->owner)->delete("/plants/{$plant->id}/photo-journal/{$entry->id}")
-            ->assertSessionHasErrorsIn('photoJournal', 'delete');
+            ->assertRedirect(route('plants', $plant).'#photo-journal');
+
+        $this->assertDatabaseMissing('plant_photo_entries', ['id' => $entry->id]);
+        $this->artisan('photos:cleanup')->assertFailed();
+        $this->assertDatabaseHas('plant_photo_cleanup', ['public_id' => $entry->public_id]);
+        $this->travel(6)->minutes();
+        $this->artisan('photos:cleanup')->assertSuccessful();
+        $this->assertDatabaseMissing('plant_photo_cleanup', ['public_id' => $entry->public_id]);
+    }
+
+    public function test_a_failed_journal_database_delete_does_not_queue_the_current_photo(): void
+    {
+        $plant = Plant::factory()->create();
+        $entry = $this->createEntry($plant);
+        PlantPhotoEntry::deleting(fn () => throw new RuntimeException('Database delete failed'));
+
+        $this->actingAs($plant->owner)->delete("/plants/{$plant->id}/photo-journal/{$entry->id}")->assertServerError();
 
         $this->assertDatabaseHas('plant_photo_entries', ['id' => $entry->id]);
+        $this->assertDatabaseCount('plant_photo_cleanup', 0);
+        $this->assertCount(0, $this->requests);
     }
 
     public function test_deleting_a_plant_cleans_up_only_its_journal_assets(): void
@@ -286,6 +312,7 @@ class PlantPhotoJournalTest extends TestCase
         $this->assertDatabaseMissing('plants', ['id' => $plant->id]);
         $this->assertDatabaseMissing('plant_photo_entries', ['id' => $entry->id]);
         $this->assertDatabaseHas('plant_photo_entries', ['id' => $otherEntry->id]);
+        $this->artisan('photos:cleanup')->assertFailed();
         $this->assertFalse($rowsStillExistAtCleanup);
         $this->assertCount(1, $this->requests);
         $this->assertSame($entry->public_id, $this->encodedField($this->requests[0]['request'], 'public_id'));

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePlantRequest;
-use App\Models\Needs;
+use App\Models\GardenMembership;
+use App\Models\History;
 use App\Models\Plant;
 use App\Models\PlantPhotoEntry;
 use App\Services\PlantCareSchedule;
+use App\Services\PlantIdentification;
 use App\Services\PlantJournalPhotos;
 use App\Services\PlantPhoto;
+use App\Services\PlantPhotoStorageException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,27 +29,31 @@ class PlantsController extends Controller
         return view('welcome', $plant ? $this->plantDetails($plant) : ['plant' => null]);
     }
 
-    public function displaySinglePlant(Request $request, Plant $plant): View
+    public function displaySinglePlant(Request $request, Plant $plant, PlantIdentification $identification): View
     {
         $canManage = $request->user()->can('manage', $plant);
         $details = $this->plantDetails($plant->load('owner', 'history', 'needs', 'plantData')) + [
             'canManage' => $canManage,
+            'identificationStatus' => $canManage ? $identification->status($plant) : null,
             'careLogs' => $plant->careLogs()->with('performedBy:id,email')->latest('performed_on')->latest('performed_at')->latest('id')
                 ->simplePaginate(15, ['*'], 'care_page')->withQueryString()->fragment('care-history'),
         ];
 
-        $details['customTasks'] = $plant->careTasks()->active()->orderBy('due_on')->orderBy('id')->get();
+        $details['customTasks'] = $plant->careTasks()->active()->with('assignee')
+            ->orderByRaw('CASE WHEN snoozed_until > due_on THEN snoozed_until ELSE due_on END')->orderBy('id')->get();
         $details['customTaskCompletions'] = $plant->taskCompletions()
             ->select('plant_task_completions.*')
             ->with('plantTask:id,name', 'completedBy:id,email')
             ->latest('plant_task_completions.completed_at')->latest('plant_task_completions.id')
             ->simplePaginate(10, ['*'], 'task_history_page')->withQueryString()->fragment('custom-tasks');
 
-        $observations = $plant->observations()->with('actor:id,email', 'followUpTask:id,name,due_on,archived_at,completed_at')
+        $observations = $plant->observations()->with('actor:id,email', 'followUpTask:id,name,due_on,snoozed_until,archived_at,completed_at')
             ->latest('observed_on')->latest('id');
         if ($canManage) {
             $details['observationPhotos'] = PlantPhotoEntry::query()->forPlant($plant)->latest('taken_on')->latest('id')
-                ->get(['id', 'taken_on', 'note']);
+                ->simplePaginate(30, ['id', 'taken_on', 'note'], 'photo_choice_page')->withQueryString()->fragment('observations');
+            $details['assignableMembers'] = GardenMembership::query()->forPlant($plant)
+                ->with('member:id,email')->get()->pluck('member');
         }
         $details['observations'] = $observations->simplePaginate(15, ['*'], 'observation_page')
             ->withQueryString()->fragment('observations');
@@ -63,8 +70,10 @@ class PlantsController extends Controller
     {
         $plants = Plant::query()->visibleTo($request->user())
             ->with('owner', 'history', 'needs')
-            ->get()
-            ->sortByDesc('history.watered_at');
+            ->orderByDesc(History::query()->select('watered_at')
+                ->whereColumn('history.plant_id', 'plants.id')->orderByDesc('watered_at')->limit(1))
+            ->orderBy('plants.id')
+            ->simplePaginate(24)->withQueryString();
 
         return view('browse', ['plants' => $plants]);
     }
@@ -74,23 +83,36 @@ class PlantsController extends Controller
         return view('edit-plant', ['plant' => $plant->load('needs')]);
     }
 
+    public function showCover(Plant $plant, PlantJournalPhotos $photos): RedirectResponse
+    {
+        abort_unless($plant->cover_public_id && $plant->cover_format, 404);
+
+        try {
+            $url = $photos->downloadUrl($plant->cover_public_id, $plant->cover_format, now(), ttl: 60);
+        } catch (PlantPhotoStorageException $exception) {
+            abort(503, $exception->getMessage());
+        }
+
+        return redirect()->away($url, 302, ['Cache-Control' => 'private, no-store', 'Referrer-Policy' => 'no-referrer']);
+    }
+
     public function store(StorePlantRequest $request, PlantPhoto $photos): RedirectResponse
     {
         $photo = $photos->fromRequest($request);
 
-        DB::transaction(function () use ($request, $photo) {
+        DB::transaction(function () use ($request, $photo, $photos) {
             $now = now();
             $plant = $request->user()->plants()->create([
-                'avatar' => $photo['url'] ?? asset('images/plant.png'),
+                'avatar' => 'plant.png',
                 'name' => $request->validated('name'),
                 'created_at' => $now,
             ]);
 
             $plant->history()->create();
-            $plant->needs()->create($request->safe()->only(Needs::SCHEDULE_FIELDS));
+            $plant->needs()->create($request->validatedSchedule());
 
-            if (!empty($photo['identification'])) {
-                $plant->plantData()->create($photo['identification']);
+            if ($photo) {
+                $photos->attachCover($plant, $photo['public_id'], $photo['format']);
             }
         }, 3);
 
@@ -101,22 +123,19 @@ class PlantsController extends Controller
     {
         $photo = $photos->fromRequest($request);
 
-        DB::transaction(function () use ($request, $plant, $photo) {
-            $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
+        DB::transaction(function () use ($request, $plant, $photo, $photos) {
+            $lockedPlant = $request->user()->plants()->lockForUpdate()->findOrFail($plant->id);
             $lockedPlant->name = $request->validated('name');
 
             if ($photo) {
-                $lockedPlant->avatar = $photo['url'];
-                if ($photo['identification']) {
-                    $lockedPlant->plantData()->updateOrCreate([], $photo['identification']);
-                } else {
-                    $lockedPlant->plantData()->delete();
-                }
+                $photos->discardCover($lockedPlant);
+                $photos->attachCover($lockedPlant, $photo['public_id'], $photo['format']);
+            } else {
+                $lockedPlant->save();
             }
 
-            $lockedPlant->save();
             $needs = $lockedPlant->needs()->firstOrNew();
-            $needs->fill($request->safe()->only(Needs::SCHEDULE_FIELDS));
+            $needs->fill($request->validatedSchedule());
             $lockedPlant->setRelation('needs', $needs);
             PlantCareSchedule::syncFlags($lockedPlant);
         }, 3);
@@ -124,11 +143,11 @@ class PlantsController extends Controller
         return redirect()->route('browse');
     }
 
-    public function deletePlant(Plant $plant, PlantJournalPhotos $photos): RedirectResponse
+    public function deletePlant(Request $request, Plant $plant, PlantPhoto $photos): RedirectResponse
     {
-        DB::transaction(function () use ($plant, $photos) {
-            $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
-            $photos->discardAfterCommit($lockedPlant);
+        DB::transaction(function () use ($request, $plant, $photos) {
+            $lockedPlant = $request->user()->plants()->lockForUpdate()->findOrFail($plant->id);
+            $photos->discardPlantMedia($lockedPlant);
             $lockedPlant->plantData()->delete();
             $lockedPlant->delete();
         }, 3);

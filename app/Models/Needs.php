@@ -9,6 +9,8 @@ class Needs extends Model
 {
     use HasFactory;
 
+    public const DEFAULT_WATERING_DAYS = 7;
+
     public const SCHEDULE_FIELDS = [
         'watering_frequency',
         'fertilizing_frequency',
@@ -16,6 +18,7 @@ class Needs extends Model
         'winter_watering_frequency',
         'summer_fertilizing_frequency',
         'winter_fertilizing_frequency',
+        'seasonal_hemisphere',
     ];
 
     protected $table = "needs";
@@ -34,6 +37,8 @@ class Needs extends Model
         'need_watering' => 'boolean',
         'need_fertilizing' => 'boolean',
     ];
+
+    protected $attributes = ['watering_frequency' => self::DEFAULT_WATERING_DAYS, 'fertilizing_frequency' => 0];
 
     public function plant()
     {

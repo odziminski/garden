@@ -38,6 +38,11 @@ enum CareType: string
         return ucfirst($this->value);
     }
 
+    public function snoozeColumn(): string
+    {
+        return $this->value.'_snoozed_until';
+    }
+
     public function actionLabel(): string
     {
         return match ($this) {

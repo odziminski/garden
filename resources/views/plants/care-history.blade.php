@@ -61,6 +61,23 @@
                     @if ($entry->is_legacy)
                         <small class="text-muted">Imported from previous care records</small>
                     @endif
+                    @if ($entry->voided_at)
+                        <p class="small text-muted mb-0">Undone. Excluded from the care schedule.</p>
+                    @else
+                        @if ($entry->corrects_entry_id)
+                            <p class="small text-muted mb-0">Corrected care entry</p>
+                        @endif
+                        @if ($entry->canBeCorrectedBy(auth()->user(), $plant))
+                            <div class="d-flex flex-wrap gap-2 mt-1">
+                                <a class="btn btn-outline-secondary btn-sm" href="{{ route('care-logs.edit', [$plant, $entry]) }}">Correct entry</a>
+                                <form method="POST" action="{{ route('care-logs.undo', [$plant, $entry]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-outline-secondary btn-sm" type="submit">Undo entry</button>
+                                </form>
+                            </div>
+                        @endif
+                    @endif
                 </li>
             @endforeach
         </ol>

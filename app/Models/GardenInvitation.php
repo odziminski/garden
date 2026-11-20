@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GardenInvitation extends Model
 {
-    protected $fillable = ['owner_id', 'email', 'token_hash', 'expires_at'];
+    protected $fillable = ['owner_id', 'email', 'plant_id', 'token_hash', 'expires_at'];
 
     protected $hidden = ['token_hash'];
 
     protected $casts = [
         'owner_id' => 'integer',
+        'plant_id' => 'integer',
         'expires_at' => 'immutable_datetime',
         'accepted_at' => 'immutable_datetime',
         'revoked_at' => 'immutable_datetime',
@@ -22,6 +23,11 @@ class GardenInvitation extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function plant(): BelongsTo
+    {
+        return $this->belongsTo(Plant::class);
     }
 
     public function scopePending(Builder $query): Builder
