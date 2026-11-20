@@ -9,7 +9,8 @@
             <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                 <h1 class="mb-0">{{ $plant->name }}</h1>
                 @if ($canManage)
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-secondary" href="{{ route('monthly-report.index', ['plant' => $plant->id]) }}">Monthly report</a>
                         <a class="btn btn-outline-secondary" href="{{ route('displayEditPlant', $plant) }}">Edit plant</a>
                         <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal"
                                 data-bs-target="#delete-plant-modal">Delete</button>

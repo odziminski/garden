@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
 
     require __DIR__.'/care.php';
     require __DIR__.'/garden-sharing.php';
+    require __DIR__.'/monthly-report.php';
 
     Route::middleware('can:view,plant')->group(function () {
         Route::get('/plants/{plant}', [PlantsController::class, 'displaySinglePlant'])->name('plants');

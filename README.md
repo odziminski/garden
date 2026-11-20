@@ -35,6 +35,12 @@ Members see the owner's plants in **Your garden** and their due tasks in **Today
 
 The owner manages plants, care schedules, private photo journals, and access. The owner can revoke a pending link or remove a member. Members can leave on their **Garden sharing** page. Removing access preserves the care history.
 
+## Monthly plant report
+
+Open **Monthly report** from **Your garden** or from a plant you own. Choose a plant and a month to see its care entries and journal photos in one timeline. The watering chart shows calendar days between recorded watering dates. Multiple entries on the same day count once for the chart, and the earliest interval may start before the selected month.
+
+The report is available for your own plants and includes private journal photos.
+
 ## Integrations and reminders
 
 - Set `CLOUDINARY_URL` to enable image uploads from files or a camera. Bloomify stores photos in Cloudinary. Browser camera access requires HTTPS or `localhost`. For uploads up to 5 MB, set PHP's `upload_max_filesize` to at least `5M` and `post_max_size` to at least `8M`.

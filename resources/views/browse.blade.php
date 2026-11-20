@@ -6,7 +6,10 @@
     <div class="container py-5">
         <header class="bloom-page-heading d-flex flex-wrap align-items-end justify-content-between gap-3">
             <h1 class="mb-0">Your garden</h1>
-            <a class="btn btn-outline-secondary" href="{{ route('care.today') }}">Today’s care</a>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-secondary" href="{{ route('monthly-report.index') }}">Monthly report</a>
+                <a class="btn btn-outline-secondary" href="{{ route('care.today') }}">Today’s care</a>
+            </div>
         </header>
 
         @if (session('message'))
