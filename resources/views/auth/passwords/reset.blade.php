@@ -1,60 +1,39 @@
 @extends('layouts.app')
 
+@section('title', 'Choose a new password')
+
 @section('content')
+    <x-auth-panel heading="Choose a new password">
+        <form method="POST" action="{{ route('password.update') }}">
+            @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('password.update') }}">
-                        @csrf
-
-                        <input type="hidden" name="token" value="{{ $token }}">
-
-                        <div class="form-group row">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('E-Mail Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-right">{{ __('Confirm Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Reset Password') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+            <div class="mb-3">
+                <label class="form-label" for="email">Email address</label>
+                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                       name="email" value="{{ $email ?? old('email') }}" required autocomplete="email"
+                       @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
+                @error('email')
+                    <div class="invalid-feedback" id="email-error">{{ $message }}</div>
+                @enderror
             </div>
-        </div>
-    </div>
-</div>
+            <div class="mb-3">
+                <label class="form-label" for="password">New password</label>
+                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
+                       name="password" required autocomplete="new-password" minlength="8"
+                       aria-describedby="password-help @error('password') password-error @enderror"
+                       @error('password') aria-invalid="true" @enderror>
+                <div class="form-text" id="password-help">Use at least 8 characters.</div>
+                @error('password')
+                    <div class="invalid-feedback" id="password-error">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="password-confirm">Confirm password</label>
+                <input id="password-confirm" type="password" class="form-control" name="password_confirmation"
+                       required autocomplete="new-password">
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Reset password</button>
+        </form>
+    </x-auth-panel>
 @endsection

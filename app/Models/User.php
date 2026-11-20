@@ -17,6 +17,12 @@ class User extends Authenticatable
      *
      * @var array
      */
+    protected $attributes = [
+        'reminders_enabled' => true,
+        'reminder_timezone' => 'UTC',
+        'reminder_time' => '10:10',
+    ];
+
     protected $fillable = [
         'email',
         'password',
@@ -39,6 +45,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'reminders_enabled' => 'boolean',
     ];
 
     public function plants()

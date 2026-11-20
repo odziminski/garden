@@ -2,38 +2,92 @@
 
 namespace App\Services;
 
+use App\Enums\CareType;
+use App\Models\Plant;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 class PlantCareSchedule
 {
     public function markWateringDue(): void
     {
-        $this->markDue('need_watering', 'watered_at', 'watering_frequency');
+        $this->refreshDueFlags(CareType::Watering);
     }
 
     public function markFertilizingDue(): void
     {
-        $this->markDue('need_fertilizing', 'fertilized_at', 'fertilizing_frequency');
+        $this->refreshDueFlags(CareType::Fertilizing);
     }
 
-    private function markDue(string $flag, string $lastCare, string $frequency): void
+    public static function nextDate(Plant $plant, CareType $type, ?CarbonInterface $asOf = null): ?Carbon
     {
-        $date = match (DB::connection()->getDriverName()) {
-            'sqlite' => "datetime(history.$lastCare, '+' || needs.$frequency || ' days')",
-            'mysql', 'mariadb' => "date_add(history.$lastCare, interval needs.$frequency day)",
-            'pgsql' => "history.$lastCare + needs.$frequency * interval '1 day'",
-            'sqlsrv' => "dateadd(day, needs.$frequency, history.$lastCare)",
-        };
+        $timezone = $plant->careTimezone();
+        $localDate = Carbon::instance($asOf ?? now())->setTimezone($timezone);
+        $season = $localDate->month >= 4 && $localDate->month <= 9 ? 'summer' : 'winter';
+        $frequency = $type->frequencyColumn();
+        $seasonalFrequency = $season.'_'.$frequency;
+        $days = (int) ($plant->needs?->$seasonalFrequency ?? $plant->needs?->$frequency);
+        if ($days <= 0) {
+            return null;
+        }
 
-        DB::table('needs')
-            ->where($flag, false)
-            ->where($frequency, '>', 0)
-            ->whereExists(function ($query) use ($date) {
-                $query->selectRaw('1')
-                    ->from('history')
-                    ->whereColumn('history.plant_id', 'needs.plant_id')
-                    ->whereRaw("$date <= ?", [now()->toDateTimeString()]);
-            })
-            ->update([$flag => true]);
+        $dateColumn = $type->lastCareDateColumn();
+        $anchor = $plant->history?->$dateColumn;
+        if ($anchor !== null) {
+            $dueDay = Carbon::parse($anchor, 'UTC')->addDays($days)->toDateString();
+
+            return Carbon::parse($dueDay, $timezone);
+        }
+
+        $lastCareColumn = $type->lastCareColumn();
+        $previous = $plant->history?->$lastCareColumn ?? $plant->created_at;
+
+        return $previous?->copy()->setTimezone($timezone)->startOfDay()->addDays($days);
+    }
+
+    public function refreshDueFlags(?CareType $type = null, ?CarbonInterface $asOf = null): void
+    {
+        $asOf ??= now();
+        $plants = Plant::query()->has('needs')->with('owner', 'history', 'needs')->lazyById(200);
+
+        foreach ($plants as $plant) {
+            if (! $plant->needs?->fill(self::expectedFlags($plant, $type, $asOf))->isDirty()) {
+                continue;
+            }
+
+            DB::transaction(function () use ($plant, $type, $asOf) {
+                $lockedPlant = Plant::query()->lockForUpdate()->find($plant->id);
+
+                if ($lockedPlant !== null) {
+                    self::syncFlags($lockedPlant, $type, $asOf);
+                }
+            }, 3);
+        }
+    }
+
+    public static function syncFlags(Plant $plant, ?CareType $type = null, ?CarbonInterface $asOf = null): void
+    {
+        $needs = $plant->needs;
+        if ($needs === null) {
+            return;
+        }
+
+        $needs->fill(self::expectedFlags($plant, $type, $asOf ?? now()));
+
+        if ($needs->isDirty()) {
+            $needs->save();
+        }
+    }
+
+    private static function expectedFlags(Plant $plant, ?CareType $type, CarbonInterface $asOf): array
+    {
+        $flags = [];
+        foreach ($type === null ? CareType::cases() : [$type] as $careType) {
+            $date = self::nextDate($plant, $careType, $asOf);
+            $flags[$careType->dueFlag()] = $date !== null && $date->lte($asOf);
+        }
+
+        return $flags;
     }
 }

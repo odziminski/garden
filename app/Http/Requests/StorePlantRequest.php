@@ -14,6 +14,10 @@ class StorePlantRequest extends FormRequest
             'name' => ['required', 'string', 'min:3', 'max:64'],
             'watering_frequency' => ['required', 'integer', 'min:1', 'max:3650'],
             'fertilizing_frequency' => ['required', 'integer', 'min:1', 'max:3650'],
+            'summer_watering_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'winter_watering_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'summer_fertilizing_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'winter_fertilizing_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'avatar' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'webcamAvatar' => [
                 'bail',

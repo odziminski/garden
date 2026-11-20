@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <div class="card mx-auto" style="max-width: 32rem;">
+    <div class="container d-grid gap-4 py-4" style="max-width: 36rem;">
+        <div class="card bloom-panel">
             <div class="card-body">
                 <h1 class="h4">Your profile</h1>
                 <p>Joined {{ $user->created_at?->toFormattedDateString() }}</p>
@@ -39,9 +39,11 @@
                     <input id="password-confirmation" class="form-control mb-3" type="password"
                            name="password_confirmation" autocomplete="new-password">
 
-                    <button class="btn" type="submit">Save profile</button>
+                    <button class="btn btn-primary" type="submit">Save profile</button>
                 </form>
             </div>
         </div>
+
+        @include('profile.reminders')
     </div>
 @endsection

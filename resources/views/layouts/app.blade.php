@@ -1,73 +1,89 @@
 <!doctype html>
-{{--<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">--}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
-
-    <!-- Fonts -->
-
-    <!-- Styles -->
+    <meta name="theme-color" content="#f7f8f2">
+    <title>@hasSection('title')@yield('title') · @endif Bloomify</title>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
-
+    <script src="{{ asset('js/app.js') }}" defer></script>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand brand" href="{{route('welcome')}}">bloomify</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <a class="visually-hidden-focusable bloom-skip-link" href="#main-content">Skip to content</a>
 
-            </ul>
-            <ul class="navbar-nav">
-                @auth
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{route('add-plant')}}">add a plant</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="{{route('browse')}}">your garden</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                           data-bs-toggle="dropdown" aria-expanded="false"> hello, gardener! </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{{ route('users') }}">Profile</a></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button class="dropdown-item" type="submit">logout</button>
-                                </form>
+    <header class="bloom-header">
+        <nav class="navbar navbar-expand-md" aria-label="Main navigation">
+            <div class="container">
+                <a class="navbar-brand bloom-brand" href="{{ route('welcome') }}">
+                    <span class="bloom-brand-mark" aria-hidden="true"><span></span></span>
+                    bloomify
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bloom-navigation"
+                        aria-controls="bloom-navigation" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="bloom-navigation">
+                    <ul class="navbar-nav ms-auto align-items-md-center">
+                        @auth
+                            <li class="nav-item">
+                                <a @class(['nav-link', 'active' => request()->routeIs('browse', 'plants', 'displayEditPlant')])
+                                   @if (request()->routeIs('browse')) aria-current="page" @endif href="{{ route('browse') }}">Your garden</a>
                             </li>
+                            @if (Route::has('care.today'))
+                                <li class="nav-item">
+                                    <a @class(['nav-link', 'active' => request()->routeIs('care.today')])
+                                       @if (request()->routeIs('care.today')) aria-current="page" @endif href="{{ route('care.today') }}">Today’s care</a>
+                                </li>
+                            @endif
+                            <li class="nav-item dropdown">
+                                <button @class(['nav-link', 'dropdown-toggle', 'active' => request()->routeIs('users')])
+                                        type="button" data-bs-toggle="dropdown" aria-expanded="false" id="bloom-account">Account</button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bloom-account">
+                                    <li>
+                                        <a class="dropdown-item" @if (request()->routeIs('users')) aria-current="page" @endif
+                                           href="{{ route('users') }}">Profile</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" @if (request()->routeIs('garden-sharing.*')) aria-current="page" @endif
+                                           href="{{ route('garden-sharing.index') }}">Garden sharing</a>
+                                    </li>
+                                    <li>
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button class="dropdown-item" type="submit">Log out</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item bloom-nav-action">
+                                <a class="btn btn-primary" @if (request()->routeIs('add-plant')) aria-current="page" @endif
+                                   href="{{ route('add-plant') }}"><span aria-hidden="true">+</span> Add a plant</a>
+                            </li>
+                        @endauth
+                        @guest
+                            <li class="nav-item">
+                                <a @class(['nav-link', 'active' => request()->routeIs('login')])
+                                   @if (request()->routeIs('login')) aria-current="page" @endif href="{{ route('login') }}">Log in</a>
+                            </li>
+                            <li class="nav-item bloom-nav-action">
+                                <a class="btn btn-primary" @if (request()->routeIs('register')) aria-current="page" @endif
+                                   href="{{ route('register') }}">Create an account</a>
+                            </li>
+                        @endguest
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-                        </ul>
-                @endauth
-                @guest
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{route('login')}}">login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{route('register')}}">register</a>
-                    </li>
-                    @endguest
-                    </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+    <main class="bloom-main" id="main-content">
+        @if (session('care_notice'))
+            <div class="container">
+                <p class="alert alert-info" role="status">{{ session('care_notice') }}</p>
+            </div>
+        @endif
+        @yield('content')
+    </main>
 </body>
-
-<main class="py-4">
-    @yield('content')
-</main>
+</html>

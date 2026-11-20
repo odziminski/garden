@@ -1,7 +1,38 @@
-// Body
-$body-bg: #f8fafc;
-
-// Typography
-$font-family-sans-serif: 'Nunito', sans-serif;
-$font-size-base: 0.9rem;
-$line-height-base: 1.6;
+$body-bg: #f7f8f2;
+$body-color: #25372b;
+$body-secondary-color: #59685d;
+$primary: #24513b;
+$secondary: #536b59;
+$success: #287048;
+$danger: #a13932;
+$link-color: $primary;
+$border-color: #dce1d4;
+$font-family-sans-serif: system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-size-base: 1rem;
+$line-height-base: 1.55;
+$headings-color: #1b3a2b;
+$headings-font-family: Georgia, "Times New Roman", serif;
+$headings-font-weight: 400;
+$headings-line-height: 1.12;
+$border-radius: .65rem;
+$border-radius-lg: 1rem;
+$btn-border-radius: .65rem;
+$btn-font-weight: 650;
+$btn-padding-x: 1.1rem;
+$btn-padding-y: .62rem;
+$btn-font-size: .92rem;
+$card-bg: #fffefa;
+$card-border-color: $border-color;
+$card-border-radius: 1rem;
+$card-spacer-x: 1.5rem;
+$card-spacer-y: 1.5rem;
+$card-cap-bg: #edf1e5;
+$input-bg: #fffefa;
+$input-border-color: #aebaaa;
+$input-focus-border-color: $primary;
+$input-padding-y: .62rem;
+$form-check-input-bg: $input-bg;
+$form-check-input-border: 1px solid #778b7c;
+$dropdown-bg: #fffefa;
+$dropdown-border-color: $border-color;
+$dropdown-link-hover-bg: #e8eee0;

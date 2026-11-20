@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePlantRequest;
+use App\Models\Needs;
 use App\Models\Plant;
+use App\Models\PlantPhotoEntry;
+use App\Services\PlantCareSchedule;
+use App\Services\PlantJournalPhotos;
 use App\Services\PlantPhoto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,22 +19,34 @@ class PlantsController extends Controller
     public function getRandomPlant(Request $request): View
     {
         $plant = $request->user()?->plants()
-            ->with('history', 'needs', 'plantData')
+            ->with('owner', 'history', 'needs', 'plantData')
             ->inRandomOrder()
             ->first();
 
         return view('welcome', $plant ? $this->plantDetails($plant) : ['plant' => null]);
     }
 
-    public function displaySinglePlant(Plant $plant): View
+    public function displaySinglePlant(Request $request, Plant $plant): View
     {
-        return view('plants', $this->plantDetails($plant->load('history', 'needs', 'plantData')));
+        $canManage = $request->user()->can('manage', $plant);
+        $details = $this->plantDetails($plant->load('owner', 'history', 'needs', 'plantData')) + [
+            'canManage' => $canManage,
+            'careLogs' => $plant->careLogs()->with('performedBy:id,email')->latest('performed_on')->latest('performed_at')->latest('id')
+                ->simplePaginate(15, ['*'], 'care_page')->withQueryString()->fragment('care-history'),
+        ];
+
+        if ($canManage) {
+            $details['photoJournalEntries'] = PlantPhotoEntry::query()->forPlant($plant)->latest('taken_on')->latest('id')
+                ->simplePaginate(12, ['*'], 'journal_page')->withQueryString()->fragment('photo-journal');
+        }
+
+        return view('plants', $details);
     }
 
     public function displayPlants(Request $request): View
     {
-        $plants = $request->user()->plants()
-            ->with('history', 'needs')
+        $plants = Plant::query()->visibleTo($request->user())
+            ->with('owner', 'history', 'needs')
             ->get()
             ->sortByDesc('history.watered_at');
 
@@ -54,8 +70,8 @@ class PlantsController extends Controller
                 'created_at' => $now,
             ]);
 
-            $plant->history()->create(['watered_at' => $now, 'fertilized_at' => $now]);
-            $plant->needs()->create($request->safe()->only(['watering_frequency', 'fertilizing_frequency']));
+            $plant->history()->create();
+            $plant->needs()->create($request->safe()->only(Needs::SCHEDULE_FIELDS));
 
             if (!empty($photo['identification'])) {
                 $plant->plantData()->create($photo['identification']);
@@ -84,23 +100,19 @@ class PlantsController extends Controller
 
             $lockedPlant->save();
             $needs = $lockedPlant->needs()->firstOrNew();
-            $needs->fill($request->safe()->only(['watering_frequency', 'fertilizing_frequency']));
+            $needs->fill($request->safe()->only(Needs::SCHEDULE_FIELDS));
             $lockedPlant->setRelation('needs', $needs);
-            $now = now();
-            $nextWatering = $lockedPlant->nextWatering();
-            $nextFertilizing = $lockedPlant->nextFertilizing();
-            $needs->need_watering = $nextWatering !== null && $nextWatering->lte($now);
-            $needs->need_fertilizing = $nextFertilizing !== null && $nextFertilizing->lte($now);
-            $needs->save();
+            PlantCareSchedule::syncFlags($lockedPlant);
         }, 3);
 
         return redirect()->route('browse');
     }
 
-    public function deletePlant(Plant $plant): RedirectResponse
+    public function deletePlant(Plant $plant, PlantJournalPhotos $photos): RedirectResponse
     {
-        DB::transaction(function () use ($plant) {
+        DB::transaction(function () use ($plant, $photos) {
             $lockedPlant = Plant::query()->lockForUpdate()->findOrFail($plant->id);
+            $photos->discardAfterCommit($lockedPlant);
             $lockedPlant->plantData()->delete();
             $lockedPlant->delete();
         }, 3);
@@ -110,15 +122,17 @@ class PlantsController extends Controller
 
     private function plantDetails(Plant $plant): array
     {
-        $lastWatering = $plant->history?->watered_at;
-        $lastFertilizing = $plant->history?->fertilized_at;
-        $nextWatering = $plant->nextWatering();
-        $nextFertilizing = $plant->nextFertilizing();
+        $asOf = now($plant->careTimezone());
+        $lastWatering = $plant->history?->watered_at ?? $plant->created_at;
+        $lastFertilizing = $plant->history?->fertilized_at ?? $plant->created_at;
+        $nextWatering = $plant->nextWatering($asOf);
+        $nextFertilizing = $plant->nextFertilizing($asOf);
 
         return [
             'plant' => $plant,
             'nextWatering' => $nextWatering,
             'nextFertilizing' => $nextFertilizing,
+            'caretakingTime' => $asOf,
             'wateringPercentage' => $this->getPercentageOfCareDate($lastWatering?->valueOf(), $nextWatering?->valueOf()),
             'fertilizingPercentage' => $this->getPercentageOfCareDate($lastFertilizing?->valueOf(), $nextFertilizing?->valueOf()),
             'wordWatering' => $nextWatering?->isPast() ? 'was' : 'in',

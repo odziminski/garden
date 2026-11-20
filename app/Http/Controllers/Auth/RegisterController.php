@@ -7,6 +7,8 @@ use App\Providers\RouteServiceProvider;
 use App\Models\User;
 use App\Rules\BcryptPassword;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -68,5 +70,14 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+    }
+
+    protected function registered(Request $request, User $user): ?RedirectResponse
+    {
+        if ($request->wantsJson()) {
+            return null;
+        }
+
+        return redirect()->intended($this->redirectPath());
     }
 }
