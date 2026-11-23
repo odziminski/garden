@@ -18,7 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(CarePushDelivery::class, BrowserCarePush::class);
+        if (BrowserCarePush::configured()) {
+            $this->app->bind(CarePushDelivery::class, BrowserCarePush::class);
+        }
     }
 
     /**

@@ -134,6 +134,40 @@ class PlantCareTest extends TestCase
         Mail::assertSent(DailyCareDigest::class, fn ($mail) => $mail->hasTo($owner->email));
     }
 
+    public function test_a_cancelled_reminder_can_be_queued_again_if_care_becomes_due_the_same_day(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-20 12:00:00', 'UTC'));
+        Mail::fake();
+        $owner = User::factory()->create(['reminders_enabled' => true]);
+        $plant = $this->createPlant($owner, 'Fern', 10);
+
+        $this->artisan('email:care --discover-only')->assertSuccessful();
+        $plant->needs()->update(['watering_frequency' => 0, 'fertilizing_frequency' => 0]);
+        $this->artisan('email:care --pending-only')->assertSuccessful();
+        $this->assertDatabaseHas('care_reminder_deliveries', [
+            'user_id' => $owner->id, 'status' => 'cancelled',
+        ]);
+        Mail::assertNothingSent();
+
+        $plant->careTasks()->create(['name' => 'Inspect roots', 'due_on' => '2026-11-20']);
+        $this->artisan('email:care')->assertSuccessful();
+        $this->artisan('email:care')->assertSuccessful();
+        Mail::assertSentCount(1);
+        $this->assertDatabaseHas('care_reminder_deliveries', [
+            'user_id' => $owner->id, 'status' => 'sent', 'attempts' => 1,
+        ]);
+    }
+
+    public function test_unconfigured_browser_push_does_not_queue_deliveries(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-20 12:00:00', 'UTC'));
+        $owner = User::factory()->create(['reminders_enabled' => false, 'push_reminders_enabled' => true]);
+        $this->createPlant($owner, 'Fern', 10);
+
+        $this->artisan('email:care')->assertSuccessful();
+        $this->assertDatabaseMissing('care_reminder_deliveries', ['user_id' => $owner->id]);
+    }
+
     public function test_an_unverified_address_does_not_receive_a_queued_reminder(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-20 12:00:00', 'UTC'));

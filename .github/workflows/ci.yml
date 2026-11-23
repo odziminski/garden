@@ -69,7 +69,9 @@ jobs:
       - run: php artisan email:care --discover-only --scheduled
       - run: php artisan email:care --pending-only --scheduled
       - run: php artisan care:status
-      - name: Run the reminder suite against MySQL
+      - name: Run care and handoff integration tests against MySQL
         run: |
           sed -E '/<env name="DB_(CONNECTION|DATABASE)"/d' phpunit.xml > phpunit.mysql.xml
-          php vendor/bin/phpunit --configuration phpunit.mysql.xml --do-not-cache-result tests/Feature/PlantCareTest.php
+          php vendor/bin/phpunit --configuration phpunit.mysql.xml --do-not-cache-result \
+            tests/Feature/PlantCareTest.php tests/Feature/PlantCheckWorkflowTest.php \
+            tests/Feature/PlantHandoffTest.php tests/Feature/PracticalPlantProfileTest.php

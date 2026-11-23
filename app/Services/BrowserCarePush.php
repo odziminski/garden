@@ -56,6 +56,10 @@ class BrowserCarePush implements CarePushDelivery
             }
         }
 
+        User::query()->whereKey($recipient->id)->where('push_reminders_enabled', true)
+            ->whereNotExists(PushSubscription::query()->whereColumn('user_id', 'users.id')->selectRaw('1')->toBase())
+            ->update(['push_reminders_enabled' => false]);
+
         if ($failed) {
             throw new RuntimeException('A browser provider rejected a care reminder.');
         }
