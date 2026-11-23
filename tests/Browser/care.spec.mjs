@@ -55,6 +55,32 @@ test('the mobile Today page and install metadata load', async ({ page, request }
     expect((await request.get('/care-notifications.js')).ok()).toBeTruthy();
 });
 
+test('choosing a file cancels an outstanding camera request', async ({ page }) => {
+    await page.addInitScript(() => {
+        navigator.mediaDevices.getUserMedia = () => new Promise(resolve => {
+            window.resolveTestCamera = () => {
+                const stream = document.createElement('canvas').captureStream();
+                resolve(stream);
+                return stream.getVideoTracks()[0];
+            };
+        });
+    });
+    await signIn(page);
+    await page.goto('/add-plant');
+    await page.getByRole('button', { name: 'Open camera' }).click();
+    await page.locator('input[name="avatar"]').setInputFiles('public/images/plant.png');
+
+    const cameraState = await page.evaluate(async () => {
+        const track = window.resolveTestCamera();
+        await new Promise(requestAnimationFrame);
+        return track.readyState;
+    });
+
+    expect(cameraState).toBe('ended');
+    await expect(page.getByRole('button', { name: 'Open camera' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Take photo' })).toBeHidden();
+});
+
 test('browser reminders can be enabled and disabled from the profile', async ({ page, context }) => {
     await context.grantPermissions(['notifications']);
     await page.addInitScript(() => {

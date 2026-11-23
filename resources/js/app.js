@@ -39,15 +39,17 @@ if (photo && navigator.mediaDevices?.getUserMedia) {
     const preview = photo.querySelector('[data-camera-preview]');
     const remove = photo.querySelector('[data-camera-remove]');
     const error = photo.querySelector('[data-camera-error]');
-    let pageActive = true;
+    let cameraRequest = 0;
 
     const stop = () => {
+        cameraRequest += 1;
         video.srcObject?.getTracks().forEach((track) => track.stop());
         video.srcObject = null;
         video.hidden = true;
         snapshot.hidden = true;
         close.hidden = true;
         start.hidden = false;
+        start.disabled = false;
     };
 
     const clearPhoto = () => {
@@ -61,6 +63,7 @@ if (photo && navigator.mediaDevices?.getUserMedia) {
     video.hidden = true;
 
     start.addEventListener('click', async () => {
+        const request = ++cameraRequest;
         error.textContent = '';
         start.disabled = true;
         try {
@@ -69,7 +72,7 @@ if (photo && navigator.mediaDevices?.getUserMedia) {
                 audio: false
             });
 
-            if (!pageActive) {
+            if (request !== cameraRequest) {
                 stream.getTracks().forEach((track) => track.stop());
                 return;
             }
@@ -80,9 +83,13 @@ if (photo && navigator.mediaDevices?.getUserMedia) {
             close.hidden = false;
             start.hidden = true;
         } catch {
-            error.textContent = 'Could not open the camera. You can choose an image file instead.';
+            if (request === cameraRequest) {
+                error.textContent = 'Could not open the camera. You can choose an image file instead.';
+            }
         } finally {
-            start.disabled = false;
+            if (request === cameraRequest) {
+                start.disabled = false;
+            }
         }
     });
 
@@ -112,9 +119,5 @@ if (photo && navigator.mediaDevices?.getUserMedia) {
     clearPhoto();
     close.addEventListener('click', stop);
     remove.addEventListener('click', clearPhoto);
-    window.addEventListener('pageshow', () => { pageActive = true; });
-    window.addEventListener('pagehide', () => {
-        pageActive = false;
-        stop();
-    });
+    window.addEventListener('pagehide', stop);
 }

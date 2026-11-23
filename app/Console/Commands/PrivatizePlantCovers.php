@@ -24,7 +24,7 @@ class PrivatizePlantCovers extends Command
             ->where('avatar', 'not like', '%/images/plant.png')->lazyById();
 
         foreach ($plants as $plant) {
-            $legacy = $covers->legacyCover($plant->avatar);
+            $legacy = PlantPhoto::legacyCover($plant->avatar);
             if ($legacy === null) {
                 $this->warn("Plant {$plant->id} has an unrecognized legacy cover.");
                 $failed = true;

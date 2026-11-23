@@ -59,7 +59,15 @@ class PlantPhotoCleanup
             }
 
             try {
-                $cloud = $entry->legacy_url === null ? null : explode('/', $entry->legacy_url)[3];
+                $legacy = PlantPhoto::legacyCover($entry->legacy_url);
+                if ($entry->legacy_url !== null && ($legacy === null || $legacy['public_id'] !== $entry->public_id)) {
+                    throw new PlantPhotoStorageException('The legacy photo reference is invalid.');
+                }
+                if ($legacy !== null && $this->hasLegacyReference($legacy['cloud'], $legacy['public_id'])) {
+                    continue;
+                }
+
+                $cloud = $legacy['cloud'] ?? null;
                 $photos->delete($entry->public_id, $entry->delivery_type, $cloud, $entry->provider);
                 DB::table('plant_photo_cleanup')->where('id', $entry->id)->where('claim_token', $token)->delete();
             } catch (PlantPhotoStorageException) {
@@ -69,5 +77,18 @@ class PlantPhotoCleanup
         }
 
         return $success;
+    }
+
+    private function hasLegacyReference(string $cloud, string $publicId): bool
+    {
+        // A Cloudinary public ID can have versioned and unversioned URLs.
+        $escape = static fn (string $value) => strtr($value, ['!' => '!!', '%' => '!%', '_' => '!_']);
+        $prefix = $escape("https://res.cloudinary.com/{$cloud}/image/upload/");
+        $resource = $escape($publicId).'.%';
+
+        return DB::table('plants')->whereRaw("avatar LIKE ? ESCAPE '!' OR avatar LIKE ? ESCAPE '!'", [
+            $prefix.$resource,
+            $prefix.'v%/'.$resource,
+        ])->exists();
     }
 }

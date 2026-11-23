@@ -10,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class PlantPhoto
 {
+    public const MAX_IMAGE_DIMENSION = 8000;
+
     public function __construct(
         private readonly PlantJournalPhotos $storage,
         private readonly PlantPhotoCleanup $cleanup,
@@ -30,7 +32,9 @@ class PlantPhoto
 
         $image = @getimagesizefromstring($bytes);
 
-        return $image !== false && $image['mime'] === $header[1];
+        return $image !== false && $image['mime'] === $header[1]
+            && $image[0] > 0 && $image[0] <= self::MAX_IMAGE_DIMENSION
+            && $image[1] > 0 && $image[1] <= self::MAX_IMAGE_DIMENSION;
     }
 
     public function fromRequest(StorePlantRequest $request): ?array
@@ -84,7 +88,7 @@ class PlantPhoto
             return;
         }
 
-        $legacy = $this->legacyCover($plant->avatar);
+        $legacy = self::legacyCover($plant->avatar);
         if ($legacy !== null) {
             $this->cleanup->enqueue($legacy['public_id'], $plant->avatar);
         }
@@ -98,7 +102,7 @@ class PlantPhoto
         }
     }
 
-    public function legacyCover(?string $url): ?array
+    public static function legacyCover(?string $url): ?array
     {
         if ($url === null || !preg_match('~\Ahttps://res\.cloudinary\.com/([A-Za-z0-9_-]+)/image/upload/(?:v[0-9]+/)?(user_uploads/[A-Za-z0-9_-]+)\.(?:jpe?g|png|webp)\z~', $url, $matches)) {
             return null;

@@ -38,7 +38,7 @@ class PlantsController extends Controller
         $details = $this->plantDetails($plant->load('owner', 'history', 'needs', 'plantData', 'checkSchedule', 'latestPlantCheck.checkedBy:id,email')) + [
             'canManage' => $canManage,
             'canObserve' => $canObserve,
-            'identificationStatus' => $canManage ? $identification->status($plant) : null,
+            'identificationStatus' => $identification->status($plant),
             'careLogs' => $plant->careLogs()->with('performedBy:id,email', 'plantCheck')->latest('performed_on')->latest('performed_at')->latest('id')
                 ->simplePaginate(15, ['*'], 'care_page')->withQueryString()->fragment('care-history'),
             'plantChecks' => $plant->plantChecks()->whereNull('voided_at')->with('checkedBy:id,email')

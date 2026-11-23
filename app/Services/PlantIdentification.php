@@ -20,7 +20,8 @@ class PlantIdentification
 
     public function schedule(Plant $plant): void
     {
-        if (!config('services.plant_id.key')) {
+        $enabled = filled(config('services.plant_id.key'));
+        if (!$enabled && !$plant->plantData()->exists()) {
             DB::table('plant_identifications')->where('plant_id', $plant->id)->delete();
 
             return;
@@ -28,7 +29,7 @@ class PlantIdentification
 
         DB::table('plant_identifications')->updateOrInsert(['plant_id' => $plant->id], [
             'cover_public_id' => $plant->cover_public_id,
-            'status' => 'pending',
+            'status' => $enabled ? 'pending' : 'disabled',
             'available_at' => now(),
             'attempts' => 0,
             'claim_token' => null,

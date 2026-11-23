@@ -13,7 +13,9 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Psr\Http\Message\RequestInterface;
 use Tests\TestCase;
 
@@ -134,6 +136,40 @@ class PlantPhotoTest extends TestCase
         $this->assertDatabaseCount('plant_photo_cleanup', 1);
     }
 
+    public function test_replacing_a_cover_with_identification_disabled_marks_old_species_data_as_previous(): void
+    {
+        config(['services.plant_id.key' => null]);
+        $this->fakeCloudinary([$this->privateUploadResponse(...)]);
+        $plant = Plant::factory()->create();
+        $plant->plantData()->create($this->identification());
+
+        $this->actingAs($plant->owner)->patch(
+            route('editPlant', $plant), $this->plantInput() + ['webcamAvatar' => $this->webcamImage()],
+        )->assertRedirect(route('browse'));
+
+        $this->get(route('plants', $plant))->assertOk()
+            ->assertSee('Previous identification')->assertSee('Fern');
+        $this->assertSame('Fern', $plant->plantData()->sole()->plant_name);
+    }
+
+    public function test_cover_dimensions_are_validated_for_both_file_and_camera_uploads(): void
+    {
+        config(['filesystems.plant_photo_driver' => 'local']);
+        Storage::fake('plant-photos');
+        $owner = User::factory()->create();
+        $image = UploadedFile::fake()->image('fern.png', 8001, 1);
+        $this->actingAs($owner);
+
+        $this->post(route('add-plant-query'), $this->plantInput() + ['avatar' => $image])
+            ->assertSessionHasErrors('avatar');
+        $this->post(route('add-plant-query'), $this->plantInput() + [
+            'webcamAvatar' => 'data:image/png;base64,'.base64_encode($image->getContent()),
+        ])->assertSessionHasErrors('webcamAvatar');
+
+        $this->assertDatabaseCount('plants', 0);
+        $this->assertDatabaseCount('plant_photo_cleanup', 0);
+    }
+
     public function test_in_flight_identification_cannot_overwrite_the_replacement_cover_result(): void
     {
         config(['services.plant_id.key' => 'test-key']);
@@ -190,6 +226,33 @@ class PlantPhotoTest extends TestCase
         $this->assertSame(route('plants.cover', $plant, false), $plant->fresh()->avatarUrl());
         $this->assertDatabaseHas('plant_photo_cleanup', ['public_id' => 'user_uploads/fern']);
         $this->artisan('photos:cleanup')->assertSuccessful();
+        $this->assertDatabaseCount('plant_photo_cleanup', 0);
+    }
+
+    public function test_cleanup_waits_while_a_legacy_cover_is_used_under_an_alias(): void
+    {
+        $first = Plant::factory()->create([
+            'avatar' => 'https://res.cloudinary.com/demo/image/upload/v123/user_uploads/shared_fern.png',
+        ]);
+        $alias = Plant::factory()->for($first->owner, 'owner')->create([
+            'avatar' => 'https://res.cloudinary.com/demo/image/upload/user_uploads/shared_fern.png',
+        ]);
+        $deletions = 0;
+        $this->fakeCloudinary([function () use (&$deletions): Response {
+            $deletions++;
+
+            return $this->cloudinaryResponse(['result' => 'ok']);
+        }]);
+
+        $this->actingAs($first->owner)->delete(route('deletePlant', $first))->assertRedirect();
+        $this->artisan('photos:cleanup')->assertSuccessful();
+        $this->assertSame(0, $deletions);
+        $this->assertDatabaseCount('plant_photo_cleanup', 1);
+
+        $this->delete(route('deletePlant', $alias))->assertRedirect();
+        $this->travel(6)->minutes();
+        $this->artisan('photos:cleanup')->assertSuccessful();
+        $this->assertSame(1, $deletions);
         $this->assertDatabaseCount('plant_photo_cleanup', 0);
     }
 
