@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\UpdateProfileRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -55,5 +56,23 @@ class ProfileTest extends TestCase
         $this->assertSame('gardener@example.net', $user->fresh()->email);
         $this->assertSame($previousHash, $user->fresh()->password);
         $this->assertNull($user->fresh()->email_verified_at);
+    }
+
+    public function test_profile_update_requires_the_password_to_still_match_when_the_record_is_written(): void
+    {
+        $user = User::factory()->create();
+        $this->app->afterResolving(UpdateProfileRequest::class, function () use ($user): void {
+            User::query()->whereKey($user->id)->update(['password' => Hash::make('updated concurrently')]);
+        });
+
+        $this->actingAs($user)->putJson(route('editUserProfile'), [
+            'email' => 'new-address@example.test',
+            'current_password' => 'password',
+            'password' => 'stale request password',
+            'password_confirmation' => 'stale request password',
+        ])->assertUnprocessable()->assertJsonValidationErrors('current_password');
+
+        $this->assertSame($user->email, $user->fresh()->email);
+        $this->assertTrue(Hash::check('updated concurrently', $user->fresh()->password));
     }
 }
