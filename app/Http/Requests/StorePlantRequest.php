@@ -6,6 +6,7 @@ use App\Models\Needs;
 use App\Services\PlantPhoto;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePlantRequest extends FormRequest
 {
@@ -25,7 +26,8 @@ class StorePlantRequest extends FormRequest
             'winter_watering_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'summer_fertilizing_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'winter_fertilizing_frequency' => ['nullable', 'integer', 'min:1', 'max:3650'],
-            'avatar' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'avatar' => ['bail', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120',
+                Rule::dimensions()->maxWidth(PlantPhoto::MAX_IMAGE_DIMENSION)->maxHeight(PlantPhoto::MAX_IMAGE_DIMENSION)],
             'webcamAvatar' => [
                 'bail',
                 'nullable',
@@ -33,7 +35,7 @@ class StorePlantRequest extends FormRequest
                 'max:6990532',
                 function (string $attribute, string $value, Closure $fail): void {
                     if (!PlantPhoto::isValidWebcamImage($value)) {
-                        $fail('The webcam photo must be a JPEG, PNG or WebP image of up to 5 MB.');
+                        $fail('The webcam photo must be a JPEG, PNG or WebP image of up to 5 MB and 8000 × 8000 pixels.');
                     }
                 },
             ],

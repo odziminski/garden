@@ -13,6 +13,7 @@ use App\Services\PlantCareSchedule;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -154,12 +155,19 @@ class NeedsController extends Controller
         $room = is_string($room) && mb_strlen($room) <= 80 ? $room : '';
         $visiblePlants = Plant::query()->visibleTo($request->user());
         $rooms = (clone $visiblePlants)->whereNotNull('room')->distinct()->orderBy('room')->pluck('room');
-        $plants = $visiblePlants->when($room !== '', fn ($query) => $query->where('room', $room))->with([
-            'owner', 'history', 'needs', 'checkSchedule', 'latestPlantCheck.checkedBy:id,email',
-            'careTasks' => fn ($tasks) => $tasks->active()
-                ->orderByRaw('CASE WHEN snoozed_until > due_on THEN snoozed_until ELSE due_on END')
-                ->orderBy('id')->limit(13),
-        ])->lazyById(100);
+        $plants = $visiblePlants->when($room !== '', fn (Builder $query) => $query->where('room', $room))
+            ->where(fn (Builder $query) => $query
+                ->whereHas('needs', fn (Builder $needs) => $needs->where('watering_frequency', '>', 0)
+                    ->orWhere('fertilizing_frequency', '>', 0))
+                ->orWhereHas('checkSchedule', fn (Builder $schedule) => $schedule->where('enabled', true)
+                    ->whereNotNull('next_check_on'))
+                ->orWhereHas('careTasks', fn (Builder $tasks) => $tasks->active()))
+            ->with([
+                'owner', 'history', 'needs', 'checkSchedule', 'latestPlantCheck.checkedBy:id,email',
+                'careTasks' => fn ($tasks) => $tasks->active()
+                    ->orderByRaw('CASE WHEN snoozed_until > due_on THEN snoozed_until ELSE due_on END')
+                    ->orderBy('id')->limit(13),
+            ])->lazyById(100);
 
         $pageSize = 20;
         $duePlants = collect();

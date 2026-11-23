@@ -32,6 +32,30 @@ class MonthlyPlantReportTest extends TestCase
             ->assertDontSee('Journal entry 25.')->assertSee('No watering dates in this month.');
     }
 
+    public function test_timeline_includes_soil_findings_and_feeding_details_without_double_counting_water(): void
+    {
+        $this->travelTo(Carbon::parse('2024-03-04T12:00:00Z'));
+        $owner = User::factory()->create();
+        $plant = $owner->plants()->create(['name' => 'Fern']);
+        $checks = route('plant-checks.store', $plant);
+
+        $this->actingAs($owner)->post($checks, [
+            'outcome' => 'still_moist', 'schedule_version' => 0, 'note' => 'Damp below the surface.',
+        ])->assertRedirect();
+        $this->post($checks, [
+            'outcome' => 'watered', 'schedule_version' => 1, 'note' => 'Watered after checking.',
+        ])->assertRedirect();
+        $this->post(route('care-logs.store', $plant), [
+            'type' => 'fertilizing', 'care_date' => '2024-03-04',
+            'fertilizer' => 'Fern feed', 'dose' => '2 ml in 1 l',
+        ])->assertRedirect();
+
+        $page = $this->get(route('monthly-report.index', ['plant' => $plant, 'month' => '2024-03']))
+            ->assertOk()->assertSee('Soil check: Still moist')->assertSee('Damp below the surface.')
+            ->assertSee('Fern feed')->assertSee('2 ml in 1 l');
+        $this->assertSame(1, substr_count($page->getContent(), 'Watered after checking.'));
+    }
+
     public function test_guests_are_redirected_to_login(): void
     {
         $this->get('/monthly-report')->assertRedirect(route('login'));

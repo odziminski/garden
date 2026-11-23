@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\User;
 use DOMDocument;
 use DOMXPath;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -76,5 +78,56 @@ class AuthenticationTest extends TestCase
 
         $this->assertTrue(Hash::check('a different password', $user->fresh()->password));
         $this->assertFalse(Password::broker()->tokenExists($user, $token));
+    }
+
+    public function test_reset_link_responses_do_not_disclose_whether_an_account_exists(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+
+        $sent = $this->postJson(route('password.email'), ['email' => $user->email])->assertOk();
+        $this->postJson(route('password.email'), ['email' => 'missing@example.test'])
+            ->assertOk()->assertExactJson($sent->json());
+        $this->postJson(route('password.email'), ['email' => $user->email])
+            ->assertOk()->assertExactJson($sent->json());
+
+        Notification::assertSentToTimes($user, ResetPassword::class, 1);
+    }
+
+    public function test_reset_link_requests_are_limited_across_email_addresses(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson(route('password.email'), ['email' => "missing{$i}@example.test"])->assertOk();
+        }
+
+        $this->postJson(route('password.email'), ['email' => 'sixth@example.test'])->assertTooManyRequests();
+    }
+
+    public function test_failed_password_reset_responses_do_not_disclose_whether_an_account_exists(): void
+    {
+        $user = User::factory()->create();
+        $credentials = [
+            'token' => str_repeat('x', 64),
+            'password' => 'a different password',
+            'password_confirmation' => 'a different password',
+        ];
+
+        $known = $this->postJson(route('password.update'), $credentials + ['email' => $user->email])
+            ->assertUnprocessable();
+        $this->postJson(route('password.update'), $credentials + ['email' => 'missing@example.test'])
+            ->assertUnprocessable()->assertExactJson($known->json());
+    }
+
+    public function test_password_reset_rejects_nonscalar_tokens_at_validation(): void
+    {
+        $user = User::factory()->create();
+        Password::broker()->createToken($user);
+
+        $this->postJson(route('password.update'), [
+            'token' => ['invalid'],
+            'email' => $user->email,
+            'password' => 'a different password',
+            'password_confirmation' => 'a different password',
+        ])->assertUnprocessable()->assertJsonValidationErrors('token');
     }
 }

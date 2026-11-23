@@ -108,6 +108,45 @@ class PlantTaskTest extends TestCase
         $this->assertFalse(PlantTask::query()->active()->whereKey($task->id)->exists());
     }
 
+    public function test_recurring_task_skips_a_date_completed_before_the_schedule_was_edited(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-20 09:00:00', 'UTC'));
+        $owner = User::factory()->create();
+        $plant = $owner->plants()->create(['name' => 'Fern']);
+        $task = $this->task($plant, '2026-11-27', 7);
+        $complete = route('plant-tasks.complete', [$plant, $task]);
+
+        $this->actingAs($owner)->post($complete, [
+            'scheduled_for' => '2026-11-27', 'complete_early' => true,
+        ])->assertRedirect();
+        $this->patch(route('plant-tasks.update', [$plant, $task]), [
+            'name' => 'Wipe leaves', 'due_on' => '2026-11-20', 'repeat_days' => 7,
+        ])->assertRedirect();
+        $this->post($complete, ['scheduled_for' => '2026-11-20'])->assertRedirect();
+
+        $this->assertSame('2026-12-04', $task->fresh()->due_on);
+        $this->assertDatabaseCount('plant_task_completions', 2);
+    }
+
+    public function test_completing_a_stuck_occurrence_repairs_the_schedule_without_recording_it_twice(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-20 09:00:00', 'UTC'));
+        $owner = User::factory()->create();
+        $plant = $owner->plants()->create(['name' => 'Fern']);
+        $task = $this->task($plant, '2026-11-27', 7);
+        $complete = route('plant-tasks.complete', [$plant, $task]);
+        $this->actingAs($owner)->post($complete, [
+            'scheduled_for' => '2026-11-27', 'complete_early' => true,
+        ])->assertRedirect();
+
+        $task->refresh()->update(['due_on' => '2026-11-27']);
+        $this->travelTo(CarbonImmutable::parse('2026-12-10 09:00:00', 'UTC'));
+        $this->post($complete, ['scheduled_for' => '2026-11-27'])->assertRedirect();
+
+        $this->assertSame('2026-12-04', $task->fresh()->due_on);
+        $this->assertDatabaseCount('plant_task_completions', 1);
+    }
+
     public function test_future_and_archived_tasks_cannot_be_completed(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-11-20 09:00:00', 'UTC'));

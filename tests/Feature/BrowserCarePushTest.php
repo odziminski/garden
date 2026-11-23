@@ -28,7 +28,7 @@ class BrowserCarePushTest extends TestCase
             'push.private_key' => $encode(str_repeat(chr(0), 31).chr(1)),
             'push.subject' => 'mailto:admin@example.test',
         ]);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['push_reminders_enabled' => true]);
         $endpoint = 'https://fcm.googleapis.com/fcm/send/expired';
         $device = PushSubscription::query()->create([
             'user_id' => $user->id,
@@ -44,6 +44,7 @@ class BrowserCarePushTest extends TestCase
         (new BrowserCarePush(new Client(['handler' => $handler])))->send($user, new Collection);
 
         $this->assertModelMissing($device);
+        $this->assertFalse($user->fresh()->push_reminders_enabled);
         $this->assertCount(1, $history);
         $this->assertStringStartsWith('vapid t=', $history[0]['request']->getHeaderLine('Authorization'));
         $this->assertSame($endpoint, (string) $history[0]['request']->getUri());

@@ -108,14 +108,14 @@ final class PlantChecks
         }, 3);
     }
 
-    public function undo(Plant $plant, User $actor, string $id): bool
+    public function undo(Plant $plant, User $actor, string $id, bool $historyOnly = false): bool
     {
-        return DB::transaction(function () use ($plant, $actor, $id) {
+        return DB::transaction(function () use ($plant, $actor, $id, $historyOnly) {
             $plant = PlantCareAccess::lock($plant, $actor);
             $check = $plant->plantChecks()->findOrFail($id);
             abort_unless($check->canBeUndoneBy($actor, $plant), 404);
             $schedule = $plant->checkSchedule()->first();
-            if ($check->voided_at !== null || !$schedule || $schedule->version !== $check->schedule_version + 1) {
+            if ($check->voided_at !== null || (!$historyOnly && $schedule?->version !== $check->schedule_version + 1)) {
                 return false;
             }
 
@@ -125,7 +125,9 @@ final class PlantChecks
                 PlantCareHistory::void($plant, $actor, $check->care_log_id);
                 PlantCareSchedule::syncFlags($plant, CareType::Watering);
             }
-            $this->advance($schedule, $check->scheduled_for);
+            if (!$historyOnly) {
+                $this->advance($schedule, $check->scheduled_for);
+            }
 
             return true;
         }, 3);

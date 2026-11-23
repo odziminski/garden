@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\CarePushDelivery;
-use App\Models\PlantHandoff;
 use App\Mail\DailyCareDigest;
+use App\Models\PlantHandoff;
 use App\Models\PlantTask;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -60,18 +60,22 @@ class CareReminderOutbox
                 continue;
             }
 
-            $alreadyQueued = $this->deliveries()->where('user_id', $recipient->id)->where('local_date', $date)->pluck('channel')->all();
-            $channels = array_diff($channels, $alreadyQueued);
+            $statuses = $this->deliveries()->where('user_id', $recipient->id)->where('local_date', $date)
+                ->pluck('status', 'channel');
+            $channels = array_filter($channels, fn (string $channel) => in_array($statuses->get($channel), [null, 'cancelled'], true));
             if ($channels === [] || $this->plants->dueFor($recipient, $instant)->isEmpty()) {
                 continue;
             }
 
-            $this->deliveries()->insertOrIgnore(array_map(fn (string $channel) => [
-                'user_id' => $recipient->id,
-                'channel' => $channel,
-                'local_date' => $date,
-                'available_at' => $instant,
-            ], $channels));
+            foreach ($channels as $channel) {
+                $key = ['user_id' => $recipient->id, 'channel' => $channel, 'local_date' => $date];
+                if ($statuses->get($channel) === 'cancelled') {
+                    $this->deliveries()->where($key)->where('status', 'cancelled')->where('attempts', '<', self::MAX_ATTEMPTS)
+                        ->update(['status' => 'pending', 'available_at' => $instant, 'finished_at' => null]);
+                } else {
+                    $this->deliveries()->insertOrIgnore($key + ['available_at' => $instant]);
+                }
+            }
         }
     }
 
@@ -116,7 +120,7 @@ class CareReminderOutbox
         $claim->where('attempts', $attempt);
         $recipient = User::query()->find($delivery->user_id);
         if (!$this->eligible($recipient, $delivery->channel, $delivery->local_date, $instant)) {
-            $claim->update(['status' => 'cancelled', 'finished_at' => $instant]);
+            $claim->update(['status' => 'cancelled', 'finished_at' => $instant, 'attempts' => $delivery->attempts]);
             return true;
         }
 
@@ -127,7 +131,7 @@ class CareReminderOutbox
 
         $plants = $this->plants->dueFor($recipient, $instant);
         if ($plants->isEmpty()) {
-            $claim->update(['status' => 'cancelled', 'finished_at' => $instant]);
+            $claim->update(['status' => 'cancelled', 'finished_at' => $instant, 'attempts' => $delivery->attempts]);
             return true;
         }
 

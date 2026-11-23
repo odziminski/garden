@@ -38,16 +38,16 @@
                             @endif
                         </div>
                     @endif
-                    @if ($identificationStatus === 'pending')
+                    @if ($canManage && $identificationStatus === 'pending')
                         <p class="card-body mb-0 text-muted">Plant identification is pending.</p>
-                    @elseif ($identificationStatus === 'unavailable')
+                    @elseif ($canManage && $identificationStatus === 'unavailable')
                         <p class="card-body mb-0 text-muted">Plant identification is unavailable.</p>
-                    @elseif ($identificationStatus === 'no_match')
+                    @elseif ($canManage && $identificationStatus === 'no_match')
                         <p class="card-body mb-0 text-muted">No plant match was found for this cover photo.</p>
                     @endif
                     @if ($plant->plantData)
                         <div class="card-body">
-                            @if (in_array($identificationStatus, ['pending', 'unavailable', 'no_match'], true))
+                            @if (in_array($identificationStatus, ['pending', 'unavailable', 'no_match', 'disabled'], true))
                                 <p class="small text-muted mb-1">Previous identification</p>
                             @endif
                             <h2 class="h5">

@@ -81,7 +81,14 @@ class PlantCheckController extends Controller
 
     public function undo(Request $request, Plant $plant, string $check, PlantChecks $checks): RedirectResponse
     {
-        return $this->undoResponse($plant, $checks->undo($plant, $request->user(), $check));
+        $details = $request->validate(['history_only' => ['sometimes', 'boolean']]);
+        $historyOnly = (bool) ($details['history_only'] ?? false);
+        $undone = $checks->undo($plant, $request->user(), $check, $historyOnly);
+        if ($historyOnly && $undone) {
+            return $this->backToChecks($plant)->with('plant_check_status', 'Check removed from history.');
+        }
+
+        return $this->undoResponse($plant, $undone);
     }
 
     public function undoSkip(Request $request, Plant $plant, PlantChecks $checks): RedirectResponse
