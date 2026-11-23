@@ -9,6 +9,7 @@ use App\Models\PlantTaskCompletion;
 use App\Services\PlantCareAccess;
 use App\Services\PlantTaskSchedule;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -51,9 +52,19 @@ class PlantTaskController extends Controller
                 return null;
             }
 
+            $existing = $lockedTask->completions()->where('scheduled_for', $scheduledFor)->first();
+            if ($existing !== null) {
+                // Repair schedules left on a completed date by an earlier reschedule.
+                $base = CarbonImmutable::parse(max($existing->completed_on, $scheduledFor), 'UTC');
+                $nextDueOn = $this->nextUnrecordedDate($lockedTask, $base);
+                $this->advanceAfterCompletion($lockedTask, $nextDueOn, $existing->completed_at);
+
+                return null;
+            }
+
             $completedAt = $asOf->copy()->utc();
             $base = $scheduledFor > $completedOn ? CarbonImmutable::parse($scheduledFor, $asOf->getTimezone()) : $asOf;
-            $nextDueOn = PlantTaskSchedule::nextDueOn($base, $lockedTask->repeat_days);
+            $nextDueOn = $this->nextUnrecordedDate($lockedTask, $base);
             $completion = $lockedTask->completions()->create([
                 'scheduled_for' => $lockedTask->due_on,
                 'completed_on' => $completedOn,
@@ -63,14 +74,7 @@ class PlantTaskController extends Controller
                 'previous_snoozed_until' => $lockedTask->snoozed_until,
             ]);
 
-            if ($nextDueOn === null) {
-                $lockedTask->completed_at = $completedAt;
-            } else {
-                $lockedTask->due_on = $nextDueOn;
-            }
-
-            $lockedTask->snoozed_until = null;
-            $lockedTask->save();
+            $this->advanceAfterCompletion($lockedTask, $nextDueOn, $completedAt);
 
             return $completion;
         }, 3);
@@ -189,5 +193,27 @@ class PlantTaskController extends Controller
     private function taskListUrl(Plant $plant): string
     {
         return route('plants', $plant).'#custom-tasks';
+    }
+
+    private function nextUnrecordedDate(PlantTask $task, CarbonInterface $base): ?string
+    {
+        $next = PlantTaskSchedule::nextDueOn($base, $task->repeat_days);
+        while ($next !== null && $task->completions()->where('scheduled_for', $next)->exists()) {
+            $next = PlantTaskSchedule::nextDueOn(CarbonImmutable::parse($next, 'UTC'), $task->repeat_days);
+        }
+
+        return $next;
+    }
+
+    private function advanceAfterCompletion(PlantTask $task, ?string $nextDueOn, CarbonInterface $completedAt): void
+    {
+        if ($nextDueOn === null) {
+            $task->completed_at = $completedAt;
+        } else {
+            $task->due_on = $nextDueOn;
+        }
+
+        $task->snoozed_until = null;
+        $task->save();
     }
 }

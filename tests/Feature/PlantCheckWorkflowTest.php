@@ -151,6 +151,30 @@ class PlantCheckWorkflowTest extends TestCase
         $this->assertNull($plant->latestPlantCheck()->first());
     }
 
+    public function test_an_old_watered_check_can_be_removed_without_rescheduling_newer_checks(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 21)->startOfDay());
+        $owner = User::factory()->create();
+        $plant = $this->plant($owner);
+        $this->actingAs($owner)->patch(route('plant-checks.schedule', $plant), ['enabled' => '1'])->assertRedirect();
+        $schedule = $plant->checkSchedule()->sole();
+        $checks = route('plant-checks.store', $plant);
+        $this->post($checks, ['outcome' => 'watered', 'schedule_version' => $schedule->version])->assertRedirect();
+        $oldCheck = $plant->plantChecks()->sole();
+        $this->patch(route('plant-checks.schedule', $plant), [
+            'enabled' => '1', 'next_check_on' => '2026-11-26',
+        ])->assertRedirect();
+
+        $this->get(route('plants', $plant))->assertOk()->assertSee('Remove from check history');
+        $this->delete(route('plant-checks.undo', [$plant, $oldCheck]), ['history_only' => '1'])
+            ->assertSessionHas('plant_check_status');
+
+        $this->assertNotNull($oldCheck->fresh()->voided_at);
+        $this->assertNotNull($oldCheck->careLog()->sole()->voided_at);
+        $this->assertSame('2026-11-26', $schedule->fresh()->next_check_on);
+        $this->assertSame('2026-11-10', $plant->history()->sole()->watered_at->toDateString());
+    }
+
     public function test_a_failed_check_insert_rolls_back_the_linked_watering_entry_and_history(): void
     {
         $this->travelTo(now()->setDate(2026, 11, 21)->startOfDay());

@@ -110,6 +110,9 @@
                                         @if ($entry['note'] !== null && $entry['note'] !== '')
                                             <p class="mt-1 mb-0 text-break">{{ $entry['note'] }}</p>
                                         @endif
+                                        @if ($entry['fertilizer'] || $entry['dose'])
+                                            <p class="mt-1 mb-0 text-break">{{ implode(' · ', array_filter([$entry['fertilizer'], $entry['dose']])) }}</p>
+                                        @endif
                                     </li>
                                 @endforeach
                             </ol>

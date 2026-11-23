@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\DailyCareDigest;
+use App\Models\Plant;
 use App\Models\PlantHandoff;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,22 @@ use Tests\TestCase;
 class PracticalPlantProfileTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_today_does_not_hydrate_plants_without_any_schedule(): void
+    {
+        $owner = User::factory()->create();
+        $manualPlant = $owner->plants()->create(['name' => 'Manual fern', 'room' => 'Kitchen']);
+        $scheduledPlant = $owner->plants()->create(['name' => 'Scheduled ivy', 'created_at' => now()->subDays(5)]);
+        $scheduledPlant->needs()->create(['watering_frequency' => 3, 'fertilizing_frequency' => 0]);
+        $loaded = [];
+        Plant::retrieved(function (Plant $plant) use (&$loaded): void {
+            $loaded[] = $plant->id;
+        });
+
+        $this->actingAs($owner)->get(route('care.today'))->assertOk()->assertSee('Scheduled ivy')->assertSee('Kitchen');
+        $this->assertContains($scheduledPlant->id, $loaded);
+        $this->assertNotContains($manualPlant->id, $loaded);
+    }
 
     public function test_new_plant_only_needs_a_name_and_has_no_automatic_care_actions(): void
     {

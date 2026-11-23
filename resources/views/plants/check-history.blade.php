@@ -62,13 +62,17 @@
                 @endif
             </div>
             @if ($canManage || (int) $check->checked_by_user_id === (int) auth()->id())
-                @if ($plant->checkSchedule?->version === $check->schedule_version + 1)
-                    <form method="POST" action="{{ route('plant-checks.undo', [$plant, $check]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-outline-secondary btn-sm" type="submit">Undo check</button>
-                    </form>
-                @endif
+                @php($canRestoreSchedule = $plant->checkSchedule?->version === $check->schedule_version + 1)
+                <form method="POST" action="{{ route('plant-checks.undo', [$plant, $check]) }}">
+                    @csrf
+                    @method('DELETE')
+                    @unless ($canRestoreSchedule)
+                        <input type="hidden" name="history_only" value="1">
+                    @endunless
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">
+                        {{ $canRestoreSchedule ? 'Undo check' : 'Remove from check history' }}
+                    </button>
+                </form>
             @endif
         </div>
     @empty
