@@ -16,13 +16,14 @@
             <div class="alert alert-success" role="status">{{ session('message') }}</div>
         @endif
 
-        @if ($rooms->isNotEmpty())
-            @include('plants.room-filter', ['filterRoute' => route('browse')])
-        @endif
+        @include('plants.room-filter', ['filterRoute' => route('browse')])
 
         @if ($plants->isEmpty())
             <div class="bloom-panel bloom-empty">
-                @if ($plants->onFirstPage() && $room !== '')
+                @if ($plants->onFirstPage() && $search !== '')
+                    <h2 class="h4">No matching plants</h2>
+                    <a class="btn btn-outline-secondary" href="{{ route('browse', $room !== '' ? ['room' => $room] : []) }}">Clear search</a>
+                @elseif ($plants->onFirstPage() && $room !== '')
                     <h2 class="h4">No plants in this room</h2>
                     <a class="btn btn-outline-secondary" href="{{ route('browse') }}">Show all rooms</a>
                 @elseif ($plants->onFirstPage())
@@ -44,6 +45,9 @@
                             <h2 class="h5 card-title">
                                 <a href="{{ route('plants', $plant) }}">{{ $plant->name }}</a>
                             </h2>
+                            @if ($species = $plant->species_name ?: $plant->plantData?->plant_name)
+                                <p class="small text-muted text-break mb-1">{{ $species }}</p>
+                            @endif
                             @if ($plant->room)
                                 <p class="small text-muted mb-2">{{ $plant->room }}</p>
                             @endif
