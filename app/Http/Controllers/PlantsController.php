@@ -13,6 +13,7 @@ use App\Services\PlantIdentification;
 use App\Services\PlantJournalPhotos;
 use App\Services\PlantPhoto;
 use App\Services\PlantPhotoStorageException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -87,16 +88,25 @@ class PlantsController extends Controller
     {
         $room = $request->query('room');
         $room = is_string($room) && mb_strlen($room) <= 80 ? $room : '';
+        $search = $request->query('q');
+        $search = is_string($search) ? mb_substr(trim($search), 0, 120) : '';
+        $pattern = '%'.strtr($search, ['!' => '!!', '%' => '!%', '_' => '!_']).'%';
         $visiblePlants = Plant::query()->visibleTo($request->user());
         $rooms = (clone $visiblePlants)->whereNotNull('room')->distinct()->orderBy('room')->pluck('room');
         $plants = $visiblePlants->when($room !== '', fn ($query) => $query->where('room', $room))
-            ->with('owner', 'history', 'needs', 'checkSchedule')
+            ->when($search !== '', fn (Builder $query) => $query->where(fn (Builder $matches) => $matches
+                ->whereRaw("LOWER(plants.name) LIKE LOWER(?) ESCAPE '!'", [$pattern])
+                ->orWhereRaw("LOWER(plants.species_name) LIKE LOWER(?) ESCAPE '!'", [$pattern])
+                ->orWhereHas('plantData', fn (Builder $identification) => $identification
+                    ->whereRaw("LOWER(plant_name) LIKE LOWER(?) ESCAPE '!'", [$pattern])
+                    ->orWhereRaw("LOWER(common_name) LIKE LOWER(?) ESCAPE '!'", [$pattern]))))
+            ->with('owner', 'history', 'needs', 'checkSchedule', 'plantData:id,plant_id,plant_name')
             ->orderByDesc(History::query()->select('watered_at')
                 ->whereColumn('history.plant_id', 'plants.id')->orderByDesc('watered_at')->limit(1))
             ->orderBy('plants.id')
             ->simplePaginate(24)->withQueryString();
 
-        return view('browse', ['plants' => $plants, 'rooms' => $rooms, 'room' => $room]);
+        return view('browse', ['plants' => $plants, 'rooms' => $rooms, 'room' => $room, 'search' => $search]);
     }
 
     public function displayEditPlant(Plant $plant): View

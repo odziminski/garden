@@ -14,6 +14,30 @@ class PracticalPlantProfileTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_garden_search_combines_species_and_name_with_room_and_plant_access(): void
+    {
+        $owner = User::factory()->create();
+        $owner->plants()->create(['name' => 'Window cactus', 'room' => 'Kitchen']);
+        $owner->plants()->create(['name' => 'Spiky plant', 'species_name' => 'Cactus', 'room' => 'Kitchen']);
+        $identified = $owner->plants()->create(['name' => 'Small pot', 'room' => 'Kitchen']);
+        $identified->plantData()->create([
+            'plant_name' => 'Schlumbergera', 'common_name' => 'Christmas cactus',
+            'wikipedia_url' => '', 'wikipedia_description' => '', 'taxonomy_class' => '',
+            'taxonomy_family' => '', 'taxonomy_genus' => '', 'taxonomy_kingdom' => '',
+            'taxonomy_order' => '', 'taxonomy_phylum' => '',
+        ]);
+        $owner->plants()->create(['name' => 'Bedroom cactus', 'room' => 'Bedroom']);
+        $owner->plants()->create(['name' => 'Kitchen fern', 'room' => 'Kitchen']);
+        User::factory()->create()->plants()->create(['name' => 'Private cactus', 'room' => 'Kitchen']);
+
+        $this->actingAs($owner)->get(route('browse', ['room' => 'Kitchen', 'q' => 'cactus']))
+            ->assertOk()->assertSee('Window cactus')->assertSee('Spiky plant')->assertSee('Small pot')
+            ->assertDontSee('Bedroom cactus')->assertDontSee('Kitchen fern')->assertDontSee('Private cactus');
+
+        $this->get(route('browse', ['q' => '%']))->assertOk()->assertSee('No matching plants')
+            ->assertDontSee('Window cactus');
+    }
+
     public function test_today_does_not_hydrate_plants_without_any_schedule(): void
     {
         $owner = User::factory()->create();
